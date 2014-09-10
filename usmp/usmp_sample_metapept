@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# sample ID and download folder are passed as arguments
+project_dir=$(readlink -f "$1")
+sample_id="$2"
+
+# define global file names
+sample_base="${project_dir}/${sample_id}"
+sample_prot2pept="${sample_base}.prot2pept"
+sample_metapept="${sample_base}.metapept"
+sample_log="${sample_base}.log"
+
+# open log file
+exec 3>> "${sample_log}"
+
+# write error messages to log file
+exec 2>&3
+
+echo "started metapept of sample ${sample_id} @ $(date)" 1>&3
+
+# drop previous version of the sample metapeptidome (if present)
+rm -f "${sample_metapept}"
+
+# collect all unique peptides from the sample into its metapeptidome
+cat "${sample_prot2pept}" | grep -v '^>' | sort | uniq > "${sample_metapept}"
+
+echo "finished metapept of sample ${sample_id} @ $(date)" 1>&3

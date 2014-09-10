@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# project ID and download folder are passed as arguments
+project_dir=$(readlink -f "$1")
+project_id="$2"
+
+# define global file names
+project_base="${project_dir}/${project_id}"
+project_log="${project_base}.log"
+
+# open log file
+exec 3>> "${project_log}"
+
+# write error messages to log file
+exec 2>&3
+
+# log start of this processing step
+echo "started prot2pept2lca of project ${project_id} @ $(date)" 1>&3
+
+# lookup complete lineage for each taxon found in one of the samples
+find "${project_dir}" -maxdepth 1 -name '*.cds' | \
+    sed 's+.*/\(.*\)\.cds+\1+' | \
+    while read sample_id; do
+        usmp_sample_prot2pept2lca "${project_dir}" "${project_id}" "${sample_id}"
+    done
+
+# log end of this processing step
+echo "finished prot2pept2lca of project ${project_id} @ $(date)" 1>&3

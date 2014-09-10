@@ -1,0 +1,19 @@
+#!/usr/bin/awk -f
+
+BEGIN { FS=","; OFS="," }
+
+NR == FNR {
+  n = split($0, field, ",")
+  key = field[0]
+  values = ""; for (i=2; i<=n; ++i) values = sprintf("%s,%s", values, field[i])
+  taxon[$1] = values
+  next
+}
+
+/^>/{ print; next }
+
+{
+  if ($NF in taxon) {
+    print $0 taxon[$NF]
+  }
+}

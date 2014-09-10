@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# project ID and download folder are passed as arguments
+project_dir=$(readlink -f "$1")
+project_id="$2"
+
+# define global file names
+project_base="${project_dir}/${project_id}"
+project_metapept="${project_base}.metapept"
+project_pept2lca="${project_base}.pept2lca"
+project_log="${project_base}.log"
+
+# open log file
+exec 3>> "${project_log}"
+
+# write error messages to log file
+exec 2>&3
+
+echo "started pept2lca of project ${project_id} @ $(date)" 1>&3
+
+# determine LCA for each peptide in project metapeptidome (set of tryptic peptides occuring in the project)
+
+# process peptides in project metapeptidome
+cat "${project_metapept}" | \
+# compute LCA for each peptide in the metapeptidome
+  unipept pept2lca | \
+# only retain peptide and taxon ID of LCA (save disk space)
+  awk -F, -v OFS=',' '{print $1, $2}' > "${project_pept2lca}"
+
+echo "finished pept2lca of project ${project_id} @ $(date)" 1>&3
+
+# close log file
+exec 3>&-

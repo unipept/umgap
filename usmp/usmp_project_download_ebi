@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# project ID and download folder are passed as arguments
+project_dir=$(readlink -f "$1")
+project_id="$2"
+project_base="${project_dir}/${project_id}"
+project_log="${project_base}.log"
+
+# open log file
+exec 3>> "${project_log}"
+
+# log start of project download
+echo "started download of project ${project_id} @ $(date)" 1>&3
+
+# create project folder if needed
+mkdir -p "${project_dir}"
+
+# fetch all project samples and store them in the project folder
+wget -qO- "https://www.ebi.ac.uk/metagenomics/project/${project_id}" | \
+  sed -ne 's+<a href="/metagenomics/sample/\([^"]*\)" class="fl_uppercase_title">+\1+p' | \
+  sed -e 's/;.*//' | sed -e 's/^ *//' | \
+  while read sample_id; do
+    wget -O "${project_dir}/${sample_id}.cds" "https://www.ebi.ac.uk/metagenomics/sample/${sample_id}/doExportCDSFile"
+  done
+
+# log end of project download
+echo "finished download of project ${project_id} @ $(date)" 1>&3
+
