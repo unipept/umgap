@@ -15,20 +15,23 @@ class Taxon(JSONEncoder):
 
     def to_json(self):
         """This must be the worst printer I've ever written. But hey, at least it doesn't uses 15 gigs of memory"""
-        print('{')
-        print(  '"id": "' + str(self.id) + '",')
-        print(  '"name": "' + self.name + '",')
-        print(  '"data": {')
-        print(    '"count": 1,')
-        print(    '"self_count": 1,')
-        print(    '"valid_taxon": ' + str(self.valid_taxon) + ',')
-        print(  '},')
-        print(  '"children": [')
-        for child in self.children:
+        print("""
+{{
+"id":{self.id},
+"name":"{self.name}",
+"data":{{"count":1,"self_count":1,"valid_taxon":{self.valid_taxon}}},
+"children":[
+""".format(self=self)
+        )
+
+        for i, child in enumerate(self.children):
             child.to_json()
-            print(',')
-        print(  ']')
-        print('}')
+            if i != len(self.children) - 1: # JSON, y u no support trailing commas?
+                print ","
+
+        print("""
+]}
+""")
 
 
 def read_file():
