@@ -19,19 +19,23 @@ class Taxon(JSONEncoder):
 {{
 "id":{self.id},
 "name":"{self.name}",
-"data":{{"count":1,"self_count":1,"valid_taxon":{self.valid_taxon}}},
 "children":[
 """.format(self=self)
         )
 
+        children = 1
+
         for i, child in enumerate(self.children):
-            child.to_json()
+            children += child.to_json()
             if i != len(self.children) - 1: # JSON, y u no support trailing commas?
                 print ","
 
         print("""
-]}
-""")
+]}},
+"data":{{"count":{children},"self_count":{self_count},"valid_taxon":{self.valid_taxon}}}
+""".format(children=children, self_count=len(self.children)+1, self=self))
+
+        return children
 
 
 def read_file():
