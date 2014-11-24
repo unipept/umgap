@@ -19,7 +19,7 @@ class Taxon(JSONEncoder):
 {{
 "id":{self.id},
 "name":"{self.name}",
-"children":[
+"hchildren":[
 """.format(self=self)
         )
 
@@ -28,7 +28,7 @@ class Taxon(JSONEncoder):
         for i, child in enumerate(self.children):
             children += child.to_json()
             if i != len(self.children) - 1: # JSON, y u no support trailing commas?
-                print ","
+                print(",")
 
         print("""
 ],
