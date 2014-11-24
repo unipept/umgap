@@ -32,7 +32,7 @@ class Taxon(JSONEncoder):
 
         print("""
 ],
-"data":{{"count":{children},"self_count":{self_count},"valid_taxon":{self.valid_taxon}}}}}
+"data":{{"count":{children},"self_count":{self_count},"valid_taxon":{self.valid_taxon},"rank":"{self.rank}"}}}}
 """.format(children=children, self_count=len(self.children)+1, self=self))
 
         return children
