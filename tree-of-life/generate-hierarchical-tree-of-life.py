@@ -19,7 +19,7 @@ class Taxon(JSONEncoder):
 {{
 "id":{self.id},
 "name":"{self.name}",
-"hchildren":[
+"children":[
 """.format(self=self)
         )
 
