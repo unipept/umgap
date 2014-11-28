@@ -93,11 +93,22 @@ class Taxon(JSONEncoder):
 
         return children
 
-    def get_lineage(self):
+    def get_lineage(self, no_rank=True, invalid=True):
         """Gets the lineage of a taxon to the root"""
+
+        # Root, return an empty list
         if self.taxon_id == self.parent_id:
-            return []
-        return  self.parent.get_lineage() + [self.taxon_id]
+            return [self.taxon_id]
+
+        # Don't count no ranks if we don't want to
+        if not no_rank and self.rank == "no_rank":
+            return self.parent.get_lineage()
+
+        # Don't count invalids if we don't want to
+        if not invalid and not self.valid_taxon:
+            return self.parent.get_lineage()
+
+        return self.parent.get_lineage() + [self.taxon_id]
 
 
 def get_tree():
