@@ -13,6 +13,7 @@ class Tree():
 
         self.read_taxons()
         self.add_taxon_children()
+        self.add_taxon_parents()
 
 
     def to_json(self, filename):
@@ -49,6 +50,11 @@ class Tree():
         for taxon in self.taxons:
             if taxon and taxon.taxon_id != taxon.parent_id:
                 self.taxons[taxon.parent_id].children.add(taxon)
+
+    def add_taxon_parents(self):
+        for taxon in self.taxons:
+            if taxon:
+                taxon.parent = self.taxons[taxon.parent_id]
 
 
 class Taxon(JSONEncoder):
@@ -87,16 +93,22 @@ class Taxon(JSONEncoder):
 
         return children
 
+    def get_lineage(self):
+        """Gets the lineage of a taxon to the root"""
+        if self.taxon_id == self.parent_id:
+            return []
+        return  self.parent.get_lineage() + [self.taxon_id]
+
 
 def get_tree():
     """Creates or loads a tree object"""
 
     # Return the tree if it exists
-    if os.path.exists('tree.p'):
-        print("Loading tree from pickle")
-        tree = pickle.load(open("tree.p", "rb"))
-    else: # Create it otherwise
-        tree = Tree()
-        pickle.dump(tree, open("tree.p", "wb"))
+    # if os.path.exists('tree.p'):
+    #     print("Loading tree from pickle")
+    #     tree = pickle.load(open("tree.p", "rb"))
+    # else: # Create it otherwise
+    tree = Tree()
+    #     pickle.dump(tree, open("tree.p", "wb"))
 
     return tree
