@@ -9,7 +9,7 @@ def get_lca(lineages):
     index = 1
     last = lineages[0][0]
 
-    while index <= len(lineages[0]):
+    while index < len(lineages[0]):
         first = lineages[0][index]
         for lineage in lineages:
             if first != lineage[index]:
