@@ -18,7 +18,7 @@ class Tree():
 
     def to_json(self, filename):
         """Writes the tree to JSON"""
-        with open("filename", "wb") as f:
+        with open(filename, "wb") as f:
             self.taxons[1].to_json(f)
 
 
@@ -27,7 +27,7 @@ class Tree():
 
         def read_taxons_file():
             """Reads a taxon file and returns the tsv values as a splitted string"""
-            with open('taxons.tsv') as taxon_file:
+            with open('data/taxons.tsv') as taxon_file:
                 # Skip the first two lines (`header` and `0 name 0 1`)
                 next(taxon_file)
                 next(taxon_file)
