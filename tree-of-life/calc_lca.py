@@ -28,23 +28,23 @@ for line in sys.stdin:
 
     p = subprocess.Popen("unipept pept2prot -s taxon_id {}".format(line), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-    lineages = {}
+    lineages = []
 
     for line in p.stdout.readlines()[1:]:
         taxon = tree.taxons[int(line)]
-        lineages[taxon] = taxon.get_lineage()
+        lineages.append(taxon.get_lineage())
 
     for lineage in lineages:
-        print(lineages.get(lineage))
+        print(lineage)
 
     if not lineages:
         unfound.add(line)
-    elif len(lineages) == 1:
-        lca = list(lineages.values())[0][-1]
-        print(lca)
-        print(tree.taxons[lca].name)
     else:
-        lca = get_lca(list(lineages.values()))
+        if len(lineages) == 1:
+            lca = lineages[0][-1]
+        else:
+            lca = get_lca(lineages)
+
         print(lca)
         print(tree.taxons[lca].name)
 
