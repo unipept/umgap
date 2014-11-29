@@ -59,4 +59,10 @@ for line in sys.stdin:
     else:
         print("Unipept LCA: None LCA found for {}".format(line))
 
-print("Unfound: {}".format(unfound))
+    if not len(lineages) and not len(result):
+        correct = correct + 1
+    elif lca == unipept_lca[0]:
+        correct = correct + 1
+    counter = counter + 1
+
+print("Correct: {}, total: {}, accuracy: {}%".format(correct, counter, correct/counter*100))
