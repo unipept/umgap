@@ -37,8 +37,8 @@ for line in sys.stdin:
         taxon = tree.taxons[int(prot)]
         lineages.append(taxon.get_lineage())
 
-    for lineage in lineages:
-        print(lineage)
+    # for lineage in lineages:
+    #     print(lineage)
 
     if not lineages:
         unfound.add(line)
@@ -59,10 +59,13 @@ for line in sys.stdin:
     else:
         print("Unipept LCA: None LCA found for {}".format(line))
 
-    if not len(lineages) and not len(result):
+    if not lineages and not result:
         correct = correct + 1
-    elif lca == unipept_lca[0]:
+    elif lca == int(unipept_lca[0]):
         correct = correct + 1
     counter = counter + 1
+    print()
+    print("==========================================")
+    print()
 
 print("Correct: {}, total: {}, accuracy: {}%".format(correct, counter, correct/counter*100))
