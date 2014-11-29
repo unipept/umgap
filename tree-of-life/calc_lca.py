@@ -23,15 +23,18 @@ def get_lca(lineages):
 
 tree = get_tree()
 unfound = set()
+correct = 0
+counter = 0
 
 for line in sys.stdin:
 
+    print("Calculating LCA for {}".format(line))
     p = subprocess.Popen("unipept pept2prot -s taxon_id {}".format(line), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
     lineages = []
 
-    for line in p.stdout.readlines()[1:]:
-        taxon = tree.taxons[int(line)]
+    for prot in p.stdout.readlines()[1:]:
+        taxon = tree.taxons[int(prot)]
         lineages.append(taxon.get_lineage())
 
     for lineage in lineages:
@@ -39,14 +42,21 @@ for line in sys.stdin:
 
     if not lineages:
         unfound.add(line)
+        print("LCA: No LCA found for {}".format(line))
     else:
         if len(lineages) == 1:
             lca = lineages[0][-1]
         else:
             lca = get_lca(lineages)
 
-        print(lca)
-        print(tree.taxons[lca].name)
+        print("LCA: {}: {}".format(lca, tree.taxons[lca].name))
 
+    ip = subprocess.Popen("unipept pept2lca -s taxon_id -s taxon_name {}".format(line), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    result = ip.stdout.readlines()
+    if len(result) > 1:
+        unipept_lca = result[1].decode('utf-8').split(',')
+        print("Unipept LCA: {}: {}".format(unipept_lca[0], unipept_lca[1]))
+    else:
+        print("Unipept LCA: None LCA found for {}".format(line))
 
 print("Unfound: {}".format(unfound))
