@@ -27,13 +27,11 @@ correct = 0
 counter = 0
 
 for line in sys.stdin:
-
-    print("Calculating LCA for {}".format(line))
-    p = subprocess.Popen("unipept pept2prot -s taxon_id {}".format(line), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
     lineages = []
 
-    for prot in p.stdout.readlines()[1:]:
+    print("Calculating LCA for {}".format(line))
+    prot_result = subprocess.Popen("unipept pept2prot -s taxon_id {}".format(line), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    for prot in prot_result.stdout.readlines()[1:]:
         taxon = tree.taxons[int(prot)]
         lineages.append(taxon.get_lineage())
 
@@ -51,8 +49,8 @@ for line in sys.stdin:
 
         print("LCA: {}: {}".format(lca, tree.taxons[lca].name))
 
-    ip = subprocess.Popen("unipept pept2lca -s taxon_id -s taxon_name {}".format(line), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    result = ip.stdout.readlines()
+    unipept_result = subprocess.Popen("unipept pept2lca -s taxon_id -s taxon_name {}".format(line), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    result = unipept_result.stdout.readlines()
     if len(result) > 1:
         unipept_lca = result[1].decode('utf-8').split(',')
         print("Unipept LCA: {}: {}".format(unipept_lca[0], unipept_lca[1]))
@@ -68,4 +66,5 @@ for line in sys.stdin:
     print("==========================================")
     print()
 
+print("Unfound: {}, {}".format(len(unfound), ', '.join(unfound)))
 print("Correct: {}, total: {}, accuracy: {}%".format(correct, counter, correct/counter*100))
