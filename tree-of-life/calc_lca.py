@@ -63,7 +63,7 @@ for line in sys.stdin:
         correct = correct + 1
     counter = counter + 1
     print()
-    print("==========================================")
+    print("=================== {}% ==================".format(counter/3983*100))
     print()
 
 print("Unfound: {}, {}".format(len(unfound), ', '.join(unfound)))
