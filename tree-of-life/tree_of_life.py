@@ -101,12 +101,16 @@ class Taxon(JSONEncoder):
             return [self.taxon_id]
 
         # Don't count no ranks if we don't want to
-        if not no_rank and self.rank == "no_rank":
+        if not no_rank and self.rank == "no rank":
+            if self.rank == 1:
+                return None
             return self.parent.get_lineage()
 
         # Don't count invalids if we don't want to
         if not invalid and not self.valid_taxon:
-            return self.parent.get_lineage()
+            if self.parent.valid_taxon:
+                return self.parent.get_lineage()
+            return None
 
         return self.parent.get_lineage() + [self.taxon_id]
 

@@ -33,10 +33,12 @@ for line in sys.stdin:
     prot_result = subprocess.Popen("unipept pept2prot -s taxon_id {}".format(line), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     for prot in prot_result.stdout.readlines()[1:]:
         taxon = tree.taxons[int(prot)]
-        lineages.append(taxon.get_lineage())
+        lineage = taxon.get_lineage(no_rank=False, invalid=False)
+        if lineage:
+            lineages.append(taxon.get_lineage(no_rank=False, invalid=False))
 
-    # for lineage in lineages:
-    #     print(lineage)
+    for lineage in lineages:
+        print(lineage)
 
     if not lineages:
         unfound.add(line)
@@ -59,7 +61,7 @@ for line in sys.stdin:
 
     if not lineages and not result:
         correct = correct + 1
-    elif lca == int(unipept_lca[0]):
+    elif lineages and result and lca == int(unipept_lca[0]):
         correct = correct + 1
     counter = counter + 1
     print()
