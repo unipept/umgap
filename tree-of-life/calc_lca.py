@@ -8,17 +8,20 @@ from tree_of_life import get_tree
 def get_lca(lineages):
     index = 1
     last = lineages[0][0]
+    last_nonzero = lineages[0][0]
 
     while index < len(lineages[0]):
         first = lineages[0][index]
         for lineage in lineages:
             if first != lineage[index]:
-                return last
+                return last_nonzero
 
         last = first
+        if first:
+            last_nonzero = first
         index = index + 1
 
-    return last
+    return last_nonzero
 
 
 tree = get_tree()
