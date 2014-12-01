@@ -4,6 +4,9 @@ import os
 from json import JSONEncoder
 import pickle
 
+CLASSES = ['no rank', 'superkingdom', 'kingdom', 'subkingdom', 'superphylum', 'phylum', 'subphylum', 'superclass', 'class', 'subclass', 'infraclass', 'superorder', 'order', 'suborder', 'infraorder', 'parvorder', 'superfamily', 'family', 'subfamily', 'tribe', 'subtribe', 'genus', 'subgenus', 'species group', 'species subgroup', 'species', 'subspecies', 'varietas', 'forma']
+
+
 class Tree():
     """It's all about the tree"""
 
@@ -96,9 +99,12 @@ class Taxon(JSONEncoder):
     def get_lineage(self, no_rank=True, invalid=True):
         """Gets the lineage of a taxon to the root"""
 
-        # Root, return an empty list
+        # Root, base case
         if self.taxon_id == self.parent_id:
-            return [self.taxon_id]
+            if no_rank:
+                return [self.taxon_id]
+            else:
+                return None
 
         # Don't count no ranks if we don't want to
         if not no_rank and self.rank == "no rank":
@@ -110,7 +116,18 @@ class Taxon(JSONEncoder):
                 return self.parent.get_lineage(no_rank=no_rank, invalid=invalid)
             return None
 
-        return self.parent.get_lineage(no_rank=no_rank, invalid=invalid) + [self.taxon_id]
+        between = 0
+        if self.rank != "no rank":
+            parent_rank_id = CLASSES.index(self.parent.rank)
+            self_rank_id = CLASSES.index(self.rank)
+            between = self_rank_id - parent_rank_id - 1
+
+        parent_lineage = self.parent.get_lineage(no_rank=no_rank, invalid=invalid)
+        if parent_lineage:
+            return parent_lineage + [0]*between + [self.taxon_id]
+        else:
+            return None
+
 
 
 def get_tree():
