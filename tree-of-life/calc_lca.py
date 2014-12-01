@@ -33,9 +33,9 @@ for line in sys.stdin:
     prot_result = subprocess.Popen("unipept pept2prot -s taxon_id {}".format(line), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     for prot in prot_result.stdout.readlines()[1:]:
         taxon = tree.taxons[int(prot)]
-        lineage = taxon.get_lineage(no_rank=False, invalid=False)
+        lineage = taxon.get_lineage()
         if lineage:
-            lineages.append(taxon.get_lineage(no_rank=False, invalid=False))
+            lineages.append(lineage)
 
     for lineage in lineages:
         print(lineage)
