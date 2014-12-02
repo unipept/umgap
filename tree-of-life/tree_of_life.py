@@ -96,6 +96,16 @@ class Taxon(JSONEncoder):
 
         return children
 
+    def get_valid_parent(self):
+        # Root case: return too
+        if self.taxon_id == self.parent_id:
+            return self
+
+        if self.parent.rank == "no rank":
+            return self.parent.get_valid_parent()
+
+        return self.parent
+
     def get_lineage(self, no_rank=True, invalid=True):
         """Gets the lineage of a taxon to the root"""
 
@@ -105,10 +115,9 @@ class Taxon(JSONEncoder):
 
         # Calculate the distance between a child and its parent
         between = 0
-        if self.rank != "no rank":
-            parent_rank_id = CLASSES.index(self.parent.rank)
-            self_rank_id = CLASSES.index(self.rank)
-            between = self_rank_id - parent_rank_id - 1
+        parent_rank_id = CLASSES.index(self.get_valid_parent().rank)
+        self_rank_id = CLASSES.index(self.rank)
+        between = self_rank_id - parent_rank_id - 1
 
         parent_lineage = self.parent.get_lineage(no_rank=no_rank, invalid=invalid)
 
@@ -121,11 +130,7 @@ class Taxon(JSONEncoder):
         if not no_rank and self.rank == "no rank":
             self_taxon_id = 0
 
-        if parent_lineage:
-            return parent_lineage + [0]*between + [self_taxon_id]
-        else:
-            return None
-
+        return parent_lineage + [0]*between + [self_taxon_id]
 
 
 def get_tree():
