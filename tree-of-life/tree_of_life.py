@@ -101,14 +101,7 @@ class Taxon(JSONEncoder):
 
         # Root, base case
         if self.taxon_id == self.parent_id:
-            if no_rank:
-                return [self.taxon_id]
-            else:
-                return None
-
-        # Don't count no ranks if we don't want to
-        if not no_rank and self.rank == "no rank":
-            return self.parent.get_lineage(no_rank=no_rank, invalid=invalid)
+            return [self.taxon_id]
 
         # Calculate the distance between a child and its parent
         between = 0
@@ -122,6 +115,10 @@ class Taxon(JSONEncoder):
         # Don't count invalids if we don't want to
         self_taxon_id = self.taxon_id
         if not invalid and not self.valid_taxon:
+            self_taxon_id = 0
+
+        # Don't count no ranks if we don't want to
+        if not no_rank and self.rank == "no rank":
             self_taxon_id = 0
 
         if parent_lineage:
