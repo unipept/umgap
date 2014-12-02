@@ -2,13 +2,14 @@
 
 import sys
 import subprocess
+from itertools import zip_longest
 
 from tree_of_life import get_tree
 
 def get_lca(lineages):
 
     lca = 1 # We always start with the root
-    for x in zip(*lineages):
+    for x in zip_longest(*lineages, fillvalue=0):
         a = set(x) - set([0])
         if len(a) == 1:
             lca = a.pop()
