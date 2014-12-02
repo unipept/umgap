@@ -6,22 +6,16 @@ import subprocess
 from tree_of_life import get_tree
 
 def get_lca(lineages):
-    index = 1
-    last = lineages[0][0]
-    last_nonzero = lineages[0][0]
 
-    while index < len(lineages[0]):
-        first = lineages[0][index]
-        for lineage in lineages:
-            if first != lineage[index]:
-                return last_nonzero
+    lca = 1 # We always start with the root
+    for x in zip(*lineages):
+        a = set(x) - set([0])
+        if len(a) == 1:
+            lca = a.pop()
+        elif len(a) > 1:
+            return lca
 
-        last = first
-        if first:
-            last_nonzero = first
-        index = index + 1
-
-    return last_nonzero
+    return lca
 
 
 tree = get_tree()
@@ -36,7 +30,7 @@ for line in sys.stdin:
     prot_result = subprocess.Popen("unipept pept2prot -s taxon_id {}".format(line), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     for prot in prot_result.stdout.readlines()[1:]:
         taxon = tree.taxons[int(prot)]
-        lineage = taxon.get_lineage()
+        lineage = taxon.get_lineage(invalid=False)
         if lineage:
             lineages.append(lineage)
 
@@ -47,10 +41,7 @@ for line in sys.stdin:
         unfound.add(line)
         print("LCA: No LCA found for {}".format(line))
     else:
-        if len(lineages) == 1:
-            lca = lineages[0][-1]
-        else:
-            lca = get_lca(lineages)
+        lca = get_lca(lineages)
 
         print("LCA: {}: {}".format(lca, tree.taxons[lca].name))
 
