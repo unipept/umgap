@@ -110,12 +110,7 @@ class Taxon(JSONEncoder):
         if not no_rank and self.rank == "no rank":
             return self.parent.get_lineage(no_rank=no_rank, invalid=invalid)
 
-        # Don't count invalids if we don't want to
-        if not invalid and not self.valid_taxon:
-            if self.parent.valid_taxon:
-                return self.parent.get_lineage(no_rank=no_rank, invalid=invalid)
-            return None
-
+        # Calculate the distance between a child and its parent
         between = 0
         if self.rank != "no rank":
             parent_rank_id = CLASSES.index(self.parent.rank)
@@ -123,8 +118,14 @@ class Taxon(JSONEncoder):
             between = self_rank_id - parent_rank_id - 1
 
         parent_lineage = self.parent.get_lineage(no_rank=no_rank, invalid=invalid)
+
+        # Don't count invalids if we don't want to
+        self_taxon_id = self.taxon_id
+        if not invalid and not self.valid_taxon:
+            self_taxon_id = 0
+
         if parent_lineage:
-            return parent_lineage + [0]*between + [self.taxon_id]
+            return parent_lineage + [0]*between + [self_taxon_id]
         else:
             return None
 
