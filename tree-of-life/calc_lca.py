@@ -9,10 +9,12 @@ from tree_of_life import get_tree
 def get_lca(lineages):
 
     lca = 1 # We always start with the root
-    for x in zip_longest(*lineages, fillvalue=0):
-        a = set(x) - set([0])
+    for x in zip_longest(*lineages, fillvalue=-1):
+        a = set(x) - set([-1])
         if len(a) == 1:
-            lca = a.pop()
+            b = a - set([0])
+            if len(b) == 1:
+                lca = b.pop()
         elif len(a) > 1:
             return lca
 

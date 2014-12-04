@@ -114,34 +114,28 @@ class Taxon(JSONEncoder):
             return [self.taxon_id]
 
         # Calculate the distance between a child and its parent
-        between = 0
-        parent_rank_id = CLASSES.index(self.get_valid_parent().rank)
-        self_rank_id = CLASSES.index(self.rank)
-        between = self_rank_id - parent_rank_id - 1
+        between = [0]
+        betweens = 0
+        valid_parent = self.get_valid_parent()
+        parent_lineage = valid_parent.get_lineage()
 
-        parent_lineage = self.parent.get_lineage(no_rank=no_rank, invalid=invalid)
+        parent_rank_id = CLASSES.index(valid_parent.rank)
+        self_rank_id = CLASSES.index(self.rank)
+        betweens = self_rank_id - parent_rank_id - 1
 
         # Don't count invalids if we don't want to
         self_taxon_id = self.taxon_id
         if not invalid and not self.valid_taxon:
-            self_taxon_id = 0
+            return parent_lineage
 
         # Don't count no ranks if we don't want to
         if not no_rank and self.rank == "no rank":
-            self_taxon_id = 0
+            return parent_lineage
 
-        return parent_lineage + [0]*between + [self_taxon_id]
+        return parent_lineage + between*betweens + [self_taxon_id]
 
 
 def get_tree():
     """Creates or loads a tree object"""
 
-    # Return the tree if it exists
-    # if os.path.exists('tree.p'):
-    #     print("Loading tree from pickle")
-    #     tree = pickle.load(open("tree.p", "rb"))
-    # else: # Create it otherwise
-    tree = Tree()
-    #     pickle.dump(tree, open("tree.p", "wb"))
-
-    return tree
+    return Tree()
