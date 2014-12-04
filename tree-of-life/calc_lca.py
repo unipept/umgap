@@ -23,6 +23,7 @@ def get_lca(lineages):
 
 tree = get_tree()
 unfound = set()
+unmatched = set()
 correct = 0
 counter = 0
 
@@ -59,10 +60,14 @@ for line in sys.stdin:
         correct = correct + 1
     elif lineages and result and lca == int(unipept_lca[0]):
         correct = correct + 1
+    else:
+        unmatched.add(line)
+
     counter = counter + 1
     print()
     print("=================== {}% ==================".format(counter/3983*100))
     print()
 
+print("Unmatched: {}, {}".format(len(unfound), ', '.join(unmatched)))
 print("Unfound: {}, {}".format(len(unfound), ', '.join(unfound)))
 print("Correct: {}, total: {}, accuracy: {}%".format(correct, counter, correct/counter*100))
