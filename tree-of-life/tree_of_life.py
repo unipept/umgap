@@ -101,7 +101,7 @@ class Taxon(JSONEncoder):
         if self.taxon_id == self.parent_id:
             return self
 
-        if self.parent.rank == "no rank":
+        if self.parent.rank == "no rank" or not self.parent.valid_taxon:
             return self.parent.get_valid_parent()
 
         return self.parent
