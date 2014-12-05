@@ -10,16 +10,16 @@ def get_lca(lineages):
 
     lca = 1 # We always start with the root
     lca_i = 0
-    for i, x in enumerate(zip_longest(*lineages, fillvalue=-1)):
+    for i, x in enumerate(zip_longest(*lineages, fillvalue=0)):
         a = set(x)
 
         if CLASSES[lca_i] != 'genus' and CLASSES[lca_i] != 'species':
-            a = a - set([-1])
+            a = a - set([0])
 
         if len(a) == 1:
-            b = a - set([0])
-            if len(b) == 1:
-                lca = b.pop()
+            val = a.pop()
+            if val:
+                lca = val
                 lca_i = i
         elif len(a) > 1:
             return lca
