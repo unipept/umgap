@@ -72,8 +72,9 @@ for line in sys.stdin:
     counter = counter + 1
     print()
     print("=================== {}% ==================".format(counter/3983*100))
+    print("Unmatched: {}, {}".format(len(unmatched), ', '.join(unmatched)))
+    print("Unfound: {}, {}".format(len(unfound), ', '.join(unfound)))
+    print("Correct: {}, total: {}, accuracy: {}%".format(correct, counter, correct/counter*100))
+    print("=================== {}% ==================".format(counter/3983*100))
     print()
 
-print("Unmatched: {}, {}".format(len(unmatched), ', '.join(unmatched)))
-print("Unfound: {}, {}".format(len(unfound), ', '.join(unfound)))
-print("Correct: {}, total: {}, accuracy: {}%".format(correct, counter, correct/counter*100))
