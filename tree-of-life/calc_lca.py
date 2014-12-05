@@ -9,18 +9,16 @@ from tree_of_life import get_tree, CLASSES
 def get_lca(lineages):
 
     lca = 1 # We always start with the root
-    lca_i = 0
-    for i, x in enumerate(zip_longest(*lineages, fillvalue=0)):
-        a = set(x)
+    for i, x in enumerate(zip_longest(*lineages, fillvalue=-1)):
+        a = set(x) - set([-1])
 
-        if CLASSES[lca_i] != 'genus' and CLASSES[lca_i] != 'species':
+        if CLASSES[i] == 'genus' or CLASSES[i] == 'species':
             a = a - set([0])
 
         if len(a) == 1:
             val = a.pop()
             if val:
                 lca = val
-                lca_i = i
         elif len(a) > 1:
             return lca
 
