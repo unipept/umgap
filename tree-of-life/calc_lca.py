@@ -4,17 +4,23 @@ import sys
 import subprocess
 from itertools import zip_longest
 
-from tree_of_life import get_tree
+from tree_of_life import get_tree, CLASSES
 
 def get_lca(lineages):
 
     lca = 1 # We always start with the root
-    for x in zip_longest(*lineages, fillvalue=-1):
-        a = set(x) - set([-1])
+    lca_i = 0
+    for i, x in enumerate(zip_longest(*lineages, fillvalue=-1)):
+        a = set(x)
+
+        if CLASSES[lca_i] != 'genus' and CLASSES[lca_i] != 'species':
+            a = a - set([-1])
+
         if len(a) == 1:
             b = a - set([0])
             if len(b) == 1:
                 lca = b.pop()
+                lca_i = i
         elif len(a) > 1:
             return lca
 
