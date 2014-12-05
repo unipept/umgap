@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+"""Calculates the LCA for a given protein"""
 
 import sys
 import subprocess
@@ -7,19 +7,22 @@ from itertools import zip_longest
 from tree_of_life import get_tree, CLASSES
 
 def get_lca(lineages):
+    """Does the actual LCA calculation"""
 
-    lca = 1 # We always start with the root
-    for i, x in enumerate(zip_longest(*lineages, fillvalue=-1)):
-        a = set(x) - set([-1])
+    # Use -1 as fillvalue here, we'll filter it out later
+    for i, taxons in enumerate(zip_longest(*lineages, fillvalue=-1)):
+        # Remove the filling and the invalid taxons
+        taxons_filtered = [t for t in taxons if t == -1 or t is None or t.valid_taxon]
+        taxon_set = set(taxons_filtered) - set([-1])
 
         if CLASSES[i] == 'genus' or CLASSES[i] == 'species':
-            a = a - set([0])
+            taxon_set = taxon_set - set([None])
 
-        if len(a) == 1:
-            val = a.pop()
+        if len(taxon_set) == 1:
+            val = taxon_set.pop()
             if val:
                 lca = val
-        elif len(a) > 1:
+        elif len(taxon_set) > 1:
             return lca
 
     return lca
@@ -42,13 +45,13 @@ for line in sys.stdin:
         lineages.append(lineage)
 
     for lineage in lineages:
-        print(lineage)
+        print([taxon.taxon_id if taxon else 0 for taxon in lineage])
 
     if not lineages:
         unfound.add(line)
         print("LCA: No LCA found for {}".format(line))
     else:
-        lca = get_lca(lineages)
+        lca = get_lca(lineages).taxon_id
 
         print("LCA: {}: {}".format(lca, tree.taxons[lca].name))
 
