@@ -6,6 +6,13 @@ from itertools import zip_longest
 
 from tree_of_life import get_tree, CLASSES
 
+tree = get_tree()
+unfound = set()
+unmatched = set()
+correct = 0
+counter = 0
+
+
 def get_lca(lineages):
     """Does the actual LCA calculation"""
 
@@ -28,14 +35,9 @@ def get_lca(lineages):
     return lca
 
 
-tree = get_tree()
-unfound = set()
-unmatched = set()
-correct = 0
-counter = 0
-
-for line in sys.stdin:
+def handle_lca(line):
     lineages = []
+    lca = None
 
     print("Calculating LCA for {}".format(line))
     prot_result = subprocess.Popen("unipept pept2prot -s taxon_id {}".format(line), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -55,17 +57,30 @@ for line in sys.stdin:
 
         print("LCA: {}: {}".format(lca, tree.taxons[lca].name))
 
-    unipept_result = subprocess.Popen("unipept pept2lca -s taxon_id -s taxon_name {}".format(line), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    result = unipept_result.stdout.readlines()
-    if len(result) > 1:
-        unipept_lca = result[1].decode('utf-8').split(',')
+    return lca, lineages
+
+
+def get_unipept_lca(line):
+    unipept_lca = None
+
+    result = subprocess.Popen("unipept pept2lca -s taxon_id -s taxon_name {}".format(line), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    unipept_result = result.stdout.readlines()
+    if len(unipept_result) > 1:
+        unipept_lca = unipept_result[1].decode('utf-8').split(',')
         print("Unipept LCA: {}: {}".format(unipept_lca[0], unipept_lca[1]))
     else:
         print("Unipept LCA: None LCA found for {}".format(line))
 
-    if not lineages and not result:
+    return unipept_lca
+
+
+for line in sys.stdin:
+    lca, lineages = handle_lca(line)
+    unipept_lca = get_unipept_lca(line)
+
+    if not lineages and not unipept_lca:
         correct = correct + 1
-    elif lineages and result and lca == int(unipept_lca[0]):
+    elif lineages and unipept_lca and lca == int(unipept_lca[0]):
         correct = correct + 1
     else:
         unmatched.add(line)
