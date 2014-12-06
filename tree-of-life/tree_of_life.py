@@ -14,10 +14,12 @@ class Tree():
         self.size = 1500560 + 1
         self.taxons = [None] * self.size
 
+    def from_taxons(self):
+        """Read the tree from the taxons file"""
         self.read_taxons()
         self.add_taxon_children()
         self.add_taxon_parents()
-
+        self.add_taxon_counts()
 
     def to_json(self, filename):
         """Writes the tree to JSON"""
@@ -59,6 +61,10 @@ class Tree():
             if taxon:
                 taxon.parent = self.taxons[taxon.parent_id]
 
+    def add_taxon_counts(self):
+        self.taxons[1].add_counts()
+
+
 
 class Taxon(JSONEncoder):
     """A Taxon objet"""
@@ -73,6 +79,17 @@ class Taxon(JSONEncoder):
         self.valid_taxon = valid_taxon
         self.children = set()
 
+    def add_counts(self):
+        children = 1
+
+        for child in self.children:
+            children += child.add_counts()
+
+        self.count = children
+        self.self_count = 0 if len(self.children) else 1
+
+        return children
+
     def to_json(self, f):
         """This must be the worst printer I've ever written."""
         f.write("""
@@ -82,19 +99,16 @@ class Taxon(JSONEncoder):
 "children":[
 """.format(self=self).encode('utf-8'))
 
-        children = 1
-
         for i, child in enumerate(self.children):
-            children += child.to_json(f)
+            child.to_json(f)
             if i != len(self.children) - 1: # JSON, y u no support trailing commas?
                 f.write(",".encode('utf-8'))
 
         f.write("""
 ],
-"data":{{"count":{children},"self_count":{self_count},"valid_taxon":{self.valid_taxon},"rank":"{self.rank}"}}}}
-""".format(children=children, self_count=len(self.children)+1, self=self).encode('utf-8'))
+"data":{{"count":{self.count},"self_count":{self.self_count},"valid_taxon":{self.valid_taxon},"rank":"{self.rank}"}}}}
+""".format(self=self).encode('utf-8'))
 
-        return children
 
     def get_valid_parent(self):
         # Root case: return too
@@ -138,4 +152,6 @@ class Taxon(JSONEncoder):
 def get_tree():
     """Creates or loads a tree object"""
 
-    return Tree()
+    tree = Tree()
+    tree.from_taxons()
+    return tree
