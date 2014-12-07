@@ -149,4 +149,4 @@ for line in sys.stdin:
 
 print("Unfound: {}, {}".format(len(UNFOUND), ', '.join(UNFOUND)))
 
-print_lcas(data/lca_result.json)
+print_lcas("data/lca_result.json")
