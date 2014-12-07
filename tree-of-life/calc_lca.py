@@ -6,11 +6,12 @@ from itertools import zip_longest
 
 from tree_of_life import get_tree, CLASSES
 
-tree = get_tree()
-unfound = set()
-unmatched = set()
-correct = 0
-counter = 0
+TREE = get_tree()
+MATCHES = []
+UNFOUND = set()
+UNMATCHED = set()
+CORRECT = 0
+COUNTER = 0
 
 
 def get_lca(lineages):
@@ -36,35 +37,54 @@ def get_lca(lineages):
 
 
 def handle_lca(line):
+    """Gets the lineages from the tree and performs the LCA calculation"""
     lineages = []
     lca = None
 
-    print("Calculating LCA for {}".format(line))
-    prot_result = subprocess.Popen("unipept pept2prot -s taxon_id {}".format(line), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    # Get the prots from Unipept
+    prot_result = subprocess.Popen(
+        "unipept pept2prot -s taxon_id {}".format(line),
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT
+    )
+
+    # Get the lineage for each prot
     for prot in prot_result.stdout.readlines()[1:]:
-        taxon = tree.taxons[int(prot)]
+        taxon = TREE.taxons[int(prot)]
         lineage = taxon.get_lineage(no_rank=False, invalid=False)
         lineages.append(lineage)
 
     for lineage in lineages:
         print([taxon.taxon_id if taxon else 0 for taxon in lineage])
 
-    if not lineages:
-        unfound.add(line)
-        print("LCA: No LCA found for {}".format(line))
-    else:
+    # If we have a result, get the LCA, otherwise, add it to the unfound ones
+    if lineages:
         lca = get_lca(lineages).taxon_id
-
-        print("LCA: {}: {}".format(lca, tree.taxons[lca].name))
+        print("LCA: {}: {}".format(lca, TREE.taxons[lca].name))
+    else:
+        UNFOUND.add(line)
+        print("LCA: No LCA found for {}".format(line))
 
     return lca, lineages
 
 
 def get_unipept_lca(line):
+    """Gets the Unipept LCA"""
+
     unipept_lca = None
 
-    result = subprocess.Popen("unipept pept2lca -s taxon_id -s taxon_name {}".format(line), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    # Get the LCA from Unipept
+    result = subprocess.Popen(
+        "unipept pept2lca -s taxon_id -s taxon_name {}".format(line),
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT
+    )
+
     unipept_result = result.stdout.readlines()
+
+    # Hande the result
     if len(unipept_result) > 1:
         unipept_lca = unipept_result[1].decode('utf-8').split(',')
         print("Unipept LCA: {}: {}".format(unipept_lca[0], unipept_lca[1]))
@@ -74,23 +94,59 @@ def get_unipept_lca(line):
     return unipept_lca
 
 
+def print_lcas(filename):
+    lineages = [TREE.taxons[prot].get_lineage(no_rank=False, invalid=False) for prot in MATCHES if prot]
+
+    # Remove all the children from the taxons
+    for lineage in lineages:
+        for taxon in lineage:
+            if taxon:
+                taxon.children = set()
+                taxon.count = 0
+                taxon.self_count = 0
+
+    # Add the children from the found lineages back
+    for taxons in zip_longest(*lineages, fillvalue=-1):
+        taxons_set = set(taxons) - set([None]) - set([-1])
+
+        # Add the correct children
+        for taxon in taxons_set:
+            valid_parent = taxon.get_valid_parent()
+            if taxon.parent_id != taxon.taxon_id:
+                valid_parent.children.add(taxon)
+
+            # Also set the self_count
+            taxon.self_count = MATCHES.count(taxon.taxon_id)
+
+    # Percolate the counts up the tree
+    lineages[0][0].add_counts()
+
+    # Print the result
+    with open(filename, "wb") as f:
+        lineages[0][0].to_json(f)
+
+
 for line in sys.stdin:
+    print("Calculating LCA for {}".format(line))
+
     lca, lineages = handle_lca(line)
     unipept_lca = get_unipept_lca(line)
 
-    if not lineages and not unipept_lca:
-        correct = correct + 1
-    elif lineages and unipept_lca and lca == int(unipept_lca[0]):
-        correct = correct + 1
+    if (not lineages and not unipept_lca) or \
+            (lineages and unipept_lca and lca == int(unipept_lca[0])):
+        CORRECT += 1
+        MATCHES.append(lca)
     else:
-        unmatched.add(line)
+        UNMATCHED.add(line)
 
-    counter = counter + 1
+    COUNTER += 1
     print()
-    print("=================== {}% ==================".format(counter/3983*100))
-    print("Unmatched: {}, {}".format(len(unmatched), ', '.join(unmatched)))
-    print("Correct: {}, total: {}, accuracy: {}%".format(correct, counter, correct/counter*100))
-    print("=================== {}% ==================".format(counter/3983*100))
+    print("=================== {}% ==================".format(COUNTER/3983*100))
+    print("Unmatched: {}, {}".format(len(UNMATCHED), ', '.join(UNMATCHED)))
+    print("Correct: {}, total: {}, accuracy: {}%".format(CORRECT, COUNTER, CORRECT/COUNTER*100))
+    print("=================== {}% ==================".format(COUNTER/3983*100))
     print()
 
-print("Unfound: {}, {}".format(len(unfound), ', '.join(unfound)))
+print("Unfound: {}, {}".format(len(UNFOUND), ', '.join(UNFOUND)))
+
+print_lcas(data/lca_result.json)

@@ -14,6 +14,7 @@ class Tree():
         self.size = 1500560 + 1
         self.taxons = [None] * self.size
 
+
     def from_taxons(self):
         """Read the tree from the taxons file"""
         self.read_taxons()
@@ -57,13 +58,14 @@ class Tree():
                 self.taxons[taxon.parent_id].children.add(taxon)
 
     def add_taxon_parents(self):
+        """Adds parents to the taxons"""
         for taxon in self.taxons:
             if taxon:
                 taxon.parent = self.taxons[taxon.parent_id]
 
     def add_taxon_counts(self):
+        """Adds counts to the taxons"""
         self.taxons[1].add_counts()
-
 
 
 class Taxon(JSONEncoder):
@@ -78,17 +80,22 @@ class Taxon(JSONEncoder):
         self.parent_id = parent_id
         self.valid_taxon = valid_taxon
         self.children = set()
+        self.count = 0
+        self.self_count = 0
 
     def add_counts(self):
-        children = 1
+        children = self.self_count
 
         for child in self.children:
             children += child.add_counts()
 
         self.count = children
-        self.self_count = 0 if len(self.children) else 1
 
         return children
+
+    def add_self_counts(self):
+        self.self_count = 0 if len(self.children) else 1
+
 
     def to_json(self, f):
         """This must be the worst printer I've ever written."""
