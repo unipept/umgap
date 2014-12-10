@@ -60,11 +60,17 @@ class Peptide:
     def handle_lca(self):
         """Gets the lineages from the tree and performs the LCA calculation"""
 
+        print("Calculating the LCA for {}".format(self.pept))
+
         # Get the lineage for each prot
         for prot in self.prots:
             taxon = TREE.taxons[int(prot)]
             lineage = taxon.get_lineage(no_rank=False, invalid=False)
             self.lineages.append(lineage)
+
+        #for lineage in self.lineages:
+        #    print([taxon.taxon_id if taxon else 0 for taxon in lineage])
+        #print()
 
         # If we have a result, get the LCA, otherwise, add it to the unfound ones
         if self.lineages:
@@ -82,8 +88,8 @@ class Peptide:
             taxons_filtered = [t for t in taxons if t == -1 or t is None or t.valid_taxon]
             taxon_set = set(taxons_filtered) - set([-1])
 
-            if CLASSES[i] == 'genus' or CLASSES[i] == 'species':
-                taxon_set = taxon_set - set([None])
+            #if CLASSES[i] == 'genus' or CLASSES[i] == 'species':
+            #    taxon_set = taxon_set - set([None])
 
             if len(taxon_set) == 1:
                 val = taxon_set.pop()
@@ -152,6 +158,7 @@ for pept in inputarray:
         CORRECT += 1
         LCAS.append(pept.lca)
     else:
+        print("Unmatched for {}: {} ({}) vs {} ({})".format(pept.pept, TREE.taxons[pept.lca].name, pept.lca, TREE.taxons[pept.unipept_lca].name, pept.unipept_lca))
         UNMATCHED.add(pept.pept)
 
 print("Unmatched: {}, {}".format(len(UNMATCHED), ', '.join(UNMATCHED)))
