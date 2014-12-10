@@ -80,6 +80,7 @@ class Taxon(JSONEncoder):
         self.parent_id = parent_id
         self.valid_taxon = valid_taxon
         self.children = set()
+        self.parent = None
         self.count = 0
         self.self_count = 0
 
