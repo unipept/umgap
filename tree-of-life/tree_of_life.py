@@ -118,17 +118,24 @@ class Taxon(JSONEncoder):
 """.format(self=self).encode('utf-8'))
 
 
-    def get_valid_parent(self):
-        # Root case: return too
+    def get_parent(self, allow_no_rank=True, allow_invalid=True):
+        # Root case: return self
         if self.taxon_id == self.parent_id:
             return self
 
-        if self.parent.rank == "no rank" or not self.parent.valid_taxon:
-            return self.parent.get_valid_parent()
+        if allow_no_rank or allow_invalid:
+            return self.parent
 
-        return self.parent
+        if not allow_no_rank and self.parent.rank != "no rank":
+            return self.parent
 
-    def get_lineage(self, no_rank=True, invalid=True):
+        if not allow_invalid and not self.parent.valid_taxon:
+            return self.parent
+
+        return self.parent.get_parent(allow_no_rank, allow_invalid)
+
+
+    def get_lineage(self, allow_no_rank=True, allow_invalid=True):
         """Gets the lineage of a taxon to the root"""
 
         # Root, base case
@@ -138,20 +145,19 @@ class Taxon(JSONEncoder):
         # Calculate the distance between a child and its parent
         between = [None]
         betweens = 0
-        valid_parent = self.get_valid_parent()
-        parent_lineage = valid_parent.get_lineage()
+        parent = self.get_parent(allow_no_rank, allow_invalid)
+        parent_lineage = parent.get_lineage(allow_no_rank, allow_invalid)
 
-        parent_rank_id = CLASSES.index(valid_parent.rank)
+        parent_rank_id = CLASSES.index(parent.rank)
         self_rank_id = CLASSES.index(self.rank)
         betweens = self_rank_id - parent_rank_id - 1
 
         # Account for the invalids, if wanted
-        self_taxon_id = self.taxon_id
-        if not invalid and not self.valid_taxon:
+        if not allow_invalid and not self.valid_taxon:
             betweens = 0
 
         # Account for the no ranks, if wanted
-        if not no_rank and self.rank == "no rank":
+        if not allow_no_rank and self.rank == "no rank":
             return parent_lineage
 
         return parent_lineage + between*betweens + [self]

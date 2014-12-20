@@ -32,7 +32,7 @@ class Peptide:
         # Get the lineage for each prot
         for prot in self.prots:
             taxon = TREE.taxons[int(prot)]
-            lineage = taxon.get_lineage(no_rank=False, invalid=False)
+            lineage = taxon.get_lineage(allow_no_rank=False, allow_invalid=False)
             self.lineages.append(lineage)
 
         #for lineage in self.lineages:
@@ -59,8 +59,8 @@ class Peptide:
             taxons_filtered = [t for t in taxons if t == -1 or t is None or t.valid_taxon]
             taxon_set = set(taxons_filtered) - set([-1])
 
-            #if CLASSES[i] == 'genus' or CLASSES[i] == 'species':
-            #    taxon_set = taxon_set - set([None])
+            if CLASSES[i] == 'genus' or CLASSES[i] == 'species':
+                taxon_set = taxon_set - set([None])
 
             if len(taxon_set) == 1:
                 val = taxon_set.pop()
@@ -112,4 +112,4 @@ for pept in pept2prot.values():
 #    print("Unfound: {}, {}".format(len(UNFOUND), ', '.join(UNFOUND)))
 
 #compare_to_unipept(fastafile, pept2prot, TREE, inputarray)
-#print_tree_json("data/lca_result.json", TREE, LCAS)
+#print_tree_json("visualisation-data/lca_result.json", TREE, LCAS)
