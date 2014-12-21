@@ -2,7 +2,7 @@ import subprocess
 from itertools import zip_longest
 
 def print_tree_json(filename, tree, lcas):
-    lineages = [tree.taxons[prot].get_lineage(no_rank=False, invalid=False) for prot in lcas if prot]
+    lineages = [tree.taxons[prot].get_lineage(allow_no_rank=False, allow_invalid=False) for prot in lcas if prot]
 
     # Remove all the children from the taxons
     for lineage in lineages:
@@ -18,14 +18,14 @@ def print_tree_json(filename, tree, lcas):
 
         # Add the correct children
         for taxon in taxons_set:
-            valid_parent = taxon.get_valid_parent()
+            parent = taxon.get_parent(allow_no_rank=False, allow_invalid=False)
             if taxon.parent_id != taxon.taxon_id:
-                valid_parent.children.add(taxon)
+                parent.children.add(taxon)
 
             # Also set the self_count
             taxon.self_count = lcas.count(taxon.taxon_id)
 
-    # Percolate the counts up the tree
+    # Percolate the counts down the tree
     lineages[0][0].add_counts()
 
     # Print the result

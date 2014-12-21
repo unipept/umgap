@@ -123,13 +123,15 @@ class Taxon(JSONEncoder):
         if self.taxon_id == self.parent_id:
             return self
 
-        if allow_no_rank or allow_invalid:
+        if allow_no_rank and allow_invalid:
             return self.parent
 
-        if not allow_no_rank and self.parent.rank != "no rank":
+        if not allow_no_rank and not self.parent.rank == "no rank" \
+                and (allow_invalid or self.parent.valid_taxon):
             return self.parent
 
-        if not allow_invalid and not self.parent.valid_taxon:
+        if not allow_invalid and not self.parent.valid_taxon \
+                and (allow_no_rank or not self.parent.rank == "no rank"):
             return self.parent
 
         return self.parent.get_parent(allow_no_rank, allow_invalid)
@@ -153,8 +155,11 @@ class Taxon(JSONEncoder):
         betweens = self_rank_id - parent_rank_id - 1
 
         # Account for the invalids, if wanted
-        if not allow_invalid and not self.valid_taxon:
-            betweens = 0
+        if not self.valid_taxon:
+            if allow_invalid:
+                between = [-1]
+            else:
+                return parent_lineage
 
         # Account for the no ranks, if wanted
         if not allow_no_rank and self.rank == "no rank":
