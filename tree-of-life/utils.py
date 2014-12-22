@@ -1,36 +1,47 @@
 import subprocess
+from copy import deepcopy
 from itertools import zip_longest
 
-def print_tree_json(filename, tree, lcas):
-    lineages = [tree.taxons[prot].get_lineage(allow_no_rank=False, allow_invalid=False) for prot in lcas if prot]
+from tree_of_life import Tree, Taxon
 
-    # Remove all the children from the taxons
-    for lineage in lineages:
-        for taxon in lineage:
-            if taxon:
-                taxon.children = set()
-                taxon.count = 0
-                taxon.self_count = 0
 
-    # Add the children from the found lineages back
-    for taxons in zip_longest(*lineages, fillvalue=-1):
-        taxons_set = set(taxons) - set([None]) - set([-1])
+def print_tree_json(filename, tree, peptides, only_lcas=True):
+    # Create a new tree
+    reduced_tree = Tree()
 
-        # Add the correct children
-        for taxon in taxons_set:
-            parent = taxon.get_parent(allow_no_rank=False, allow_invalid=False)
-            if taxon.parent_id != taxon.taxon_id:
-                parent.children.add(taxon)
+    for peptide in peptides:
+        for lineage in peptide.lineages:
+            for taxon in lineage:
+                if taxon and taxon != -1:
+                    # Only add the taxon if it is not there yet
+                    # Also don't add it when it's invalid and only_lcas is true
+                    if not reduced_tree.taxons[taxon.taxon_id] and not (only_lcas and not taxon.valid_taxon):
+                        reduced_tree.taxons[taxon.taxon_id] = Taxon(
+                                taxon.taxon_id,
+                                taxon.name,
+                                taxon.rank,
+                                taxon.get_parent(allow_no_rank=False, allow_invalid=True).taxon_id,
+                                taxon.valid_taxon
+                        )
 
-            # Also set the self_count
-            taxon.self_count = lcas.count(taxon.taxon_id)
+                    # Break if we don't want to go deeper than the LCA
+                    if only_lcas and taxon.taxon_id == peptide.lca:
+                        break
+            # Nifty little hack; also break out of this loop if we breaked
+            # from the inner loop
+            else:
+                continue
+            break
 
-    # Percolate the counts down the tree
-    lineages[0][0].add_counts()
+    reduced_tree.add_taxon_children()
+    reduced_tree.add_taxon_parents()
 
-    # Print the result
-    with open(filename, "wb") as f:
-        lineages[0][0].to_json(f)
+    for peptide in peptides:
+        if peptide.lca:
+            reduced_tree.taxons[peptide.lca].self_count += 1
+
+    reduced_tree.add_taxon_counts()
+    reduced_tree.to_json(filename)
 
 
 def compare_to_unipept(fastafile, pept2prot, tree, inputarray):
