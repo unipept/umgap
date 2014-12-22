@@ -122,5 +122,5 @@ for pept in pept2prot.values():
 #if UNFOUND:
 #    print("Unfound: {}, {}".format(len(UNFOUND), ', '.join(UNFOUND)))
 
-compare_to_unipept(fastafile, pept2prot, TREE, inputarray)
-#print_tree_json("visualisation-data/lca_result.json", TREE, LCAS)
+#compare_to_unipept(fastafile, pept2prot, TREE, inputarray)
+print_tree_json("visualisation-data/lca_result.json", TREE, pept2prot.values(), only_lcas=False)

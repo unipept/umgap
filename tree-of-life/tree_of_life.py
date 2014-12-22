@@ -29,7 +29,7 @@ class Tree():
 
 
     def read_taxons(self):
-        """Auxiliry method used to create a list of taxons"""
+        """Auxiliary method used to create a list of taxons"""
 
         def read_taxons_file():
             """Reads a taxon file and returns the tsv values as a splitted string"""
