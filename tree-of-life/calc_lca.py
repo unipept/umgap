@@ -8,6 +8,7 @@ from collections import OrderedDict
 from tree_of_life import get_tree, CLASSES
 from utils import print_tree_json, compare_to_unipept
 
+GENUS_CHECK = True
 DEBUG = False
 TREE = get_tree()
 LCAS = []
@@ -69,8 +70,9 @@ class Peptide:
             if DEBUG:
                 print("After: {}".format([(taxon.taxon_id, taxon.valid_taxon) if taxon and taxon != -1 else -1 if taxon == -1 else 0 or taxon in taxons]))
 
-            if i < len(CLASSES) and (CLASSES[i] == 'genus' or CLASSES[i] == 'species'):
-                taxon_set = taxon_set - set([None])
+            if GENUS_CHECK:
+                if i < len(CLASSES) and (CLASSES[i] == 'genus' or CLASSES[i] == 'species'):
+                    taxon_set = taxon_set - set([None])
 
             if len(taxon_set) == 1:
                 val = taxon_set.pop()
@@ -123,4 +125,4 @@ for pept in pept2prot.values():
 #    print("Unfound: {}, {}".format(len(UNFOUND), ', '.join(UNFOUND)))
 
 #compare_to_unipept(fastafile, pept2prot, TREE, inputarray)
-print_tree_json("visualisation-data/lca_result.json", TREE, pept2prot.values(), only_lcas=False)
+#print_tree_json("visualisation-data/lca_with_overall_check.json", TREE, pept2prot.values(), only_lcas=True)
