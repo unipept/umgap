@@ -2,18 +2,24 @@
 
 import sys
 import subprocess
+import time
 from itertools import zip_longest
 from collections import OrderedDict
 
 from tree_of_life import get_tree, CLASSES
+from tree_based_lca import Real_LCA_Calculator
 from utils import print_tree_json, compare_to_unipept
 
 GENUS_CHECK = True
 DEBUG = False
-TREE = get_tree()
 LCAS = []
 UNFOUND = set()
 
+print("Building tree. Time: {}".format(time.time()))
+TREE = get_tree()
+print("Tree built. Time: {}".format(time.time()))
+real_lca = Real_LCA_Calculator(TREE)
+exit()
 
 class Peptide:
     def __init__(self, pept):
@@ -24,7 +30,8 @@ class Peptide:
         self.lineages = []
 
 
-    def addprot(self, prot):
+    def add_prot(self, prot):
+        """Adds a protein to the peptide"""
         self.prots.append(prot)
 
 
@@ -115,7 +122,7 @@ prot_result = subprocess.Popen(
 
 for prot in prot_result.stdout.readlines()[1:]:
     _, pept, prot = prot.decode('utf-8').strip().split(',')
-    pept2prot[pept].addprot(prot)
+    pept2prot[pept].add_prot(prot)
 
 # Get all the LCAs
 for pept in pept2prot.values():
