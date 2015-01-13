@@ -7,7 +7,7 @@ from itertools import zip_longest
 from collections import OrderedDict
 
 from tree_of_life import get_tree, CLASSES
-from tree_based_lca import Real_LCA_Calculator
+from tree_based_lca import Tree_LCA_Calculator
 from utils import print_tree_json, compare_to_unipept
 
 GENUS_CHECK = True
@@ -17,9 +17,8 @@ UNFOUND = set()
 
 print("Building tree. Time: {}".format(time.time()))
 TREE = get_tree()
-print("Tree built. Time: {}".format(time.time()))
-real_lca = Real_LCA_Calculator(TREE)
-exit()
+print("Tree build. Time: {}".format(time.time()))
+print("---")
 
 class Peptide:
     def __init__(self, pept):
@@ -27,15 +26,16 @@ class Peptide:
         self.prots = []
         self.lca = None
         self.unipept_lca = None
+        self.tree_lca = None
         self.lineages = []
 
 
     def add_prot(self, prot):
         """Adds a protein to the peptide"""
-        self.prots.append(prot)
+        self.prots.append(int(prot))
 
 
-    def handle_lca(self):
+    def handle_lineages_lca(self):
         """Gets the lineages from the tree and performs the LCA calculation"""
 
         # Get the lineage for each prot
@@ -51,7 +51,7 @@ class Peptide:
 
         # If we have a result, get the LCA, otherwise, add it to the unfound ones
         if self.lineages:
-            self.lca = self.get_lca(allow_invalid=False).taxon_id
+            self.lca = self.get_lineages_lca(allow_invalid=False).taxon_id
             LCAS.append(self.lca)
             print("LCA for {} is {} ({})".format(self.pept, TREE.taxons[self.lca].name, self.lca))
         else:
@@ -60,7 +60,7 @@ class Peptide:
 
 
 
-    def get_lca(self, allow_invalid=True):
+    def get_lineages_lca(self, allow_invalid=True):
         """Does the actual LCA calculation"""
 
         # Use -1 as fillvalue here, we'll filter it out later
@@ -90,14 +90,25 @@ class Peptide:
 
         return lca
 
+    def handle_tree_lca(self):
+        # Map invalids to their valid parent, allow no ranks
+        filtered = [TREE.taxons[prot].get_parent(allow_invalid=False).taxon_id for prot in self.prots]
+
+        self.tree_lca = TREE_LCA_CALCULATOR.calc_lca(filtered)
+        if self.tree_lca:
+            print("LCA for {} is {} ({})".format(self.pept, TREE.taxons[self.tree_lca].name, self.tree_lca))
+        else:
+            print("LCA for {} not found".format(self.pept))
+
 
 fastafile = "/tmp/fasta.tmp"
 # Dict containing the input sequence
 inputarray = []
 # Dict containing the peptides to their objects
-#pept2prot = OrderedDict() # Uncomment this to enable diffing between resultsets
-pept2prot = dict()
+pept2prot = OrderedDict() # Uncomment this to enable diffing between resultsets
+#pept2prot = dict()
 
+print("Get proteins. Time: {}".format(time.time()))
 # Create a temp fastafile for easy Unipept querying
 with open(fastafile, "wb") as f:
     for i, line in enumerate(sys.stdin):
@@ -123,10 +134,17 @@ prot_result = subprocess.Popen(
 for prot in prot_result.stdout.readlines()[1:]:
     _, pept, prot = prot.decode('utf-8').strip().split(',')
     pept2prot[pept].add_prot(prot)
+print("Got proteins. Time: {}".format(time.time()))
+print("---")
 
 # Get all the LCAs
+TREE_LCA_CALCULATOR = Tree_LCA_Calculator(TREE)
+print("Get Tree LCAs. Time: {}".format(time.time()))
 for pept in pept2prot.values():
-    pept.handle_lca()
+    #pept.handle_lineages_lca()
+    pept.handle_tree_lca()
+print("Got Tree LCAs. Time: {}".format(time.time()))
+print("---")
 
 #if UNFOUND:
 #    print("Unfound: {}, {}".format(len(UNFOUND), ', '.join(UNFOUND)))

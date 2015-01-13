@@ -124,18 +124,34 @@ class Taxon(JSONEncoder):
         if self.taxon_id == self.parent_id:
             return self
 
-        if allow_no_rank and allow_invalid:
-            return self.parent
-
-        if not allow_no_rank and not self.parent.rank == "no rank" \
-                and (allow_invalid or self.parent.valid_taxon):
-            return self.parent
-
-        if not allow_invalid and not self.parent.valid_taxon \
-                and (allow_no_rank or not self.parent.rank == "no rank"):
-            return self.parent
-
-        return self.parent.get_parent(allow_no_rank, allow_invalid)
+        # A big if else thing, makes it easier to reason about it
+        if allow_no_rank:
+            if allow_invalid:
+                # Allow no ranks and invalids: return all
+                return self.parent
+            else:
+                # Allow no ranks but no invalids
+                if self.parent.valid_taxon:
+                    # If the parent is valid: return the parent
+                    return self.parent
+                else:
+                    # If the parent is invalid, return its valid parent
+                    return self.parent.get_parent(allow_no_rank, allow_invalid)
+        else:
+            if allow_invalid:
+                # Dont allow no ranks, allow invalids
+                if self.parent.rank != "no rank":
+                    # If the parent is no no rank, return it
+                    return self.parent
+                else:
+                    # If the parent is a no rank, return its valid parent
+                    return self.parent.get_parent(allow_no_rank, allow_invalid)
+            else:
+                # Dont allow no ranks, don't allow invalids
+                if self.parent.rank != "no rank" and self.parent.valid_taxon:
+                    return self.parent
+                else:
+                    return self.parent.get_parent(allow_no_rank, allow_invalid)
 
 
     def get_lineage(self, allow_no_rank=True, allow_invalid=True):
