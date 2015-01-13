@@ -1,0 +1,15 @@
+LCA for AAEVALVGTEK is Clostridiales (186802)
+LCA for AAVESGSAAASR is Firmicutes (1239)
+LCA for EGGAVENIDIWGR is Bifidobacterium (1678)
+LCA for GISLANWMCLAK is Euarchontoglires (314146)
+LCA for GLTAAIEAADAMTK is Firmicutes (1239)
+LCA for IGSGLVTVMVR is root (1)
+LCA for KLAYEIAGK not found
+LCA for LLNLNESVIR is Bifidobacterium (1678)
+LCA for LTEQYLETVTK is Bifidobacterium (1678)
+LCA for MDGTEYIIVK is Ruminococcus sp. 5_1_39BFAA (457412)
+LCA for MEVAVGDKVIYSK not found
+LCA for SGIVLPGQAQEKPQQAEVVAVGPGGVVDGK is Firmicutes (1239)
+LCA for SGIVLPGQAQEKPQQAEVVAVGPGGVVDGKEVK not found
+LCA for TEGNYVVVNYSAEPATSDELDR is Bifidobacterium (1678)
+LCA for WESGYNTR is Boreoeutheria (1437010)
