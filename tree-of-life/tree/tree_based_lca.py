@@ -1,8 +1,8 @@
 import sys
 import time
 
-from lca_calculator import LCA_Calculator
-import vendor.rmq as rmq
+from tree.lca_calculator import LCA_Calculator
+import tree.vendor.rmq as rmq
 
 
 class Tree_LCA_Calculator(LCA_Calculator):
@@ -14,24 +14,24 @@ class Tree_LCA_Calculator(LCA_Calculator):
         self.levels = [None] * (2*self.tree.real_size - 1)
         self.first_occurences = [None] * self.tree.size
 
-        print("Preprocessing LCA arrays. Time: {}".format(time.time()))
+        print("Preprocessing LCA arrays. Time: {}".format(time.time()), file=sys.stderr)
         self.dfs_run(self.tree.taxons[1], 0, 0)
-        print("Preprocessed LCA arrays: {}".format(time.time()))
-        print("---")
+        print("Preprocessed LCA arrays: {}".format(time.time()), file=sys.stderr)
+        print("---", file=sys.stderr)
 
         # Preprocess the RMQ
-        print("Preprocessing RMQ. Time: {}".format(time.time()))
-        self.preprocess_rmq()
-        print("Preprocessed RMQ. Time: {}".format(time.time()))
-        print("---")
+        print("Preprocessing RMQ. Time: {}".format(time.time()), file=sys.stderr)
+        self.rmqinfo = self.preprocess_rmq()
+        print("Preprocessed RMQ. Time: {}".format(time.time()), file=sys.stderr)
+        print("---", file=sys.stderr)
 
 
     def preprocess_rmq(self):
-        self.rmqinfo = rmq.rm_query_preprocess(self.levels, len(self.levels))
+        return rmq.rm_query_preprocess(self.levels, len(self.levels))
 
 
     def free_rmqinfo(self):
-        rmq.rm_free(self.free_rmqinfo)
+        rmq.rm_free(self.rmqinfo)
 
 
     def dfs_run(self, taxon, iteration, level):
@@ -58,14 +58,14 @@ class Tree_LCA_Calculator(LCA_Calculator):
             return None
 
         # Map prots to their first valid parent
-        prots = [TREE.taxons[prot].get_parent(allow_invalid=False).taxon_id for prot in self.prots]
+        prots = [self.tree.taxons[prot].get_parent(allow_invalid=False).taxon_id for prot in prots]
 
         lca = prots[0]
 
         for prot in prots[1:]:
             lca_index = self.first_occurences[lca]
             prot_index = self.first_occurences[prot]
-            #print("DEBUG: {}, {}, {}, {}:".format(lca_index, prot_index, lca_index < len(self.levels), prot_index < len(self.levels)))
+            #print("DEBUG: {}, {}, {}, {}:".format(lca_index, prot_index, lca_index < len(self.levels), prot_index < len(self.levels)), file=sys.stderr)
             rmq_index = self.get_rmq(lca_index, prot_index)
 
             # If one boundary is the result; take the other
