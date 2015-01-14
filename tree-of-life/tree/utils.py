@@ -2,7 +2,7 @@ import subprocess
 from copy import deepcopy
 from itertools import zip_longest
 
-from tree_of_life import Tree, Taxon
+from tree.tree_of_life import Tree, Taxon
 
 
 def print_tree_json(filename, tree, peptides, only_lcas=True):
