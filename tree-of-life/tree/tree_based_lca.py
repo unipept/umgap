@@ -1,26 +1,33 @@
 import sys
 import time
 
+from lca_calculator import LCA_Calculator
 import vendor.rmq as rmq
 
-class Tree_LCA_Calculator():
 
-    def __init__(self, tree):
-        self.euler_tour =[None] * (2*tree.real_size - 1)
-        self.levels = [None] * (2*tree.real_size - 1)
-        self.first_occurences = [None] * tree.size
+class Tree_LCA_Calculator(LCA_Calculator):
+
+    def __init__(self):
+        super().__init__()
+
+        self.euler_tour =[None] * (2*self.tree.real_size - 1)
+        self.levels = [None] * (2*self.tree.real_size - 1)
+        self.first_occurences = [None] * self.tree.size
 
         print("Preprocessing LCA arrays. Time: {}".format(time.time()))
-        self.dfs_run(tree.taxons[1], 0, 0)
+        self.dfs_run(self.tree.taxons[1], 0, 0)
         print("Preprocessed LCA arrays: {}".format(time.time()))
+        print("---")
+
+        # Preprocess the RMQ
+        print("Preprocessing RMQ. Time: {}".format(time.time()))
+        self.preprocess_rmq()
+        print("Preprocessed RMQ. Time: {}".format(time.time()))
         print("---")
 
 
     def preprocess_rmq(self):
-        print("Preprocessing RMQ. Time: {}".format(time.time()))
         self.rmqinfo = rmq.rm_query_preprocess(self.levels, len(self.levels))
-        print("Preprocessed RMQ. Time: {}".format(time.time()))
-        print("---")
 
 
     def free_rmqinfo(self):
@@ -45,8 +52,13 @@ class Tree_LCA_Calculator():
 
 
     def calc_lca(self, prots):
+        """Given a list of protein ids, calculate the LCA"""
+
         if not prots:
             return None
+
+        # Map prots to their first valid parent
+        prots = [TREE.taxons[prot].get_parent(allow_invalid=False).taxon_id for prot in self.prots]
 
         lca = prots[0]
 
@@ -69,3 +81,7 @@ class Tree_LCA_Calculator():
 
     def get_rmq(self, start, end):
         return rmq.rm_query(self.rmqinfo, start, end)
+
+
+    def cleanup(self):
+        self.free_rmqinfo()
