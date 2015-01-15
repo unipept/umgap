@@ -3217,14 +3217,8 @@ SWIGINTERN PyObject *_wrap_rmqinfo_array_set(PyObject *SWIGUNUSEDPARM(self), PyO
   }
   if (arg1) (arg1)->array = arg2;
   resultobj = SWIG_Py_Void();
-  {
-    free(arg2);
-  }
   return resultobj;
 fail:
-  {
-    free(arg2);
-  }
   return NULL;
 }
 
@@ -3497,14 +3491,8 @@ SWIGINTERN PyObject *_wrap_rm_query_naive(PyObject *SWIGUNUSEDPARM(self), PyObje
   arg3 = (INT)(val3);
   result = (INT)rm_query_naive(arg1,arg2,arg3);
   resultobj = SWIG_From_unsigned_SS_int((unsigned int)(result));
-  {
-    free(arg1);
-  }
   return resultobj;
 fail:
-  {
-    free(arg1);
-  }
   return NULL;
 }
 
@@ -3549,14 +3537,8 @@ SWIGINTERN PyObject *_wrap_rm_query_preprocess(PyObject *SWIGUNUSEDPARM(self), P
   arg2 = (INT)(val2);
   result = (struct rmqinfo *)rm_query_preprocess(arg1,arg2);
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_rmqinfo, 0 |  0 );
-  {
-    free(arg1);
-  }
   return resultobj;
 fail:
-  {
-    free(arg1);
-  }
   return NULL;
 }
 

@@ -27,11 +27,6 @@ typedef unsigned int VAL;
   }
 }
 
-// This cleans up the char ** array we malloc'd before the function call
-%typemap(freearg) VAL * {
-  free($1);
-}
-
 %{
 #include "rmq.h"
 #include <stdio.h>
