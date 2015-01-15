@@ -3204,7 +3204,7 @@ SWIGINTERN PyObject *_wrap_rmqinfo_array_set(PyObject *SWIGUNUSEDPARM(self), PyO
         if (PyInt_Check(o))
         arg2[i] = PyInt_AsLong(PyList_GetItem(obj1,i));
         else {
-          PyErr_SetString(PyExc_TypeError,"list must contain strings");
+          PyErr_SetString(PyExc_TypeError,"list must contain integers");
           free(arg2);
           return NULL;
         }
@@ -3474,7 +3474,7 @@ SWIGINTERN PyObject *_wrap_rm_query_naive(PyObject *SWIGUNUSEDPARM(self), PyObje
         if (PyInt_Check(o))
         arg1[i] = PyInt_AsLong(PyList_GetItem(obj0,i));
         else {
-          PyErr_SetString(PyExc_TypeError,"list must contain strings");
+          PyErr_SetString(PyExc_TypeError,"list must contain integers");
           free(arg1);
           return NULL;
         }
@@ -3531,7 +3531,7 @@ SWIGINTERN PyObject *_wrap_rm_query_preprocess(PyObject *SWIGUNUSEDPARM(self), P
         if (PyInt_Check(o))
         arg1[i] = PyInt_AsLong(PyList_GetItem(obj0,i));
         else {
-          PyErr_SetString(PyExc_TypeError,"list must contain strings");
+          PyErr_SetString(PyExc_TypeError,"list must contain integers");
           free(arg1);
           return NULL;
         }

@@ -1,4 +1,4 @@
-/*  
+/*
  * Implementation of a simple range minimum query algorithm described in
  * S. Alstrup, C. Gavoille, H. Kaplan, T. Rauhe.
  * Nearest common ancestors: a survey and a new distributed algorithm,
@@ -22,7 +22,7 @@
 
 /* clear the least significant x-1 bits */
 static inline INT clearbits(INT n, INT x){
-  return((n >> x) << x);  
+  return((n >> x) << x);
 }
 
 /* return floor of log n. assumes n > 0
@@ -66,7 +66,7 @@ INT rm_query_naive(VAL * a, INT x, INT y){
     tmp = x; x = y; y = tmp;
   }
   z = x;
-  minval = a[x];  
+  minval = a[x];
   for(x++; x <= y; x++){
     if(VAL_LT(a[x],minval)){
       z = x; minval = a[x];
@@ -84,11 +84,11 @@ struct rmqinfo * rm_query_preprocess(VAL * array, INT alen){
   INT i, j, g, rows, cols, block_cnt, rowelmlen;
   INT * block_min, **sparse, *labels;
   INT gstack[32], gstacksize = 0;
-  
+
   info = (struct rmqinfo *) malloc(sizeof(struct rmqinfo));
   /* divide input array into blocks of size 32.
    * block_cnt is the number of such blocks.
-   * block_minpos is an array that contains the 
+   * block_minpos is an array that contains the
    * minimum positions in each block. */
   block_cnt = ((alen-1) >> 5) + 1;
   block_min = (INT *) malloc (sizeof(INT) * block_cnt);
@@ -125,11 +125,11 @@ struct rmqinfo * rm_query_preprocess(VAL * array, INT alen){
         if(VAL_LT(array[sparse[j-1][i + (rowelmlen >> 1)]],array[sparse[j-1][i]]))
           sparse[j][i] = sparse[j-1][i + (rowelmlen >> 1)];
 	else
-	  sparse[j][i] = sparse[j-1][i];	
+	  sparse[j][i] = sparse[j-1][i];
       }
     }
   }
-  
+
   /* create integers for constant time rmq inside the blocks
    * In each block:
    * - g[i]: the first position to the left of i
@@ -154,7 +154,7 @@ struct rmqinfo * rm_query_preprocess(VAL * array, INT alen){
   info->block_min = block_min;
   info->labels = labels;
   info->alen = alen;
-  return info;  
+  return info;
 }
 
 
@@ -180,7 +180,7 @@ INT rm_query(const struct rmqinfo * info, INT l, INT r){
     return ((v == 0) ? r : bpos + lsbset(v));
     break;
   case 1:  /* two inblock queries. in block blocknum_l and blocknum_r.
-	    * in blocknum_l: postion (l%32) to 31  
+	    * in blocknum_l: postion (l%32) to 31
 	    * in blocknum_r: postion 0 to (r%32) */
     tmp = bpos + 31;
     v1 = clearbits(info->labels[tmp], l%32);

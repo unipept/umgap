@@ -15,7 +15,7 @@ typedef unsigned int VAL;
       if (PyInt_Check(o))
         $1[i] = PyInt_AsLong(PyList_GetItem($input,i));
       else {
-        PyErr_SetString(PyExc_TypeError,"list must contain strings");
+        PyErr_SetString(PyExc_TypeError,"list must contain integers");
         free($1);
         return NULL;
       }
