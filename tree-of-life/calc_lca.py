@@ -14,8 +14,8 @@ fastafile = "/tmp/fasta.tmp"
 # Dict containing the input sequence
 inputarray = []
 # Dict containing the peptides to their objects
-#pept2prot = OrderedDict() # Uncomment this to enable diffing between resultsets
-pept2prot = dict()
+pept2prot = OrderedDict() # Uncomment this to enable diffing between resultsets
+#pept2prot = dict()
 
 lcas = []
 unfound = set()
@@ -69,10 +69,11 @@ print("Got proteins. Time: {}".format(time.time()), file=sys.stderr)
 print("---", file=sys.stderr)
 
 # Calculate all the LCAs
+calculator = Tree_LCA_Calculator()
+#calculator = Lineage_LCA_Calculator()
 print("Get Tree LCAs. Time: {}".format(time.time()), file=sys.stderr)
-#calculator = Tree_LCA_Calculator()
-calculator = Lineage_LCA_Calculator()
 for pept in pept2prot.values():
+    print("Calc for {}".format(pept.pept))
     pept.lca = calculator.calc_lca(pept.prots)
 
     if pept.lca:
@@ -81,6 +82,7 @@ for pept in pept2prot.values():
     else:
         print("LCA for {} not found".format(pept.pept))
         unfound.add(pept)
+
 calculator.cleanup()
 print("Got Tree LCAs. Time: {}".format(time.time()), file=sys.stderr)
 
