@@ -11,6 +11,8 @@ class Tree():
     """It's all about the tree"""
 
     def __init__(self):
+        #self.size = 11 # The maximum ID, including nones for easy querying by taxon_id
+        #self.real_size = 10 # The actual amount of taxons in the tree-of-life
         self.size = 1500560 + 1 # The maximum ID, including nones for easy querying by taxon_id
         self.real_size = 1157753 # The actual amount of taxons in the tree-of-life
         self.taxons = [None] * self.size
