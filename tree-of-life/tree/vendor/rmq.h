@@ -1,4 +1,4 @@
-/*  
+/*
  * Implementation of a simple range minimum query algorithm described in
  * S. Alstrup, C. Gavoille, H. Kaplan, T. Rauhe.
  * Nearest common ancestors: a survey and a new distributed algorithm,
@@ -29,7 +29,7 @@ extern "C" {
 typedef unsigned int INT;
 
 /* Type for values in the array. */
-typedef unsigned int VAL;	
+typedef unsigned int VAL;
 
 /* compare the value inside the array */
 #define VAL_LT(x,y) x < y
@@ -60,7 +60,7 @@ struct rmqinfo * rm_query_preprocess(VAL * a, INT alen);
 
 
 /*
- * Return the position in array which gives the minimum value 
+ * Return the position in array which gives the minimum value
  * in the subarray rmqinfo.array[x..y] using preprocessed information.
  * When there are multiple positions with the same minimum value,
  * in the range, the smallest index is returned.
