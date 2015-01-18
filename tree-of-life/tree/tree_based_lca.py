@@ -59,12 +59,17 @@ class Tree_LCA_Calculator(LCA_Calculator):
         if not taxons:
             return None
 
+        if len(taxons) == 1:
+            result = self.tree.taxons[taxons[0]]
+
+            if result.valid_taxon and result.rank != "no rank":
+                return result.taxon_id
+            else:
+                return result.get_parent(allow_no_rank=False, allow_invalid=False).taxon_id
         # Map sort to their first valid parent
         taxons = [self.tree.taxons[taxon].get_parent(allow_no_rank=False, allow_invalid=False).taxon_id if not self.tree.taxons[taxon].valid_taxon else taxon for taxon in taxons]
         #print([self.tree.taxons[taxon].name for taxon in taxons], file=sys.stderr)
 
-        if len(taxons) == 1:
-            return taxons[0]
 
         # Don't do duplicate calculations, set the list first
         taxons = list(set(taxons))
@@ -117,7 +122,12 @@ class Tree_LCA_Calculator(LCA_Calculator):
             #print("Level of highest join: {}".format(level_of_highest_join), file=sys.stderr)
             #print(file=sys.stderr)
 
-        return taxons.pop()
+        result = self.tree.taxons[taxons.pop()]
+
+        if result.valid_taxon and result.rank != "no rank":
+            return result.taxon_id
+        else:
+            return result.get_parent(allow_no_rank=False, allow_invalid=False).taxon_id
 
 
     def get_rmq(self, start, end):
