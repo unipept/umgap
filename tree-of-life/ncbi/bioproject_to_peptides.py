@@ -52,9 +52,10 @@ def process_translation(i, translation):
         print(pept.decode('utf-8').strip())
 
 
-# Parse all the IDs of the nucleotides
+# Get all the proteins
 i = 0
 for nucleotide_id in get_nucleotide_ids(PROJECT)['IdList']:
     for translation in get_nucleotide_translation(nucleotide_id):
         process_translation(i, translation)
         i+=1
+
