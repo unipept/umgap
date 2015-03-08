@@ -51,3 +51,4 @@ for nucleotide_id in get_nucleotide_ids(ASSEMBLY_ID):
         for feature in features:
             if feature.type == 'CDS':
                 print(feature.qualifiers['protein_id'][0])
+        exit()
