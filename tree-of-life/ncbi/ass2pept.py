@@ -49,10 +49,10 @@ def get_nucleotide_translation(nucleotide_id):
     for feature in get_nucleotide_features(nucleotide_id):
         if feature.type == 'CDS':
             if 'translation' in feature.qualifiers:
-                yield feature.qualifiers['translation'][0]
+                yield feature.qualifiers['protein_id'][0], feature.qualifiers['translation'][0]
 
 
-def process_translation(i, translation):
+def process_translation(insdc, translation):
     result = subprocess.Popen(
         "echo {} | prot2pept | peptfilter".format(translation),
         shell=True,
@@ -60,13 +60,11 @@ def process_translation(i, translation):
         stderr=subprocess.STDOUT
     )
 
-    print(">|{}".format(i))
+    print(">|{}".format(insdc))
     for pept in result.stdout.readlines():
-        print(pept.decode('utf-8').strip())
+        print(pept.strip())
 
 # Get all the proteins
-i = 0
 for nucleotide_id in get_nucleotide_ids(ASSEMBLY_ID):
-    for translation in get_nucleotide_translation(nucleotide_id):
-        process_translation(i, translation)
-        i+=1
+    for insdc, translation in get_nucleotide_translation(nucleotide_id):
+        process_translation(insdc, translation)
