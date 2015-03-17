@@ -13,10 +13,10 @@ class FastaRecord:
 
 fasta2record = dict()
 next(sys.stdin)
-for i, line in enumerate(sys.stdin):
+for line in sys.stdin:
     fasta_header, _, taxon_id, _, _ = line.strip().split(',')
 
-    fasta_id = fasta_header[2:]
+    fasta_id = fasta_header[1:]
 
     if fasta_id not in fasta2record:
         fasta2record[fasta_id] = FastaRecord(fasta_id)
@@ -29,4 +29,4 @@ for fasta_record in fasta2record.values():
     lca = calculator.calc_lca(fasta_record.taxons)
 
     taxon = calculator.tree.taxons[lca]
-    print(">|{},{},{},{}".format(fasta_record.fasta_id, taxon.taxon_id, taxon.name, taxon.rank))
+    print(">{},{},{},{}".format(fasta_record.fasta_id, taxon.taxon_id, taxon.name, taxon.rank))
