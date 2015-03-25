@@ -1,7 +1,7 @@
 import time
 import sys
 
-from tree.tree_of_life import get_tree
+from lca_calculators.tree_of_life import get_tree
 
 
 class LCA_Calculator:

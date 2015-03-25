@@ -1,8 +1,8 @@
 from itertools import zip_longest
 import time
 
-from tree.lca_calculator import LCA_Calculator
-from tree.tree_of_life import CLASSES
+from lca_calculators.lca_calculator import LCA_Calculator
+from lca_calculators.tree_of_life import CLASSES
 
 
 class Lineage_LCA_Calculator(LCA_Calculator):

@@ -1,6 +1,6 @@
 import sys
 
-from tree.tree_based_lca import Tree_LCA_Calculator
+from lca_calculators.tree_based_lca import Tree_LCA_Calculator
 
 class FastaRecord:
     def __init__(self, fasta_id):

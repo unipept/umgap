@@ -5,9 +5,9 @@ import subprocess
 import time
 from collections import OrderedDict
 
-from tree.tree_based_lca import Tree_LCA_Calculator
-from tree.lineage_based_lca import Lineage_LCA_Calculator
-from tree.utils import print_tree_json, compare_to_unipept
+from lca_calculators.tree_based_lca import Tree_LCA_Calculator
+from lca_calculators.lineage_based_lca import Lineage_LCA_Calculator
+from lca_calculators.utils import print_tree_json, compare_to_unipept
 
 
 fastafile = "/tmp/fasta.tmp"
