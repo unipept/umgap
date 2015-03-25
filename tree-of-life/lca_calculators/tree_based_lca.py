@@ -10,7 +10,8 @@ class Tree_LCA_Calculator(LCA_Calculator):
     def __init__(self):
         super().__init__()
 
-        print("Preprocessing LCA arrays. Time: {}".format(time.time()), file=sys.stderr)
+        starttime = time.time()
+        print("Preprocessing LCA arrays. Time: {}".format(starttime), file=sys.stderr)
         self.euler_tour =[None] * (2*self.tree.real_size - 1)
         self.levels = [None] * (2*self.tree.real_size - 1)
         self.first_occurences = [None] * self.tree.size
@@ -18,13 +19,14 @@ class Tree_LCA_Calculator(LCA_Calculator):
         self.dfs_run(self.tree.taxons[1], 0, 0)
 
         print()
-        print("Preprocessed LCA arrays: {}".format(time.time()), file=sys.stderr)
+        print("Preprocessed LCA arrays: {}, time elapsed: {}".format(time.time(), time.time()-starttime), file=sys.stderr)
         print("---", file=sys.stderr)
 
         # Preprocess the RMQ
-        print("Preprocessing RMQ. Time: {}".format(time.time()), file=sys.stderr)
+        starttime = time.time()
+        print("Preprocessing RMQ. Time: {}".format(starttime), file=sys.stderr)
         self.rmqinfo = self.preprocess_rmq()
-        print("Preprocessed RMQ. Time: {}".format(time.time()), file=sys.stderr)
+        print("Preprocessed RMQ. Time: {}, time elapsed: {}".format(time.time(), time.time()-starttime), file=sys.stderr)
         print("---", file=sys.stderr)
 
 
