@@ -1,8 +1,8 @@
 import sys
 import time
 
-from tree.lca_calculator import LCA_Calculator
-import tree.vendor.rmq as rmq
+from lca_calculators.lca_calculator import LCA_Calculator
+import lca_calculators.vendor.rmq as rmq
 
 
 class Tree_LCA_Calculator(LCA_Calculator):
