@@ -1,4 +1,4 @@
-""" Given a file of pept2prot2filter entries, gets the LCA for every peptide.
+""" Given a file of pept2prot2filter entries, gets the LCA for every fasta header by getting the LCAs per peptides.
 
 Expects a list grouped first by the FASTA header and then by peptide for speed reasons
 Not necessarily ordered, just grouped is fine
