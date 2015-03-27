@@ -1,6 +1,7 @@
 import subprocess
 import urllib.request, urllib.parse, urllib.error
 import os
+import sys
 
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
@@ -10,7 +11,6 @@ from Bio import Entrez
 
 # Variables
 Entrez.email = "tom.naessens@ugent.be"
-ASSEMBLY_ID = "GCF_000015425.1"
 
 def get_nucleotide_ids(assembly_id):
     """Get all the nucleotides for a projectid"""
@@ -43,12 +43,13 @@ def get_nucleotide_features(nucleotide_id):
     yield record.features
 
 
-# Get all the proteins
+if len(sys.argv) != 2:
+    print("Usage: {} [refseq_id]".format(sys.argv[0]))
+    exit(1)
 
-i = 0
-for nucleotide_id in get_nucleotide_ids(ASSEMBLY_ID):
+# Get all the proteins
+for nucleotide_id in get_nucleotide_ids(sys.argv[1]):
     for features in get_nucleotide_features(nucleotide_id):
         for feature in features:
             if feature.type == 'CDS':
                 print(feature.qualifiers['protein_id'][0])
-        exit()
