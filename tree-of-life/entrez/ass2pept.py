@@ -54,7 +54,7 @@ def get_nucleotide_translation(nucleotide_id):
 
 def process_translation(insdc, translation):
     result = subprocess.Popen(
-        "echo {} | prot2pept | peptfilter".format(translation),
+        "echo {} | prot2pept | peptfilter | sort | uniq".format(translation),
         shell=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT
