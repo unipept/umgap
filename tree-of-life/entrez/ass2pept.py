@@ -1,6 +1,7 @@
 import subprocess
 import urllib.request
 import os
+import sys
 
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
@@ -10,7 +11,6 @@ from Bio import Entrez
 
 # Variables
 Entrez.email = "tom.naessens@ugent.be"
-ASSEMBLY_ID = "GCF_000015425.1"
 
 def get_nucleotide_ids(assembly_id):
     """Get all the nucleotides for a projectid"""
@@ -62,9 +62,13 @@ def process_translation(insdc, translation):
 
     print(">|{}".format(insdc))
     for pept in result.stdout.readlines():
-        print(pept.strip())
+        print(pept.strip().decode('utf-8'))
+
+if len(sys.argv) != 2:
+    print("Usage: {} [refseq_id]".format(sys.argv[0]))
+    exit(1)
 
 # Get all the proteins
-for nucleotide_id in get_nucleotide_ids(ASSEMBLY_ID):
+for nucleotide_id in get_nucleotide_ids(sys.argv[1]):
     for insdc, translation in get_nucleotide_translation(nucleotide_id):
         process_translation(insdc, translation)
