@@ -21,9 +21,10 @@ usage() {
 (($# != 1)) && usage
 
 ass_id=$1
+tmp_dir="/tmp"
 
 # Create dirs
-dir="/tmp/$ass_id/"
+dir="$tmp_dir/$ass_id"
 
 rm -rf $dir
 mkdir $dir
