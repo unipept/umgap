@@ -26,23 +26,30 @@ tmp_dir="/tmp"
 # Create dirs
 dir="$tmp_dir/$ass_id"
 
-rm -rf $dir
-mkdir $dir
+#rm -rf $dir
+mkdir -p $dir
 
 
 #  get the complete sequence and process it with:
 #     - prot2pept
 #     - peptfilter
-python ./entrez/ass2pept.py $ass_id > "$dir/peptides.fst"
+if [ ! -f "$dir/peptides.fst" ]; then
+  python ./entrez/ass2pept.py $ass_id > "$dir/peptides.fst"
+fi
 
 # get the proteins uniprot ids which occur in the genome
-python ./entrez/ass2seqacc.py $ass_id | entrez/seqacc2protid.sh > "$dir/uniprot_protein_ids.txt"
+if [ ! -f "$dir/uniprot_protein_ids.txt" ]; then
+  python ./entrez/ass2seqacc.py $ass_id | entrez/seqacc2protid.sh > "$dir/uniprot_protein_ids.txt"
+fi
 
-# analyse the complete sequence with:
+# analyse the complete sequence with and
+# check wether resulting taxons come from the correct lineage
 #     - pept2lca2lca
-#     - pept2prot2filter2lca
+unipept pept2lca -i "$dir/peptides.fst" | python3 pept2lca2lca2.py -c 400667
 
-# check wether resulting taxons come from the correct lineage and reports how many do
+#     - pept2prot2filter2lca
+#unipept pept2prot -i "$dir/peptides.fst"| ./pept2prot2filter.sh "$dir/uniprot_protein_ids.txt" | python3 pept2prot2filter2lca2.py
+
 
 # spit out some statistics about the found lcas
 
