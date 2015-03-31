@@ -8,11 +8,23 @@ import sys
 from itertools import groupby
 from operator import itemgetter
 
+import argparse
+
 from lca_calculators.tree_based_lca import Tree_LCA_Calculator
+
+# Input argument parsing
+parser = argparse.ArgumentParser(description='Calculate the LCAs for a given fastafile after pept2lca')
+parser.add_argument('-c', '--check-against', dest='reference_taxon_id', type=int, help='check against a taxon_id')
+args = parser.parse_args()
 
 
 calculator = Tree_LCA_Calculator()
-print("fasta_header,taxon_id,taxon_name,taxon_rank")
+
+print("fasta_header,taxon_id,taxon_name,taxon_rank", end="")
+if args.reference_taxon_id:
+    print(",on_lineage")
+else:
+    print()
 
 
 def reduce_per_fasta(lines):
@@ -28,7 +40,15 @@ def parse(input_):
     reduced_fastas = ((k, reduce_per_fasta(group)) for k, group in fasta_groups)
 
     for fasta_header, taxon in reduced_fastas:
-        print("{},{},{},{}".format(fasta_header, taxon.taxon_id, taxon.name, taxon.rank))
+
+        print("{},{},{},{}".format(fasta_header, taxon.taxon_id, taxon.name, taxon.rank), end="")
+
+        # We want to check against a reference taxon
+        if args.reference_taxon_id:
+            on_lineage = calculator.calc_lca([taxon.taxon_id, args.reference_taxon_id]) == args.reference_taxon_id
+            print(",{}".format(int(on_lineage)))
+        else:
+            print()
 
 
 # Skip the header
