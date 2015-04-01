@@ -30,7 +30,7 @@ else:
 
 
 def reduce_per_peptide(lines):
-    lca = calculator.calc_lca([int(line[3]) for line in lines])
+    lca = calculator.calc_lca([int(line[3]) for line in lines], allow_no_rank=False)
     return lca
 
 
@@ -39,7 +39,7 @@ def reduce_per_fasta(lines):
 
     lcas_per_peptide = (reduce_per_peptide(group) for group in peptide_groups)
 
-    lca = calculator.calc_lca(lcas_per_peptide)
+    lca = calculator.calc_lca(lcas_per_peptide, allow_no_rank=False)
     taxon = calculator.tree.taxons[lca]
 
     return taxon
