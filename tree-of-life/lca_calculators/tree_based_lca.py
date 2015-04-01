@@ -1,3 +1,4 @@
+from functools import reduce
 import sys
 import time
 
@@ -55,68 +56,72 @@ class Tree_LCA_Calculator(LCA_Calculator):
         return iteration + 1
 
 
-    def calc_lca(self, taxons, allow_no_rank=True):
+    def _calc_lca_pair(self, acc, second):
+        level_of_highest_join, first = acc
+
+        # Get their occurence in the levels/euler_tour array
+        first_index = self.first_occurences[first]
+        second_index = self.first_occurences[second]
+
+        #print("DEBUG:", file=sys.stderr)
+        #print("LCA BY {} AND {} ".format(
+            #self.tree.taxons[self.euler_tour[first_index]].taxon_id,
+            #self.tree.taxons[self.euler_tour[second_index]].taxon_id
+        #), file=sys.stderr)
+
+        # Calculate the index of their LCA
+        rmq_index = self.get_rmq(first_index, second_index)
+
+        #print("LCA BY IS {} AT LEVEL {} ".format(
+            #self.tree.taxons[self.euler_tour[rmq_index]].taxon_id,
+            #self.levels[rmq_index]
+        #), file=sys.stderr)
+
+        # We've found a split, take it and update the highest_join level
+        if rmq_index != first_index and rmq_index != second_index:
+            lca_index = rmq_index
+            level_of_highest_join = self.levels[rmq_index]
+        else:
+            # We're on a single lineage here, take the bottom one
+            if rmq_index == first_index:
+                lca_index = second_index
+            elif rmq_index == second_index:
+                lca_index = first_index
+
+            # Don't go lower than the max join though
+            if self.levels[lca_index] > level_of_highest_join:
+                lca_index = rmq_index
+
+
+        #print("Found LCA: {}".format(self.euler_tour[lca_index]), file=sys.stderr)
+        #print("Level of highest join: {}".format(level_of_highest_join), file=sys.stderr)
+        #print(file=sys.stderr)
+
+        return level_of_highest_join, self.euler_tour[lca_index]
+
+
+    def calc_lca(self, taxons, allow_no_rank=False):
         """Given a list of taxon ids, calculate the LCA"""
 
-        if not taxons:
-            return None
-
         # Map sort to their first valid parent
-        taxons = [self.tree.taxons[taxon].get_parent(allow_no_rank=allow_no_rank, allow_invalid=False).taxon_id if not self.tree.taxons[taxon].valid_taxon else taxon for taxon in taxons]
+        taxons = (self.tree.taxons[taxon].get_parent(allow_no_rank=allow_no_rank, allow_invalid=False).taxon_id
+                  if not self.tree.taxons[taxon].valid_taxon else taxon
+                  for taxon in taxons)
         #print("DEBUG:", file=sys.stderr)
         #print([self.tree.taxons[taxon].name for taxon in taxons], file=sys.stderr)
 
         # Put the highest join level as high as possible
         level_of_highest_join = sys.maxsize
 
-        # Iterate over the taxons, joining two taxons at a time
-        while len(taxons) > 1:
-            # Get two taxons
-            first = taxons.pop()
-            second = taxons.pop()
+        try:
+            first = next(taxons)
+        except StopIteration:
+            return None
 
-            # Get their occurence in the levels/euler_tour array
-            first_index = self.first_occurences[first]
-            second_index = self.first_occurences[second]
+        level_of_higest_join, taxon_id = reduce(self._calc_lca_pair, taxons, (level_of_highest_join, first))
+        taxon = self.tree.taxons[taxon_id]
 
-            #print("DEBUG:", file=sys.stderr)
-            #print("LCA BY {} AND {} ".format(
-                #self.tree.taxons[self.euler_tour[first_index]].taxon_id,
-                #self.tree.taxons[self.euler_tour[second_index]].taxon_id
-            #), file=sys.stderr)
-
-            # Calculate the index of their LCA
-            rmq_index = self.get_rmq(first_index, second_index)
-
-            #print("LCA BY IS {} AT LEVEL {} ".format(
-                #self.tree.taxons[self.euler_tour[rmq_index]].taxon_id,
-                #self.levels[rmq_index]
-            #), file=sys.stderr)
-
-            # We've found a split, take it and update the highest_join level
-            if rmq_index != first_index and rmq_index != second_index:
-                lca_index = rmq_index
-                level_of_highest_join = self.levels[rmq_index]
-            else:
-                # We're on a single lineage here, take the bottom one
-                if rmq_index == first_index:
-                    lca_index = second_index
-                elif rmq_index == second_index:
-                    lca_index = first_index
-
-                # Don't go lower than the max join though
-                if self.levels[lca_index] > level_of_highest_join:
-                    lca_index = rmq_index
-
-            taxons.append(self.euler_tour[lca_index])
-
-            #print("Found LCA: {}".format(self.euler_tour[lca_index]), file=sys.stderr)
-            #print("Level of highest join: {}".format(level_of_highest_join), file=sys.stderr)
-            #print(file=sys.stderr)
-
-        result = self.tree.taxons[taxons.pop()]
-
-        return result.map_to_valid_taxon(allow_no_rank=allow_no_rank).taxon_id
+        return taxon.map_to_valid_taxon(allow_no_rank=allow_no_rank).taxon_id
 
 
     def get_rmq(self, start, end):
