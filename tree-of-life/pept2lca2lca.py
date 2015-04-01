@@ -28,7 +28,7 @@ else:
 
 
 def reduce_per_fasta(lines):
-    lca = calculator.calc_lca([int(line[2]) for line in lines])
+    lca = calculator.calc_lca([int(line[2]) for line in lines], allow_no_rank=False)
     taxon = calculator.tree.taxons[lca]
 
     return taxon
@@ -45,7 +45,7 @@ def parse(input_):
 
         # We want to check against a reference taxon
         if args.reference_taxon_id:
-            on_lineage = calculator.calc_lca([taxon.taxon_id, args.reference_taxon_id]) == args.reference_taxon_id
+            on_lineage = calculator.calc_lca([taxon.taxon_id, args.reference_taxon_id], allow_no_rank=True) == args.reference_taxon_id
             print(",{}".format(int(on_lineage)))
         else:
             print()
