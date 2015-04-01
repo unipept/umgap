@@ -156,6 +156,16 @@ class Taxon(JSONEncoder):
                     return self.parent.get_parent(allow_no_rank, allow_invalid)
 
 
+    def map_to_valid_taxon(self, allow_no_rank=True):
+        if not self.valid_taxon:
+            return self.get_parent(allow_no_rank=allow_no_rank, allow_invalid=False)
+        else:
+            if allow_no_rank or self.rank != "no rank":
+                return self
+            else:
+                return self.get_parent(allow_no_rank=False, allow_invalid=False)
+
+
     def get_lineage(self, allow_no_rank=True, allow_invalid=True):
         """Gets the lineage of a taxon to the root"""
 
