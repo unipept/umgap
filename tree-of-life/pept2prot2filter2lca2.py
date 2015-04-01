@@ -25,6 +25,8 @@ calculator = Tree_LCA_Calculator()
 print("fasta_header,taxon_id,taxon_name,taxon_rank", end="")
 if args.reference_taxon_id:
     print(",on_lineage")
+else:
+    print()
 
 
 def reduce_per_peptide(lines):
@@ -55,6 +57,8 @@ def parse(input_):
         if args.reference_taxon_id:
             on_lineage = calculator.calc_lca([taxon.taxon_id, args.reference_taxon_id]) == args.reference_taxon_id
             print(",{}".format(int(on_lineage)))
+        else:
+            print()
 
 
 # Skip the header
