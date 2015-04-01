@@ -30,7 +30,7 @@ else:
 
 
 def reduce_per_peptide(lines):
-    lca = calculator.calc_lca([int(line[3]) for line in lines], allow_no_rank=False)
+    lca = calculator.calc_lca([int(line[3]) for line in lines])
     return lca
 
 
@@ -39,7 +39,7 @@ def reduce_per_fasta(lines):
 
     lcas_per_peptide = (reduce_per_peptide(group) for group in peptide_groups)
 
-    lca = calculator.calc_lca(lcas_per_peptide, allow_no_rank=False)
+    lca = calculator.calc_lca(lcas_per_peptide)
     taxon = calculator.tree.taxons[lca]
 
     return taxon
@@ -55,7 +55,7 @@ def parse(input_):
 
         # We want to check against a reference taxon
         if args.reference_taxon_id:
-            on_lineage = calculator.calc_lca([taxon.taxon_id, args.reference_taxon_id]) == args.reference_taxon_id
+            on_lineage = calculator.calc_lca([taxon.taxon_id, args.reference_taxon_id], allow_no_rank=True) == args.reference_taxon_id
             print(",{}".format(int(on_lineage)))
         else:
             print()

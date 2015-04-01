@@ -28,7 +28,7 @@ else:
 
 
 def reduce_per_fasta(lines):
-    lca = calculator.calc_lca([int(line[2]) for line in lines], allow_no_rank=False)
+    lca = calculator.calc_lca([int(line[2]) for line in lines])
     taxon = calculator.tree.taxons[lca]
 
     return taxon
