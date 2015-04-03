@@ -18,6 +18,7 @@ usage() {
   exit 1
 }
 
+
 (($# != 1)) && usage
 
 ass_id=$1
@@ -29,6 +30,8 @@ dir="$tmp_dir/$ass_id"
 #rm -rf $dir
 mkdir -p $dir
 
+# get the taxon ID of the assembly
+tax_id=$(python ./entrez/ass2taxid.py $ass_id)
 
 #  get the complete sequence and process it with:
 #     - prot2pept
@@ -45,12 +48,10 @@ fi
 # analyse the complete sequence with and
 # check wether resulting taxons come from the correct lineage
 #     - pept2lca2lca
-unipept pept2lca -i "$dir/peptides.fst" | python3 pept2lca2lca2.py -c 400667
+unipept pept2lca -i "$dir/peptides.fst" | python3 pept2lca2lca.py -c $tax_id
 
 #     - pept2prot2filter2lca
-#unipept pept2prot -i "$dir/peptides.fst"| ./pept2prot2filter.sh "$dir/uniprot_protein_ids.txt" | python3 pept2prot2filter2lca2.py
+unipept pept2prot -i "$dir/peptides.fst"| ./pept2prot2filter.sh "$dir/uniprot_protein_ids.txt" | python3 pept2prot2filter2lca.py -c $tax_id
 
 
 # spit out some statistics about the found lcas
-
-
