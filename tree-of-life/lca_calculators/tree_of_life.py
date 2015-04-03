@@ -11,10 +11,8 @@ class Tree():
     """It's all about the tree"""
 
     def __init__(self):
-        #self.size = 11 # The maximum ID, including nones for easy querying by taxon_id
-        #self.real_size = 10 # The actual amount of taxons in the tree-of-life
-        self.size = 1500560 + 1 # The maximum ID, including nones for easy querying by taxon_id
-        self.real_size = 1157753 # The actual amount of taxons in the tree-of-life
+        self.size = 1638795 + 1 # The maximum ID, including nones for easy querying by taxon_id
+        self.real_size = 1272571 # The actual amount of taxons in the tree-of-life
         self.taxons = [None] * self.size
 
 
@@ -37,12 +35,8 @@ class Tree():
         def read_taxons_file():
             """Reads a taxon file and returns the tsv values as a splitted string"""
             with open(os.path.join(os.path.dirname(__file__), 'data/taxons.tsv')) as taxon_file:
-                # Skip the first two lines (`header` and `0 name 0 1`)
-                next(taxon_file)
-                next(taxon_file)
-
                 for line in taxon_file:
-                    yield line.split("\t")
+                    yield line.rstrip().split("\t")
 
         for line in read_taxons_file():
             self.taxons[int(line[0])] = Taxon(
@@ -50,7 +44,7 @@ class Tree():
                 line[1],
                 line[2],
                 int(line[3]),
-                int(line[4])
+                bool(ord(line[4]))
             )
 
 
