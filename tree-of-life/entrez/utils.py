@@ -6,6 +6,17 @@ from Bio import SeqIO
 from Bio import Entrez
 
 
+def get_taxon_id(assembly_id):
+    """Get the taxon ID for an assembly_id"""
+    url = ("ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/All/" +
+           "{}.assembly.txt".format(assembly_id))
+
+    resp = urllib.request.urlopen(url)
+    return [line.decode('utf-8').split()[-1]
+            for line in resp
+            if line.startswith(b'# Taxid')][0]
+
+
 def get_nucleotide_ids(assembly_id):
     """Get all the nucleotides for a projectid"""
 
