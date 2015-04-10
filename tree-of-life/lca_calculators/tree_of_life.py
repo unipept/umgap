@@ -3,6 +3,8 @@
 import os
 from json import JSONEncoder
 import pickle
+import time
+import sys
 
 CLASSES = ['no rank', 'superkingdom', 'kingdom', 'subkingdom', 'superphylum', 'phylum', 'subphylum', 'superclass', 'class', 'subclass', 'infraclass', 'superorder', 'order', 'suborder', 'infraorder', 'parvorder', 'superfamily', 'family', 'subfamily', 'tribe', 'subtribe', 'genus', 'subgenus', 'species group', 'species subgroup', 'species', 'subspecies', 'varietas', 'forma']
 
@@ -11,17 +13,32 @@ class Tree():
     """It's all about the tree"""
 
     def __init__(self):
-        self.size = 1638795 + 1 # The maximum ID, including nones for easy querying by taxon_id
-        self.real_size = 1272571 # The actual amount of taxons in the tree-of-life
-        self.taxons = [None] * self.size
+        with open(os.path.join(os.path.dirname(__file__), 'data/taxons.tsv')) as taxon_file:
+            for i, l in enumerate(taxon_file):
+                pass
+
+            self.size = int(l.split()[0])+1
+            self.real_size = i+1
+            self.taxons = [None] * self.size
+
+        self.from_taxons()
 
 
     def from_taxons(self):
         """Read the tree from the taxons file"""
         self.read_taxons()
+
+        # We cant put these two in the loop as all the parents and children
+        # need to have been added first
         self.add_taxon_children()
         self.add_taxon_parents()
+
+        for taxon in self.taxons:
+            self.add_taxon_valid_parents(taxon)
+            self.add_taxon_valid_ranked_parents(taxon)
+
         self.add_taxon_counts()
+
 
     def to_json(self, filename):
         """Writes the tree to JSON"""
@@ -37,6 +54,7 @@ class Tree():
             with open(os.path.join(os.path.dirname(__file__), 'data/taxons.tsv')) as taxon_file:
                 for line in taxon_file:
                     yield line.rstrip().split("\t")
+
 
         for line in read_taxons_file():
             self.taxons[int(line[0])] = Taxon(
@@ -54,11 +72,25 @@ class Tree():
             if taxon and taxon.taxon_id != taxon.parent_id:
                 self.taxons[taxon.parent_id].children.add(taxon)
 
+
     def add_taxon_parents(self):
         """Adds parents to the taxons"""
         for taxon in self.taxons:
             if taxon:
                 taxon.parent = self.taxons[taxon.parent_id]
+
+
+    def add_taxon_valid_parents(self, taxon):
+        """Adds a valid_parent_id to the taxons"""
+        if taxon:
+            taxon.valid_parent_id = taxon.get_parent(allow_invalid=False).taxon_id
+
+
+    def add_taxon_valid_ranked_parents(self, taxon):
+        """Adds a ranked_valid_parent_id to the taxons"""
+        if taxon:
+            taxon.valid_ranked_parent_id = taxon.get_parent(allow_no_rank=False, allow_invalid=False).taxon_id
+
 
     def add_taxon_counts(self):
         """Adds counts to the taxons"""
@@ -74,10 +106,16 @@ class Taxon(JSONEncoder):
         self.taxon_id = taxon_id
         self.name = name
         self.rank = rank
-        self.parent_id = parent_id
-        self.valid_taxon = valid_taxon
-        self.children = set()
+
         self.parent = None
+        self.children = set()
+
+        self.parent_id = parent_id
+        self.valid_parent_id = None
+        self.valid_ranked_parent_id = None
+
+        self.valid_taxon = valid_taxon
+
         self.count = 0
         self.self_count = 0
 
@@ -150,14 +188,17 @@ class Taxon(JSONEncoder):
                     return self.parent.get_parent(allow_no_rank, allow_invalid)
 
 
-    def map_to_valid_taxon(self, allow_no_rank=True):
+    def map_to_valid_taxon_id(self, allow_no_rank=True):
         if not self.valid_taxon:
-            return self.get_parent(allow_no_rank=allow_no_rank, allow_invalid=False)
-        else:
-            if allow_no_rank or self.rank != "no rank":
-                return self
+            if allow_no_rank:
+                return self.valid_parent_id
             else:
-                return self.get_parent(allow_no_rank=False, allow_invalid=False)
+                return self.valid_ranked_parent_id
+        else:
+            if allow_no_rank:
+                return self.taxon_id
+            else:
+                return self.valid_ranked_parent_id
 
 
     def get_lineage(self, allow_no_rank=True, allow_invalid=True):
@@ -194,6 +235,36 @@ class Taxon(JSONEncoder):
 def get_tree():
     """Creates or loads a tree object"""
 
+    starttime = time.time()
+    print("Building tree. Time: {}".format(starttime), file=sys.stderr)
+
     tree = Tree()
-    tree.from_taxons()
+
+    print("Built tree. Time: {}, time elapsed: {}".format(time.time(), time.time()-starttime), file=sys.stderr)
+    print("---", file=sys.stderr)
+
+    return tree
+
+
+def pickle_tree():
+    tree = get_tree()
+
+    starttime = time.time()
+    print("Pickling tree. Time: {}".format(starttime), file=sys.stderr)
+
+    pickle.dump(tree, open("tree.p", "wb"))
+
+    print("Pickled tree. Time: {}, time elapsed: {}".format(time.time(), time.time()-starttime), file=sys.stderr)
+    print("---", file=sys.stderr)
+
+
+def unpickle_tree():
+    starttime = time.time()
+    print("Unpickling tree. Time: {}".format(starttime), file=sys.stderr)
+
+    tree = pickle.load(open("tree.p", "rb"))
+
+    print("Unpickled tree. Time: {}, time elapsed: {}".format(time.time(), time.time()-starttime), file=sys.stderr)
+    print("---", file=sys.stderr)
+
     return tree
