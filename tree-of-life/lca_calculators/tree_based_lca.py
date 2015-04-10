@@ -100,13 +100,13 @@ class Tree_LCA_Calculator(LCA_Calculator):
         return level_of_highest_join, self.euler_tour[lca_index]
 
 
-    def calc_lca(self, taxons, allow_no_rank=False):
+    def calc_lca(self, taxon_ids, allow_no_rank=False):
         """Given a list of taxon ids, calculate the LCA"""
 
-        # Map sort to their first valid parent
-        taxons = (self.tree.taxons[taxon].get_parent(allow_no_rank=allow_no_rank, allow_invalid=False).taxon_id
-                  if not self.tree.taxons[taxon].valid_taxon else taxon
-                  for taxon in taxons)
+        # Map taxons their valid counterpart
+        taxon_ids = (self.tree.taxons[taxon_id].map_to_valid_taxon_id(allow_no_rank=allow_no_rank)
+                  for taxon_id in taxon_ids)
+
         #print("DEBUG:", file=sys.stderr)
         #print([self.tree.taxons[taxon].name for taxon in taxons], file=sys.stderr)
 
@@ -114,14 +114,14 @@ class Tree_LCA_Calculator(LCA_Calculator):
         level_of_highest_join = sys.maxsize
 
         try:
-            first = next(taxons)
+            first = next(taxon_ids)
         except StopIteration:
             return None
 
-        level_of_higest_join, taxon_id = reduce(self._calc_lca_pair, taxons, (level_of_highest_join, first))
+        level_of_higest_join, taxon_id = reduce(self._calc_lca_pair, taxon_ids, (level_of_highest_join, first))
         taxon = self.tree.taxons[taxon_id]
 
-        return taxon.map_to_valid_taxon(allow_no_rank=allow_no_rank).taxon_id
+        return taxon.map_to_valid_taxon_id(allow_no_rank=allow_no_rank)
 
 
     def get_rmq(self, start, end):
