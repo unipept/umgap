@@ -1,12 +1,16 @@
 """Objects to hold a tree"""
 
-import os
 from json import JSONEncoder
-import pickle
-import time
+import os
 import sys
+import time
+
+import numpy
 
 CLASSES = ['no rank', 'superkingdom', 'kingdom', 'subkingdom', 'superphylum', 'phylum', 'subphylum', 'superclass', 'class', 'subclass', 'infraclass', 'superorder', 'order', 'suborder', 'infraorder', 'parvorder', 'superfamily', 'family', 'subfamily', 'tribe', 'subtribe', 'genus', 'subgenus', 'species group', 'species subgroup', 'species', 'subspecies', 'varietas', 'forma']
+
+RMQLIB_PATH = os.path.join(os.path.dirname(__file__), 'vendor/librmq.o')
+DATA_DIR = os.path.join(os.path.dirname(__file__), ".npy")
 
 
 class Tree():
@@ -246,25 +250,34 @@ def get_tree():
     return tree
 
 
-def pickle_tree():
-    tree = get_tree()
+def serialize_tree(tree=None):
+    if not tree:
+        tree = get_tree()
 
     starttime = time.time()
-    print("Pickling tree. Time: {}".format(starttime), file=sys.stderr)
+    print("Serialize tree. Time: {}".format(starttime), file=sys.stderr)
 
-    pickle.dump(tree, open("tree.p", "wb"))
+    names = numpy.array([None] * tree.size)
+    ranks = numpy.array([None] * tree.size)
+    valids = numpy.array([None] * tree.size)
+    valid_parent_ids = numpy.array([None] * tree.size)
+    valid_ranked_parent_ids = numpy.array([None] * tree.size)
 
-    print("Pickled tree. Time: {}, time elapsed: {}".format(time.time(), time.time()-starttime), file=sys.stderr)
+    for taxon in tree.taxons:
+        if taxon:
+            names[taxon.taxon_id]                   = taxon.name
+            ranks[taxon.taxon_id]                   = taxon.rank
+            valids[taxon.taxon_id]                  = taxon.valid_taxon
+            valid_parent_ids[taxon.taxon_id]        = taxon.valid_parent_id
+            valid_ranked_parent_ids[taxon.taxon_id] = taxon.valid_ranked_parent_id
+
+    if not os.path.isdir(DATA_DIR):
+        os.makedirs(DATA_DIR)
+    numpy.save(os.path.join(DATA_DIR, "names.npy"), names)
+    numpy.save(os.path.join(DATA_DIR, "ranks.npy"), ranks)
+    numpy.save(os.path.join(DATA_DIR, "valids.npy"), valids)
+    numpy.save(os.path.join(DATA_DIR, "valid_parent_ids.npy"), valid_parent_ids)
+    numpy.save(os.path.join(DATA_DIR, "valid_ranked_parent_ids.npy"), valid_ranked_parent_ids)
+
+    print("Serialized tree. Time: {}, time elapsed: {}".format(time.time(), time.time()-starttime), file=sys.stderr)
     print("---", file=sys.stderr)
-
-
-def unpickle_tree():
-    starttime = time.time()
-    print("Unpickling tree. Time: {}".format(starttime), file=sys.stderr)
-
-    tree = pickle.load(open("tree.p", "rb"))
-
-    print("Unpickled tree. Time: {}, time elapsed: {}".format(time.time(), time.time()-starttime), file=sys.stderr)
-    print("---", file=sys.stderr)
-
-    return tree
