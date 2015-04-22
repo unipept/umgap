@@ -34,14 +34,16 @@ class Tree():
 
         # We cant put these two in the loop as all the parents and children
         # need to have been added first
-        self.add_taxon_children()
-        self.add_taxon_parents()
+        self.add_children_to_taxons()
+        self.add_parents_to_taxons()
 
         for taxon in self.taxons:
-            self.add_taxon_valid_parents(taxon)
-            self.add_taxon_valid_ranked_parents(taxon)
+            self.add_valid_parent_to_taxon(taxon)
+            self.add_valid_ranked_parent_to_taxon(taxon)
+            self.add_valid_taxon_to_taxon(taxon)
+            self.add_valid_ranked_taxon_to_taxon(taxon)
 
-        self.add_taxon_counts()
+        self.add_counts_to_taxons()
 
 
     def to_json(self, filename):
@@ -70,33 +72,46 @@ class Tree():
             )
 
 
-    def add_taxon_children(self):
+    def add_children_to_taxons(self):
         """Adds the children of each taxon"""
         for taxon in self.taxons:
             if taxon and taxon.taxon_id != taxon.parent_id:
                 self.taxons[taxon.parent_id].children.add(taxon)
 
 
-    def add_taxon_parents(self):
+    def add_parents_to_taxons(self):
         """Adds parents to the taxons"""
         for taxon in self.taxons:
             if taxon:
                 taxon.parent = self.taxons[taxon.parent_id]
 
 
-    def add_taxon_valid_parents(self, taxon):
+    def add_valid_parent_to_taxon(self, taxon):
         """Adds a valid_parent_id to the taxons"""
         if taxon:
             taxon.valid_parent_id = taxon.get_parent(allow_invalid=False).taxon_id
 
 
-    def add_taxon_valid_ranked_parents(self, taxon):
+    def add_valid_ranked_parent_to_taxon(self, taxon):
         """Adds a ranked_valid_parent_id to the taxons"""
         if taxon:
             taxon.valid_ranked_parent_id = taxon.get_parent(allow_no_rank=False, allow_invalid=False).taxon_id
 
 
-    def add_taxon_counts(self):
+    def add_valid_taxon_to_taxon(self, taxon):
+        """Adds a valid_parent_id to the taxons"""
+        if taxon:
+            taxon.valid_taxon_id = taxon.map_to_valid_taxon_id()
+
+
+    def add_valid_ranked_taxon_to_taxon(self, taxon):
+        """Adds a valid_parent_id to the taxons"""
+        if taxon:
+            taxon.valid_ranked_taxon_id = taxon.map_to_valid_taxon_id(allow_no_rank=False)
+
+
+
+    def add_counts_to_taxons(self):
         """Adds counts to the taxons"""
         self.taxons[1].add_counts()
 
@@ -117,6 +132,8 @@ class Taxon(JSONEncoder):
         self.parent_id = parent_id
         self.valid_parent_id = None
         self.valid_ranked_parent_id = None
+        self.valid_taxon_id = None
+        self.valid_ranked_taxon_id = None
 
         self.valid_taxon = valid_taxon
 
@@ -192,6 +209,10 @@ class Taxon(JSONEncoder):
                     return self.parent.get_parent(allow_no_rank, allow_invalid)
 
 
+    def is_ranked(self):
+        return self.rank != "no rank"
+
+
     def map_to_valid_taxon_id(self, allow_no_rank=True):
         if not self.valid_taxon:
             if allow_no_rank:
@@ -199,7 +220,7 @@ class Taxon(JSONEncoder):
             else:
                 return self.valid_ranked_parent_id
         else:
-            if allow_no_rank:
+            if allow_no_rank or taxon.is_ranked():
                 return self.taxon_id
             else:
                 return self.valid_ranked_parent_id
@@ -260,24 +281,24 @@ def serialize_tree(tree=None):
     names = numpy.array([None] * tree.size)
     ranks = numpy.array([None] * tree.size)
     valids = numpy.array([None] * tree.size)
-    valid_parent_ids = numpy.array([None] * tree.size)
-    valid_ranked_parent_ids = numpy.array([None] * tree.size)
+    valid_taxon_ids = numpy.array([None] * tree.size)
+    valid_ranked_taxon_ids = numpy.array([None] * tree.size)
 
     for taxon in tree.taxons:
         if taxon:
             names[taxon.taxon_id]                   = taxon.name
             ranks[taxon.taxon_id]                   = taxon.rank
             valids[taxon.taxon_id]                  = taxon.valid_taxon
-            valid_parent_ids[taxon.taxon_id]        = taxon.valid_parent_id
-            valid_ranked_parent_ids[taxon.taxon_id] = taxon.valid_ranked_parent_id
+            valid_taxon_ids[taxon.taxon_id]         = taxon.valid_taxon_id
+            valid_ranked_taxon_ids[taxon.taxon_id]  = taxon.valid_ranked_taxon_id
 
     if not os.path.isdir(DATA_DIR):
         os.makedirs(DATA_DIR)
     numpy.save(os.path.join(DATA_DIR, "names.npy"), names)
     numpy.save(os.path.join(DATA_DIR, "ranks.npy"), ranks)
     numpy.save(os.path.join(DATA_DIR, "valids.npy"), valids)
-    numpy.save(os.path.join(DATA_DIR, "valid_parent_ids.npy"), valid_parent_ids)
-    numpy.save(os.path.join(DATA_DIR, "valid_ranked_parent_ids.npy"), valid_ranked_parent_ids)
+    numpy.save(os.path.join(DATA_DIR, "valid_taxon_ids.npy"), valid_taxon_ids)
+    numpy.save(os.path.join(DATA_DIR, "valid_ranked_taxon_ids.npy"), valid_ranked_taxon_ids)
 
     print("Serialized tree. Time: {}, time elapsed: {}".format(time.time(), time.time()-starttime), file=sys.stderr)
     print("---", file=sys.stderr)
