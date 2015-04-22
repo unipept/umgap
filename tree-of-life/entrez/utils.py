@@ -27,7 +27,8 @@ def get_nucleotide_ids(assembly_id):
 
     return [line.decode('utf-8').split()[4]
             for line in resp
-            if not line.startswith(b'#')]
+            if not line.startswith(b'#')
+               and line.decode('utf-8').split()[4] != "na"]
 
 
 def get_nucleotide_features(nucleotide_id):
