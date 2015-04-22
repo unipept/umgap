@@ -23,16 +23,22 @@ class rmqinfo(ct.Structure):
 
 class Tree_LCA_Calculator(LCA_Calculator):
 
-    def __init__(self, serialize=True):
+    def __init__(self):
         super().__init__()
 
         if os.path.isdir(DATA_DIR):
-            self.from_npy()
+            starttime = time.time()
+            print("Getting data from disk. Time: {}".format(starttime), file=sys.stderr)
+            self.get_rmq_from_npy()
+            self.get_tree_from_npy()
+            print("Got data from disk: {}, time elapsed: {}".format(time.time(), time.time()-starttime), file=sys.stderr)
+            print("---", file=sys.stderr)
+
         else:
             print("Warning: no seralized data found. Building tree from taxons.tsv and serializing the result. Use serialize=False to not store the result to disk.", file=sys.stderr)
             self.from_tree()
-            if serialize:
-                self.store_data()
+            self.store_data()
+            self.get_tree_from_npy()
 
 
         self.librmq = ct.cdll.LoadLibrary(RMQLIB_PATH)
@@ -57,23 +63,19 @@ class Tree_LCA_Calculator(LCA_Calculator):
         print("---", file=sys.stderr)
 
 
-    def from_npy(self):
-        starttime = time.time()
-        print("Getting data from disk. Time: {}".format(starttime), file=sys.stderr)
-
-        # LCA data
+    def get_rmq_from_npy(self):
+        """Gets the needed npy data from the preprocessed RMQ"""
         self.euler_tour = numpy.load(os.path.join(DATA_DIR, "euler_tour.npy"))
         self.levels = numpy.load(os.path.join(DATA_DIR, "levels.npy"))
         self.first_occurences = numpy.load(os.path.join(DATA_DIR, "first_occurences.npy"))
 
-        # Tree data
+
+    def get_tree_from_npy(self):
+        """Gets the needed npy data from the preprocessed tree"""
         self.names = numpy.load(os.path.join(DATA_DIR, "names.npy"))
         self.ranks = numpy.load(os.path.join(DATA_DIR, "ranks.npy"))
-        self.valid_parent_ids = numpy.load(os.path.join(DATA_DIR, "valid_parent_ids.npy"))
-        self.valid_ranked_parent_ids = numpy.load(os.path.join(DATA_DIR, "valid_ranked_parent_ids.npy"))
-
-        print("Got data from disk: {}, time elapsed: {}".format(time.time(), time.time()-starttime), file=sys.stderr)
-        print("---", file=sys.stderr)
+        self.valid_taxon_ids = numpy.load(os.path.join(DATA_DIR, "valid_taxon_ids.npy"))
+        self.valid_ranked_taxon_ids = numpy.load(os.path.join(DATA_DIR, "valid_ranked_taxon_ids.npy"))
 
 
     def from_tree(self):
@@ -193,9 +195,10 @@ class Tree_LCA_Calculator(LCA_Calculator):
 
     def map_to_valid_taxon_id(self, taxon_id, allow_no_rank=False):
         if allow_no_rank:
-            return self.valid_parent_ids[taxon_id]
+            return self.valid_taxon_ids[taxon_id]
         else:
-            return self.valid_ranked_parent_ids[taxon_id]
+            return self.valid_ranked_taxon_ids[taxon_id]
+
 
     def get_rmq(self, start, end):
         return self.librmq.rm_query(self.rmqinfo, start, end)
