@@ -84,9 +84,9 @@ class Tree_LCA_Calculator(LCA_Calculator):
         starttime = time.time()
         print("Preprocessing LCA arrays. Time: {}".format(starttime), file=sys.stderr)
 
-        self.euler_tour = numpy.array([None] * (2*self.tree.real_size - 1))
-        self.levels = numpy.array([None] * (2*self.tree.real_size - 1))
-        self.first_occurences = numpy.array([None] * self.tree.size)
+        self.euler_tour = numpy.array([0] * (2*self.tree.real_size - 1), dtype=numpy.intc)
+        self.levels = numpy.array([0] * (2*self.tree.real_size - 1), dtype=numpy.intc)
+        self.first_occurences = numpy.array([0] * self.tree.size, dtype=numpy.intc)
 
         self.dfs_run(self.tree.taxons[1], 0, 0)
 
@@ -99,8 +99,12 @@ class Tree_LCA_Calculator(LCA_Calculator):
         starttime = time.time()
         print("Preprocessing RMQ. Time: {}".format(starttime), file=sys.stderr)
 
+        levelsp = numpy.ctypeslib.ndpointer(dtype=numpy.intc, ndim=1, flags='C_CONTIGUOUS')
+
         self.librmq.rm_query_preprocess.restype = ct.POINTER(rmqinfo)
-        self.rmqinfo = self.librmq.rm_query_preprocess(ct.c_void_p(self.levels.ctypes.data), len(self.levels))
+        self.librmq.rm_query_preprocess.argtypes = [levelsp, ct.c_int]
+
+        self.rmqinfo = self.librmq.rm_query_preprocess(self.levels, len(self.levels))
 
         print("Preprocessed RMQ. Time: {}, time elapsed: {}".format(time.time(), time.time()-starttime), file=sys.stderr)
         print("---", file=sys.stderr)
@@ -201,6 +205,8 @@ class Tree_LCA_Calculator(LCA_Calculator):
 
 
     def get_rmq(self, start, end):
+        self.librmq.rm_query.restype = ct.c_int
+        self.librmq.rm_query.argtypes = [ct.POINTER(rmqinfo), ct.c_int, ct.c_int]
         return self.librmq.rm_query(self.rmqinfo, start, end)
 
 
