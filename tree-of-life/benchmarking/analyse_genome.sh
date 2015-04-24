@@ -24,7 +24,8 @@ usage() {
 (($# != 1)) && usage
 
 ass_id=$1
-dir=$(mktemp -d -t $ass_id)
+dir=$(mktemp -d -t "$ass_id.XXXXXXXXX")
+echo $dir
 
 #rm -rf $dir
 mkdir -p $dir
