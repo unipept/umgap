@@ -10,7 +10,7 @@ import numpy
 CLASSES = ['no rank', 'superkingdom', 'kingdom', 'subkingdom', 'superphylum', 'phylum', 'subphylum', 'superclass', 'class', 'subclass', 'infraclass', 'superorder', 'order', 'suborder', 'infraorder', 'parvorder', 'superfamily', 'family', 'subfamily', 'tribe', 'subtribe', 'genus', 'subgenus', 'species group', 'species subgroup', 'species', 'subspecies', 'varietas', 'forma']
 
 RMQLIB_PATH = os.path.join(os.path.dirname(__file__), 'vendor/librmq.o')
-DATA_DIR = os.path.join(os.path.dirname(__file__), ".npy")
+DATA_DIR = os.path.join(os.path.expanduser('~'), ".rmqnpydata")
 
 
 class Tree():
@@ -220,7 +220,7 @@ class Taxon(JSONEncoder):
             else:
                 return self.valid_ranked_parent_id
         else:
-            if allow_no_rank or taxon.is_ranked():
+            if allow_no_rank or self.is_ranked():
                 return self.taxon_id
             else:
                 return self.valid_ranked_parent_id
