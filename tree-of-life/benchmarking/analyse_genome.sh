@@ -24,10 +24,7 @@ usage() {
 (($# != 1)) && usage
 
 ass_id=$1
-tmp_dir="/tmp"
-
-# Create dirs
-dir="$tmp_dir/$ass_id"
+dir=$(mktemp -d -t $ass_id)
 
 #rm -rf $dir
 mkdir -p $dir
@@ -38,14 +35,10 @@ tax_id=$(python3 ./entrez/ass2taxid.py $ass_id)
 #  get the complete sequence and process it with:
 #     - prot2pept
 #     - peptfilter
-if [ ! -f "$dir/peptides.fst" ]; then
-  python3 ./entrez/ass2pept.py $ass_id > "$dir/peptides.fst"
-fi
+python3 ./entrez/ass2pept.py $ass_id > "$dir/peptides.fst"
 
 # get the proteins uniprot ids which occur in the genome
-#if [ ! -f "$dir/uniprot_protein_ids.txt" ]; then
-#  python3 ./entrez/ass2seqacc.py $ass_id | entrez/seqacc2protid.sh > "$dir/uniprot_protein_ids.txt"
-#fi
+python3 ./entrez/ass2seqacc.py $ass_id | entrez/seqacc2protid.sh > "$dir/uniprot_protein_ids.txt"
 
 # analyse the complete sequence with and
 # check wether resulting taxons come from the correct lineage
