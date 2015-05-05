@@ -23,23 +23,23 @@ usage() {
 
 (($# != 1)) && usage
 
-ass_id=$1
-dir=$(mktemp -d -t "$ass_id.XXXXXXXXX")
+asm_id=$1
+dir=$(mktemp -d -t "$asm_id.XXXXXXXXX")
 echo $dir
 
 #rm -rf $dir
 mkdir -p $dir
 
 # get the taxon ID of the assembly
-tax_id=$(python3 ./entrez/ass2taxid.py $ass_id)
+tax_id=$(python3 ./entrez/asm2taxid.py $asm_id)
 
 #  get the complete sequence and process it with:
 #     - prot2pept
 #     - peptfilter
-python3 ./entrez/ass2pept.py $ass_id > "$dir/peptides.fst"
+python3 ./entrez/asm2pept.py $asm_id > "$dir/peptides.fst"
 
 # get the proteins uniprot ids which occur in the genome
-python3 ./entrez/ass2seqacc.py $ass_id | entrez/seqacc2protid.sh > "$dir/uniprot_protein_ids.txt"
+python3 ./entrez/asm2seqacc.py $asm_id | entrez/seqacc2protid.sh > "$dir/uniprot_protein_ids.txt"
 
 # analyse the complete sequence with and
 # check wether resulting taxons come from the correct lineage
