@@ -25,7 +25,7 @@ usage() {
 
 asm_id=$1
 
-tmpdir=$(mktemp -d -t "$asm_id")
+tmpdir=$(mktemp -d -t "$asm_id.XXXXXXXXXX")
 datadir=$tmpdir
 
 if [ "$2" == "-d" ]
@@ -44,7 +44,6 @@ mkdir -p $tmpdir
 echo "Writing data to $datadir"
 echo "Writing tempdata to $tmpdir"
 
-exit
 
 # get the taxon ID of the assembly
 tax_id=$(python3 ./entrez/asm2taxid.py $asm_id)
