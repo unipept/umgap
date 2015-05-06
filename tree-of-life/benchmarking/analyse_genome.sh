@@ -16,7 +16,7 @@
 
 
 usage() {
-  echo "Usage: $0 [refseq assembly id] [-d dir]"
+  echo "Usage: $0 [refseq assembly id] [-d datadir] [-t tempdir]"
   exit 1
 }
 
@@ -24,13 +24,18 @@ usage() {
 (($# < 1)) && usage
 
 asm_id=$1
-tmpdir=$(mktemp -d -t "$asm_id.XXXXXXXXX")
+
+tmpdir=$(mktemp -d -t "$asm_id")
+datadir=$tmpdir
 
 if [ "$2" == "-d" ]
 then
-  datadir=$3
-else
-  datadir=$tmpdir
+  datadir="$3/$asm_id"
+fi
+
+if [ "$4" == "-t" ]
+then
+  tmpdir="$5/$asm_id"
 fi
 
 mkdir -p $datadir
@@ -39,6 +44,7 @@ mkdir -p $tmpdir
 echo "Writing data to $datadir"
 echo "Writing tempdata to $tmpdir"
 
+exit
 
 # get the taxon ID of the assembly
 tax_id=$(python3 ./entrez/asm2taxid.py $asm_id)
