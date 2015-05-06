@@ -8,4 +8,6 @@
 #PBS -m be
 #
 
-./benchmarking/analyse_genome.sh $1
+cd ..
+
+./benchmarking/analyse_genome.sh $1 -d $VSC_DATA -t $TMPDIR
