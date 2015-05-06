@@ -16,19 +16,29 @@
 
 
 usage() {
-  echo "Usage: $0 [refseq assembly id]"
+  echo "Usage: $0 [refseq assembly id] [-d dir]"
   exit 1
 }
 
 
-(($# != 1)) && usage
+(($# < 1)) && usage
 
 asm_id=$1
-dir=$(mktemp -d -t "$asm_id.XXXXXXXXX")
-echo $dir
+tmpdir=$(mktemp -d -t "$asm_id.XXXXXXXXX")
 
-#rm -rf $dir
-mkdir -p $dir
+if [ "$2" == "-d" ]
+then
+  datadir=$3
+else
+  datadir=$tmpdir
+fi
+
+mkdir -p $datadir
+mkdir -p $tmpdir
+
+echo "Writing data to $datadir"
+echo "Writing tempdata to $tmpdir"
+
 
 # get the taxon ID of the assembly
 tax_id=$(python3 ./entrez/asm2taxid.py $asm_id)
@@ -36,18 +46,21 @@ tax_id=$(python3 ./entrez/asm2taxid.py $asm_id)
 #  get the complete sequence and process it with:
 #     - prot2pept
 #     - peptfilter
-python3 ./entrez/asm2pept.py $asm_id > "$dir/peptides.fst"
+python3 ./entrez/asm2pept.py $asm_id > "$tmpdir/peptides.fst"
 
 # get the proteins uniprot ids which occur in the genome
-python3 ./entrez/asm2seqacc.py $asm_id | entrez/seqacc2protid.sh > "$dir/uniprot_protein_ids.txt"
+python3 ./entrez/asm2seqacc.py $asm_id | entrez/seqacc2protid.sh > "$datadir/uniprot_protein_ids.txt"
 
 # analyse the complete sequence with and
 # check wether resulting taxons come from the correct lineage
 #     - pept2lca2lca
-unipept pept2lca -i "$dir/peptides.fst" | python3 pept2lca2lca.py -c $tax_id > "$dir/pept2lca2lca.fst"
+unipept pept2lca -i "$tmpdir/peptides.fst" | tee "$datadir/pept2lca.fst" | python3 pept2lca2lca.py -c $tax_id > "$datadir/pept2lca2lca.fst"
 
 #     - pept2prot2filter2lca
-#unipept pept2prot -i "$dir/peptides.fst"| ./pept2prot2filter.sh "$dir/uniprot_protein_ids.txt" | python3 pept2prot2filter2lca.py -c $tax_id > "$dir/pept2prot2filter2lca.fst"
+#unipept pept2prot -i "$tmpdir/peptides.fst"| ./pept2prot2filter.sh "$tmpdir/uniprot_protein_ids.txt" | python3 pept2prot2filter2lca.py -c $tax_id > "$datadir/pept2prot2filter2lca.fst"
 
 
 # spit out some statistics about the found lcas
+
+
+#rm -rf $tmpdir
