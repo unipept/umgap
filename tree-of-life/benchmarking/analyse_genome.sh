@@ -14,7 +14,6 @@
 #  checks wether resulting taxons come from the correct lineage and reports how many do
 #  spits out some statistics about the found lcas
 
-
 usage() {
   echo "Usage: $0 [refseq assembly id] [-d datadir] [-t tempdir]"
   exit 1
@@ -43,7 +42,6 @@ mkdir -p $tmpdir
 
 echo "Writing data to $datadir"
 echo "Writing tempdata to $tmpdir"
-
 
 # get the taxon ID of the assembly
 tax_id=$(python3 ./entrez/asm2taxid.py $asm_id)
