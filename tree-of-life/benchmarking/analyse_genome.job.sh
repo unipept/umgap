@@ -8,8 +8,8 @@
 #PBS -m be
 #
 
-module load Ruby
-module load Python
+module load Ruby/2.2.1-intel-2014b
+module load Python/3.3.2-ictce-4.1.13
 
 # make sure $PBS_ARRAYID is set, to avoid surprises
 if [ -z "$PBS_ARRAYID" ]
@@ -21,6 +21,8 @@ fi
 cd ..
 
 INPUTS_LIST_FILE=$HOME/metagenomics-scripts/tree-of-life/benchmarking/data/complete_assemblies.tsv
-INPUT_LINE=`sed -n "${PBS_ARRAYID}p" $INPUTS_LIST_FILE`
+INPUT_LINE=$(sed -n "${PBS_ARRAYID}p" $INPUTS_LIST_FILE)
+ASM_COL=$(echo $INPUT_LINE | awk -F\t '{print $9}')
+ASM_ID=$(echo $NINTH_COL | sed 's/ .*//')
 
-./benchmarking/analyse_genome.sh $1 -d $VSC_DATA -t $TMPDIR
+./benchmarking/analyse_genome.sh $ASM_ID -d $VSC_DATA -t $TMPDIR
