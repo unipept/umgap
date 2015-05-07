@@ -14,28 +14,43 @@
 #  checks wether resulting taxons come from the correct lineage and reports how many do
 #  spits out some statistics about the found lcas
 
+set -eu
+
 usage() {
-  echo "Usage: $0 [refseq assembly id] [-d datadir] [-t tempdir]"
+  echo "Usage: $0 [refseq assembly id] [-d datadir] [-t tempdir] [-r rmqdatadir]"
   exit 1
 }
 
 
 (($# < 1)) && usage
 
-asm_id=$1
+# Save directory of the analysis script to know where to find the others
+dir="$(dirname "$0")"
 
+asm_id=$1 && shift
+
+# Create a tmpdir and a datadir
 tmpdir=$(mktemp -d -t "$asm_id.XXXXXXXXXX")
 datadir=$tmpdir
+rmqdatadir=
 
-if [ "$2" == "-d" ]
-then
-  datadir="$3/$asm_id"
-fi
-
-if [ "$4" == "-t" ]
-then
-  tmpdir="$5/$asm_id"
-fi
+while getopts "d:t:r:" opt
+do
+  case $opt in
+    d)
+      datadir="$OPTARG/$asm_id"
+      ;;
+    t)
+      tmpdir="$OPTARG/$asm_id"
+      ;;
+    r)
+      rmqdatadir="-r $OPTARG"
+      ;;
+    ?)
+      usage
+      ;;
+  esac
+done
 
 mkdir -p $datadir
 mkdir -p $tmpdir
@@ -44,23 +59,30 @@ echo "Writing data to $datadir"
 echo "Writing tempdata to $tmpdir"
 
 # get the taxon ID of the assembly
-tax_id=$(python3 ./entrez/asm2taxid.py $asm_id)
+tax_id=$(python3 $dir/../entrez/asm2taxid.py $asm_id)
 
 #  get the complete sequence and process it with:
 #     - prot2pept
 #     - peptfilter
-python3 ./entrez/asm2pept.py $asm_id > "$tmpdir/peptides.fst"
+
+if [ ! -f "$tmpdir/peptides.fst" ]
+then
+  python3 $dir/../entrez/asm2pept.py $asm_id > "$tmpdir/peptides.fst"
+fi
 
 # get the proteins uniprot ids which occur in the genome
-python3 ./entrez/asm2seqacc.py $asm_id | entrez/seqacc2protid.sh > "$datadir/uniprot_protein_ids.txt"
+if [ ! -f "$tmpdir/uniprot_protein_ids.txt" ]
+then
+  python3 $dir/../entrez/asm2seqacc.py $asm_id | $dir/../entrez/seqacc2protid.sh > "$tmpdir/uniprot_protein_ids.txt"
+fi
 
 # analyse the complete sequence with and
 # check wether resulting taxons come from the correct lineage
 #     - pept2lca2lca
-unipept pept2lca -i "$tmpdir/peptides.fst" | tee "$datadir/pept2lca.fst" | python3 pept2lca2lca.py -c $tax_id > "$datadir/pept2lca2lca.fst"
+unipept pept2lca -i "$tmpdir/peptides.fst" | tee "$datadir/pept2lca.fst" | python3 $dir/../pept2lca2lca.py -c $tax_id "$rmqdatadir" > "$datadir/pept2lca2lca.fst"
 
 #     - pept2prot2filter2lca
-#unipept pept2prot -i "$tmpdir/peptides.fst"| ./pept2prot2filter.sh "$tmpdir/uniprot_protein_ids.txt" | python3 pept2prot2filter2lca.py -c $tax_id > "$datadir/pept2prot2filter2lca.fst"
+#unipept pept2prot -i "$tmpdir/peptides.fst"| $dir/.././pept2prot2filter.sh "$tmpdir/uniprot_protein_ids.txt" | python3 $dir/../pept2prot2filter2lca.py -c $tax_id "$rmqdatadir" > "$datadir/pept2prot2filter2lca.fst"
 
 
 # spit out some statistics about the found lcas

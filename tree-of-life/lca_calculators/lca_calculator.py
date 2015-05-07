@@ -2,7 +2,7 @@ import time
 import sys
 import os
 
-from lca_calculators.tree_of_life import get_tree, DATA_DIR
+from lca_calculators.tree_of_life import get_tree, DEFAULT_DATA_DIR
 
 
 class LCA_Calculator:

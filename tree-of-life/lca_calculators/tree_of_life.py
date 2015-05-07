@@ -10,7 +10,7 @@ import numpy
 CLASSES = ['no rank', 'superkingdom', 'kingdom', 'subkingdom', 'superphylum', 'phylum', 'subphylum', 'superclass', 'class', 'subclass', 'infraclass', 'superorder', 'order', 'suborder', 'infraorder', 'parvorder', 'superfamily', 'family', 'subfamily', 'tribe', 'subtribe', 'genus', 'subgenus', 'species group', 'species subgroup', 'species', 'subspecies', 'varietas', 'forma']
 
 RMQLIB_PATH = os.path.join(os.path.dirname(__file__), 'vendor/librmq.o')
-DATA_DIR = os.path.join(os.path.expanduser('~'), ".rmqnpydata")
+DEFAULT_DATA_DIR = os.path.join(os.path.expanduser('~'), ".rmqnpydata")
 
 
 class Tree():
@@ -271,7 +271,7 @@ def get_tree():
     return tree
 
 
-def serialize_tree(tree=None):
+def serialize_tree(tree=None, rmqdatadir=DEFAULT_DATA_DIR):
     if not tree:
         tree = get_tree()
 
@@ -292,13 +292,13 @@ def serialize_tree(tree=None):
             valid_taxon_ids[taxon.taxon_id]         = taxon.valid_taxon_id
             valid_ranked_taxon_ids[taxon.taxon_id]  = taxon.valid_ranked_taxon_id
 
-    if not os.path.isdir(DATA_DIR):
-        os.makedirs(DATA_DIR)
-    numpy.save(os.path.join(DATA_DIR, "names.npy"), names)
-    numpy.save(os.path.join(DATA_DIR, "ranks.npy"), ranks)
-    numpy.save(os.path.join(DATA_DIR, "valids.npy"), valids)
-    numpy.save(os.path.join(DATA_DIR, "valid_taxon_ids.npy"), valid_taxon_ids)
-    numpy.save(os.path.join(DATA_DIR, "valid_ranked_taxon_ids.npy"), valid_ranked_taxon_ids)
+    if not os.path.isdir(rmqdatadir):
+        os.makedirs(rmqdatadir)
+    numpy.save(os.path.join(rmqdatadir, "names.npy"), names)
+    numpy.save(os.path.join(rmqdatadir, "ranks.npy"), ranks)
+    numpy.save(os.path.join(rmqdatadir, "valids.npy"), valids)
+    numpy.save(os.path.join(rmqdatadir, "valid_taxon_ids.npy"), valid_taxon_ids)
+    numpy.save(os.path.join(rmqdatadir, "valid_ranked_taxon_ids.npy"), valid_ranked_taxon_ids)
 
     print("Serialized tree. Time: {}, time elapsed: {}".format(time.time(), time.time()-starttime), file=sys.stderr)
     print("---", file=sys.stderr)

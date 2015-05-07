@@ -8,7 +8,7 @@ import ctypes as ct
 
 from lca_calculators.tree_of_life import get_tree, serialize_tree, RMQLIB_PATH
 from lca_calculators.lca_calculator import LCA_Calculator
-from lca_calculators.lca_calculator import DATA_DIR
+from lca_calculators.lca_calculator import DEFAULT_DATA_DIR
 
 
 class rmqinfo(ct.Structure):
@@ -23,10 +23,12 @@ class rmqinfo(ct.Structure):
 
 class Tree_LCA_Calculator(LCA_Calculator):
 
-    def __init__(self):
+    def __init__(self, rmqdatadir=None):
         super().__init__()
 
-        if os.path.isdir(DATA_DIR):
+        self.rmqdatadir = rmqdatadir or DEFAULT_DATA_DIR
+
+        if os.path.isdir(self.rmqdatadir):
             starttime = time.time()
             print("Getting data from disk. Time: {}".format(starttime), file=sys.stderr)
             self.get_rmq_from_npy()
@@ -50,14 +52,14 @@ class Tree_LCA_Calculator(LCA_Calculator):
         print("Storing data to disk. Time: {}".format(starttime), file=sys.stderr)
 
         # Serialize the tree
-        serialize_tree(self.tree)
+        serialize_tree(self.tree, self.rmqdatadir)
 
         # Create the arrays
-        if not os.path.isdir(DATA_DIR):
-            os.makedirs(DATA_DIR)
-        numpy.save(os.path.join(DATA_DIR, "euler_tour.npy"), self.euler_tour)
-        numpy.save(os.path.join(DATA_DIR, "levels.npy"), self.levels)
-        numpy.save(os.path.join(DATA_DIR, "first_occurences.npy"), self.first_occurences)
+        if not os.path.isdir(self.rmqdatadir):
+            os.makedirs(self.rmqdatadir)
+        numpy.save(os.path.join(self.rmqdatadir, "euler_tour.npy"), self.euler_tour)
+        numpy.save(os.path.join(self.rmqdatadir, "levels.npy"), self.levels)
+        numpy.save(os.path.join(self.rmqdatadir, "first_occurences.npy"), self.first_occurences)
 
         print("Stored data to disk: {}, time elapsed: {}".format(time.time(), time.time()-starttime), file=sys.stderr)
         print("---", file=sys.stderr)
@@ -65,17 +67,17 @@ class Tree_LCA_Calculator(LCA_Calculator):
 
     def get_rmq_from_npy(self):
         """Gets the needed npy data from the preprocessed RMQ"""
-        self.euler_tour = numpy.load(os.path.join(DATA_DIR, "euler_tour.npy"))
-        self.levels = numpy.load(os.path.join(DATA_DIR, "levels.npy"))
-        self.first_occurences = numpy.load(os.path.join(DATA_DIR, "first_occurences.npy"))
+        self.euler_tour = numpy.load(os.path.join(self.rmqdatadir, "euler_tour.npy"))
+        self.levels = numpy.load(os.path.join(self.rmqdatadir, "levels.npy"))
+        self.first_occurences = numpy.load(os.path.join(self.rmqdatadir, "first_occurences.npy"))
 
 
     def get_tree_from_npy(self):
         """Gets the needed npy data from the preprocessed tree"""
-        self.names = numpy.load(os.path.join(DATA_DIR, "names.npy"))
-        self.ranks = numpy.load(os.path.join(DATA_DIR, "ranks.npy"))
-        self.valid_taxon_ids = numpy.load(os.path.join(DATA_DIR, "valid_taxon_ids.npy"))
-        self.valid_ranked_taxon_ids = numpy.load(os.path.join(DATA_DIR, "valid_ranked_taxon_ids.npy"))
+        self.names = numpy.load(os.path.join(self.rmqdatadir, "names.npy"))
+        self.ranks = numpy.load(os.path.join(self.rmqdatadir, "ranks.npy"))
+        self.valid_taxon_ids = numpy.load(os.path.join(self.rmqdatadir, "valid_taxon_ids.npy"))
+        self.valid_ranked_taxon_ids = numpy.load(os.path.join(self.rmqdatadir, "valid_ranked_taxon_ids.npy"))
 
 
     def from_tree(self):
