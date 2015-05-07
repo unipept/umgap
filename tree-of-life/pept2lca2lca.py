@@ -15,10 +15,12 @@ from lca_calculators.tree_based_lca import Tree_LCA_Calculator
 # Input argument parsing
 parser = argparse.ArgumentParser(description='Calculate the LCAs for a given fastafile after pept2lca')
 parser.add_argument('-c', '--check-against', dest='reference_taxon_id', type=int, help='check against a taxon_id')
+parser.add_argument('-r', '--rmqdatadir', dest='rmqdatadir', type=str,
+                    help='specify a directory to contain the serialized data')
 args = parser.parse_args()
 
 
-calculator = Tree_LCA_Calculator()
+calculator = Tree_LCA_Calculator(args.rmqdatadir)
 
 print("fasta_header,taxon_id,taxon_name,taxon_rank", end="")
 if args.reference_taxon_id:
