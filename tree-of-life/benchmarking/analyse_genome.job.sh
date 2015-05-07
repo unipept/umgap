@@ -27,4 +27,4 @@ INPUTS_LIST_FILE=$HOME/unipept-metagenomics-scripts/tree-of-life/benchmarking/da
 ASM_ID=$(sed -n "${PBS_ARRAYID}p" $INPUTS_LIST_FILE | awk -F'\t' '{print $9}' | sed 's/ .*//')
 
 cd $HOME/unipept-metagenomics-scripts/tree-of-life
-./benchmarking/analyse_genome.sh $ASM_ID -d $VSC_DATA -t $TMPDIR
+./benchmarking/analyse_genome.sh $ASM_ID -d $VSC_DATA -t $TMPDIR -r "$VSC_SCRATCH/.rmqdatadir"
