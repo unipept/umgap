@@ -88,10 +88,10 @@ then
   echo "No uniprot ids found, downloading."
   python3 $dir/../entrez/asm2seqacc.py $asm_id | python3 $dir/../entrez/seqacc2protid.py > "$tmpdir/uniprot_protein_ids.txt"
 
-  # Check if the file isn't empty
+  # Check if the file is still empty; no translation could be found.
   if [ ! -s "$tmpdir/uniprot_protein_ids.txt" ]
   then
-    echo "ERROR: It seems that the uniprot_protein_ids.txt file is empty. Pept2prot2filter has no use anymore now." >&2
+    echo "ERROR: It seems that the uniprot_protein_ids.txt file is still empty. Pept2prot2filter has no use anymore now." >&2
     exit 1
   fi
 fi
