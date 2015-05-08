@@ -17,7 +17,7 @@
 set -eu
 
 usage() {
-  echo "Usage: $0 [refseq assembly id] [-d datadir] [-t tempdir] [-r rmqdatadir]"
+  echo "Usage: $0 [refseq assembly id] [-d datadir] [-t tempdir] [-r rmqdatadir]" >&2
   exit 1
 }
 
@@ -85,7 +85,7 @@ unipept pept2lca -i "$tmpdir/peptides.fst" \
 
 #     - pept2prot2filter2lca
 unipept pept2prot -i "$tmpdir/peptides.fst" \
-  | $dir/.././pept2prot2filter.sh "$tmpdir/uniprot_protein_ids.txt" \
+  | $dir/../pept2prot2filter.sh "$tmpdir/uniprot_protein_ids.txt" \
   | python3 $dir/../pept2prot2filter2lca.py -c $tax_id $rmqdatadir > "$datadir/pept2prot2filter2lca.fst"
 
 
