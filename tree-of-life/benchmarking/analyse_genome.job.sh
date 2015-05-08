@@ -9,7 +9,7 @@
 #
 
 module load Ruby/2.2.1-intel-2014b
-module load Python/3.3.2-ictce-4.1.13
+module load Python/3.4.3-intel-2015a
 
 # Export gempath
 export PATH="$(ruby -rubygems -e 'puts Gem.user_dir')/bin:$PATH"
