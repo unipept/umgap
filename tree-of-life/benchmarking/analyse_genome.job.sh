@@ -8,7 +8,7 @@
 #PBS -m be
 #
 
-module load Ruby/2.2.1-intel-2014b
+module load Ruby/2.2.1-intel-2015a
 module load Python/3.4.3-intel-2015a
 
 # Export gempath
