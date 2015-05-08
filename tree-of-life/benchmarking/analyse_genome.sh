@@ -82,12 +82,12 @@ unipept pept2lca -i "$tmpdir/peptides.fst" \
 
 echo "Getting uniprot ids"
 # get the proteins uniprot ids which occur in the genome
-if [[ -s "$tmpdir/uniprot_protein_ids.txt" ]]
+if [ ! -s "$tmpdir/uniprot_protein_ids.txt" ]
 then
   python3 $dir/../entrez/asm2seqacc.py $asm_id | python3 $dir/../entrez/seqacc2protid.py > "$tmpdir/uniprot_protein_ids.txt"
 
   # Check if the file isn't empty
-  if [[ -s "$tmpdir/uniprot_protein_ids.txt" ]]
+  if [ -s "$tmpdir/uniprot_protein_ids.txt" ]
   then
     echo "ERROR: It seems that the uniprot_protein_ids.txt file is empty. Pept2prot2filter has no use anymore now." >&2
     exit 1
