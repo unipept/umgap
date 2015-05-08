@@ -66,7 +66,7 @@ tax_id=$(python3 $dir/../entrez/asm2taxid.py $asm_id)
 #     - peptfilter
 
 echo "Getting peptides"
-if [ ! -f "$tmpdir/peptides.fst" ]
+if [ ! -s "$tmpdir/peptides.fst" ]
 then
   python3 $dir/../entrez/asm2pept.py $asm_id > "$tmpdir/peptides.fst"
 fi
