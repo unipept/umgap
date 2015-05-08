@@ -79,10 +79,15 @@ fi
 # analyse the complete sequence with and
 # check wether resulting taxons come from the correct lineage
 #     - pept2lca2lca
-unipept pept2lca -i "$tmpdir/peptides.fst" | tee "$datadir/pept2lca.fst" | python3 $dir/../pept2lca2lca.py -c $tax_id "$rmqdatadir" > "$datadir/pept2lca2lca.fst"
+unipept pept2lca -i "$tmpdir/peptides.fst" \
+  | tee "$datadir/pept2lca.fst" \
+  | python3 $dir/../pept2lca2lca.py -c $tax_id "$rmqdatadir" > "$datadir/pept2lca2lca.fst"
 
 #     - pept2prot2filter2lca
-#unipept pept2prot -i "$tmpdir/peptides.fst"| $dir/.././pept2prot2filter.sh "$tmpdir/uniprot_protein_ids.txt" | python3 $dir/../pept2prot2filter2lca.py -c $tax_id "$rmqdatadir" > "$datadir/pept2prot2filter2lca.fst"
+unipept pept2prot -i "$tmpdir/peptides.fst" \
+  | $dir/.././pept2prot2filter.sh "$tmpdir/uniprot_protein_ids.txt" \
+  | tee "$datadir/pept2prot2filder.fst" \
+  | python3 $dir/../pept2prot2filter2lca.py -c $tax_id "$rmqdatadir" > "$datadir/pept2prot2filter2lca.fst"
 
 
 # spit out some statistics about the found lcas
