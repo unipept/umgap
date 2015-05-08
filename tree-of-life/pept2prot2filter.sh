@@ -5,6 +5,6 @@ usage(){
   exit 1
 }
 
-(($# != 2)) && usage
+(($# != 1)) && usage
 
 grep -v -f $1
