@@ -71,13 +71,6 @@ then
   python3 $dir/../entrez/asm2pept.py $asm_id > "$tmpdir/peptides.fst"
 fi
 
-echo "Getting uniprot ids"
-# get the proteins uniprot ids which occur in the genome
-if [ ! -f "$tmpdir/uniprot_protein_ids.txt" ]
-then
-  python3 $dir/../entrez/asm2seqacc.py $asm_id | $dir/../entrez/seqacc2protid.sh > "$tmpdir/uniprot_protein_ids.txt"
-fi
-
 # analyse the complete sequence with and
 # check wether resulting taxons come from the correct lineage
 #     - pept2lca2lca
@@ -85,6 +78,21 @@ echo "Executing pept2lca2lca"
 unipept pept2lca -i "$tmpdir/peptides.fst" \
   | tee "$datadir/pept2lca.fst" \
   | python3 $dir/../pept2lca2lca.py -c $tax_id $rmqdatadir > "$datadir/pept2lca2lca.fst"
+
+
+echo "Getting uniprot ids"
+# get the proteins uniprot ids which occur in the genome
+if [ ! -s "$tmpdir/uniprot_protein_ids.txt" ]
+then
+  python3 $dir/../entrez/asm2seqacc.py $asm_id | python3 $dir/../entrez/seqacc2protid.py > "$tmpdir/uniprot_protein_ids.txt"
+
+  # Check if the file isn't empty
+  if [ -s "$tmpdir/uniprot_protein_ids.txt" ]
+  then
+    echo "ERROR: It seems that the uniprot_protein_ids.txt file is empty. Pept2prot2filter has no use anymore now." >&2
+    exit 1
+  fi
+fi
 
 #     - pept2prot2filter2lca
 echo "Executing pept2prot2filter2lca"
