@@ -1,10 +1,10 @@
 #!/bin/sh
 #
 #
-#PBS -N debug
+#PBS -N normal
 #PBS -o output.file
 #PBS -e error.file
-#PBS -l walltime=0:59:58
+#PBS -l walltime=2:00:00
 #PBS -m be
 #
 
