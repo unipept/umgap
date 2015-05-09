@@ -7,11 +7,12 @@ usage() {
 
 (($# != 2)) && usage
 
+INPUTS_LIST_FILE=$HOME/unipept-metagenomics-scripts/tree-of-life/benchmarking/data/complete_assemblies.tsv
+
 for i in {$1..$2}
 do
 
   # Do some parsing based on the arrayid
-  INPUTS_LIST_FILE=$HOME/unipept-metagenomics-scripts/tree-of-life/benchmarking/data/complete_assemblies.tsv
   ASM_ID=$(sed -n "${i}p" $INPUTS_LIST_FILE | awk -F'\t' '{print $9}' | sed 's/ .*//')
 
   qsub ./benchmarking/analyse_genome.job.sh \
