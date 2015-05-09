@@ -25,8 +25,6 @@ class Tree():
             self.real_size = i+1
             self.taxons = [None] * self.size
 
-        self.from_taxons()
-
 
     def from_taxons(self):
         """Read the tree from the taxons file"""
@@ -158,10 +156,13 @@ class Taxon(JSONEncoder):
         """This must be the worst printer I've ever written."""
         f.write("""
 {{
-"id":{self.taxon_id},
-"name":"{self.name}",
+"id":{taxon_id},
+"name":"{name}",
 "children":[
-""".format(self=self).encode('utf-8'))
+""".format(
+        taxon_id=self.taxon_id,
+        name=self.name,
+    ).encode('utf-8'))
 
         for i, child in enumerate(self.children):
             child.to_json(f)
@@ -170,8 +171,13 @@ class Taxon(JSONEncoder):
 
         f.write("""
 ],
-"data":{{"count":{self.count},"self_count":{self.self_count},"valid_taxon":{self.valid_taxon},"rank":"{self.rank}"}}}}
-""".format(self=self).encode('utf-8'))
+"data":{{"count":{count},"self_count":{self_count},"valid_taxon":{valid_taxon},"rank":"{rank}"}}}}
+""".format(
+        count=self.count,
+        self_count=self.self_count,
+        valid_taxon=int(self.valid_taxon),
+        rank=self.rank,
+    ).encode('utf-8'))
 
 
     def get_parent(self, allow_no_rank=True, allow_invalid=True):
@@ -264,6 +270,7 @@ def get_tree():
     print("Building tree. Time: {}".format(starttime), file=sys.stderr)
 
     tree = Tree()
+    tree.from_taxons()
 
     print("Built tree. Time: {}, time elapsed: {}".format(time.time(), time.time()-starttime), file=sys.stderr)
     print("---", file=sys.stderr)
