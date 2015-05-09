@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -eu
+
 usage() {
   echo "Usage: $0 start stop" >&2
   exit 1
@@ -15,7 +17,7 @@ do
   # Do some parsing based on the arrayid
   ASM_ID=$(sed -n "${i}p" $INPUTS_LIST_FILE | awk -F'\t' '{print $9}' | sed 's/ .*//')
 
-  qsub ./benchmarking/analyse_genome.job.sh \
+  qsub ./analyse_genome.job.sh \
     -v asm_id=$ASM_ID \
     -N $ASM_ID \
     -o "$VSC_DATA/$ASM_ID/out.log" \
