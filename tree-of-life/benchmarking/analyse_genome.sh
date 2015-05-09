@@ -92,7 +92,7 @@ then
   if [ ! -s "$tmpdir/uniprot_protein_ids.txt" ]
   then
     echo "ERROR: It seems that the uniprot_protein_ids.txt file is still empty. Pept2prot2filter has no use anymore now." >&2
-    exit 1
+    exit
   fi
 fi
 
