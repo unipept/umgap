@@ -104,8 +104,4 @@ unipept pept2prot -i "$tmpdir/peptides.fst" \
   | tee "$datadir/pept2prot2filter.fst" \
   | python3 $dir/../pept2prot2filter2lca.py -c $tax_id $rmqdatadir > "$datadir/pept2prot2filter2lca.fst"
 
-
-# spit out some statistics about the found lcas
-
-
-#rm -rf $tmpdir
+echo "All done!"
