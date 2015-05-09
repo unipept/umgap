@@ -15,7 +15,7 @@ for i in $(seq $1 $2)
 do
 
   # Do some parsing based on the arrayid
-  ASM_ID=$(sed -n "${i}p" $INPUTS_LIST_FILE | awk -F'\t' '{print $9}' | sed 's/ .*//')
+  ASM_ID=$(sed -n "${i}p" $INPUTS_LIST_FILE | awk -F'\t' '{print $2}')
 
   qsub ./analyse_genome.job.sh \
     -v asm_id=$ASM_ID \
