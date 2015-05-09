@@ -14,7 +14,10 @@ or
 ```
     taxon1,count1
     taxon2,count2
-```"""
+```
+
+Usage: `cat id_file | python3 tax2tree.py resultfile.json`
+"""
 
 import sys
 
