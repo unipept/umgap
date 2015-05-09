@@ -11,7 +11,7 @@ usage() {
 
 INPUTS_LIST_FILE=$HOME/unipept-metagenomics-scripts/tree-of-life/benchmarking/data/complete_assemblies.tsv
 
-for i in {$1..$2}
+for i in $(seq $1 $2)
 do
 
   # Do some parsing based on the arrayid
