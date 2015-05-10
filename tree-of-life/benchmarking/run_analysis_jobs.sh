@@ -24,8 +24,8 @@ do
     qsub ./analyse_genome.job.sh \
       -v asm_id=$ASM_ID \
       -N $ASM_ID \
-      -o "$VSC_DATA/$ASM_ID/out.log" \
-      -e "$VSC_DATA/$ASM_ID/err.log" \
+      -o "$VSC_DATA_VO_USER/$ASM_ID/out.log" \
+      -e "$VSC_DATA_VO_USER/$ASM_ID/err.log" \
       $depend
   )
 
