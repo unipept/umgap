@@ -98,10 +98,10 @@ fi
 
 #     - pept2prot2filter2lca
 echo "Executing pept2prot2filter2lca"
-unipept pept2prot -i "$tmpdir/peptides.fst" \
-  | tee "$datadir/pept2prot.fst" \
+cat "$tmpdir/peptides.fst" \
+  | $dir/../commonpeptfilter.py "$datadir/pept2lca.fst" \
+  | unipept pept2prot \
   | $dir/../pept2prot2filter.sh "$tmpdir/uniprot_protein_ids.txt" \
-  | tee "$datadir/pept2prot2filter.fst" \
   | python3 $dir/../pept2prot2filter2lca.py -c $tax_id $rmqdatadir > "$datadir/pept2prot2filter2lca.fst"
 
 echo "All done!"
