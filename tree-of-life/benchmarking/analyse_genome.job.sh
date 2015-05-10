@@ -12,4 +12,4 @@ module load Biopython/1.65-intel-2015a-Python-3.4.3
 ASM_ID=${asm_id}
 
 cd $HOME/unipept-metagenomics-scripts/tree-of-life
-./benchmarking/analyse_genome.sh $ASM_ID -d $VSC_DATA -t $VSC_DATA -r "$VSC_SCRATCH/.rmqdatadir"
+./benchmarking/analyse_genome.sh $ASM_ID -d $VSC_DATA_VO_USER -t $VSC_DATA_VO_USER -r "$VSC_SCRATCH/.rmqdatadir"
