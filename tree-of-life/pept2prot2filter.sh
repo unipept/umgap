@@ -7,4 +7,4 @@ usage(){
 
 (($# != 1)) && usage
 
-grep -v -f $1
+grep -v -F -f $1
