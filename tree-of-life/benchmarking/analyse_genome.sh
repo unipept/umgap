@@ -99,7 +99,7 @@ fi
 #     - pept2prot2filter2lca
 echo "Executing pept2prot2filter2lca"
 cat "$tmpdir/peptides.fst" \
-  | $dir/../commonpeptfilter.py "$datadir/pept2lca.fst" \
+  | python3 $dir/../commonpeptfilter.py "$datadir/pept2lca.fst" \
   | unipept pept2prot \
   | $dir/../pept2prot2filter.sh "$tmpdir/uniprot_protein_ids.txt" \
   | python3 $dir/../pept2prot2filter2lca.py -c $tax_id $rmqdatadir > "$datadir/pept2prot2filter2lca.fst"
