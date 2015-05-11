@@ -98,10 +98,19 @@ fi
 
 #     - pept2prot2filter2lca
 echo "Executing pept2prot2filter2lca"
+
+# Divide peptides in common and not common peptides
 cat "$tmpdir/peptides.fst" \
-  | python3 $dir/../commonpeptfilter.py "$datadir/pept2lca.fst" \
-  | unipept pept2prot \
+  | python3 $dir/../commonpeptfilter.py "$datadir/pept2lca.fst" "$tmpdir/peptides.filteredout.fst" > "$tmpdir/peptides.filtered.fst"
+
+# Run pipeline
+unipept pept2prot -i "$tmpdir/peptides.filtered.fst" \
   | $dir/../pept2prot2filter.sh "$tmpdir/uniprot_protein_ids.txt" \
+  | {
+      read -r hdr;
+      sort -m - $"tmpdir/peptides.filteredout.fst" \
+        | cat <(echo $hdr) -
+    } \
   | python3 $dir/../pept2prot2filter2lca.py -c $tax_id $rmqdatadir > "$datadir/pept2prot2filter2lca.fst"
 
 echo "All done!"
