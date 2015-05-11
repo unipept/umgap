@@ -111,9 +111,9 @@ unipept pept2prot -i "$tmpdir/peptides.filtered.fst" \
   | {
       read -r hdr;
       sort -m - "$tmpdir/peptides.filteredout.fst" \
-        | cat <(echo $hdr) -
-    } \
-  | tee "$tmpdir/pept2prot2filter.merged.fst" \
-  | python3 $dir/../pept2prot2filter2lca.py -c $tax_id $rmqdatadir > "$datadir/pept2prot2filter2lca.fst"
+        | cat <(echo $hdr) - \
+        | tee "$tmpdir/pept2prot2filter.merged.fst" \
+        | python3 $dir/../pept2prot2filter2lca.py -c $tax_id $rmqdatadir > "$datadir/pept2prot2filter2lca.fst"
+    }
 
 echo "All done!"
