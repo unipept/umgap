@@ -48,7 +48,7 @@ def get_all_peptides(assembly_refseq_accession_id):
     # Print them out ordered by insdc
     for insdc, prot in sorted(results, key=lambda tup: tup[0]):
         print(">|{}".format(insdc))
-        for pept in process_translation(translation):
+        for pept in process_translation(prot):
             print(pept)
 
 
