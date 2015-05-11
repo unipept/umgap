@@ -105,12 +105,15 @@ cat "$tmpdir/peptides.fst" \
 
 # Run pipeline
 unipept pept2prot -i "$tmpdir/peptides.filtered.fst" \
+  | tee "$tmpdir/pept2prot.fst" \
   | $dir/../pept2prot2filter.sh "$tmpdir/uniprot_protein_ids.txt" \
+  | tee "$tmpdir/pept2prot2filter.fst" \
   | {
       read -r hdr;
       sort -m - "$tmpdir/peptides.filteredout.fst" \
         | cat <(echo $hdr) -
     } \
+  | tee "$tmpdir/pept2prot2filter.merged.fst" \
   | python3 $dir/../pept2prot2filter2lca.py -c $tax_id $rmqdatadir > "$datadir/pept2prot2filter2lca.fst"
 
 echo "All done!"
