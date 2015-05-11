@@ -3,7 +3,13 @@
 import sys
 
 
-ranks_to_filter = set(["no rank", "superkingdom"])
+ranks_to_filter = set([
+                        'no rank',
+                        'superkingdom', 'kingdom', 'subkingdom',
+                        'superphylum', 'phylum', 'subphylum',
+                        'superclass', 'class', 'subclass', 'infraclass',
+                        'superorder', 'order', 'suborder', 'infraorder', 'parvorder'
+                     ])
 
 lines = ((line.strip().split(',')) for line in open(sys.argv[1]))
 
