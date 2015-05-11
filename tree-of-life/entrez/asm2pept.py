@@ -37,13 +37,19 @@ def process_translation(translation):
 def get_all_peptides(assembly_refseq_accession_id):
     """Main function"""
 
+    results = set()
+
     # Get all the proteins
     for nucleotide_id in get_nucleotide_ids(assembly_refseq_accession_id):
         for insdc, translation in get_nucleotide_translation(nucleotide_id):
+            results.add((insdc, translation))
 
-            print(">|{}".format(insdc))
-            for pept in process_translation(translation):
-                print(pept)
+
+    # Print them out ordered by insdc
+    for insdc, prot in sorted(results, key=lambda tup: tup[0]):
+        print(">|{}".format(insdc))
+        for pept in process_translation(translation):
+            print(pept)
 
 
 if __name__ == '__main__':
