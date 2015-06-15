@@ -1,37 +1,67 @@
+""" Given a file of pept2prot2filter entries, gets the LCA for every fasta header by
+getting the LCAs per peptides and by doing another LCA step on these results.
+
+Expects a list grouped first by the FASTA header and then by peptide for speed reasons
+Not necessarily ordered, just grouped is fine
+"""
+
 import sys
+from itertools import groupby
+from operator import itemgetter
+
+import argparse
 
 from lca_calculators.tree_based_lca import Tree_LCA_Calculator
 
-class FastaRecord:
-    def __init__(self, fasta_id):
-        self.fasta_id = fasta_id
-        self.peptides = dict()
-
-    def add_peptide(self, peptide, taxon_id):
-        if peptide not in self.peptides:
-            self.peptides[peptide] = []
-
-        self.peptides[peptide].append(int(taxon_id))
+# Input argument parsing
+parser = argparse.ArgumentParser(description='Calculate the LCAs for a given fastafile after pept2lca')
+parser.add_argument('-c', '--check-against', dest='reference_taxon_id', type=int, help='check against a taxon_id')
+parser.add_argument('-r', '--rmqdatadir', dest='rmqdatadir', type=str, help='check against a taxon_id')
+args = parser.parse_args()
 
 
-fasta2record = dict()
+calculator = Tree_LCA_Calculator(args.rmqdatadir)
+
+
+print("fasta_header,taxon_id,taxon_name,taxon_rank", end="")
+if args.reference_taxon_id:
+    print(",on_lineage")
+else:
+    print()
+
+
+def reduce_per_peptide(lines):
+    lca = calculator.calc_lca([int(line[3]) for line in lines])
+    return lca
+
+
+def reduce_per_fasta(lines):
+    peptide_groups = (g for k, g in groupby(lines, itemgetter(1)))
+
+    lcas_per_peptide = (reduce_per_peptide(group) for group in peptide_groups)
+
+    lca = calculator.calc_lca(lcas_per_peptide)
+    return lca
+
+
+def parse(input_):
+    splits = (line.rstrip().split(',') for line in input_)
+    fasta_groups = ((k, g) for k, g in groupby(splits, itemgetter(0)))
+    reduced_fastas = ((k, reduce_per_fasta(group)) for k, group in fasta_groups)
+
+    for fasta_header, taxon_id in reduced_fastas:
+        print("{},{},{},{}".format(fasta_header, taxon_id, calculator.names[taxon_id], calculator.ranks[taxon_id]), end="")
+
+        # We want to check against a reference taxon
+        if args.reference_taxon_id:
+            on_lineage = calculator.calc_lca([taxon_id, args.reference_taxon_id], allow_no_rank=True) == args.reference_taxon_id
+            print(",{}".format(int(on_lineage)))
+        else:
+            print()
+
+
+# Skip the header
 next(sys.stdin)
-for line in sys.stdin:
-    fasta_header, peptide, _, taxon_id = line.strip().split(',')
+parse(sys.stdin)
 
-    fasta_id = fasta_header[1:]
-
-    if fasta_id not in fasta2record:
-        fasta2record[fasta_id] = FastaRecord(fasta_id)
-
-    fasta2record[fasta_id].add_peptide(peptide, taxon_id)
-
-calculator = Tree_LCA_Calculator()
-print("fasta_header,taxon_id,taxon_name,taxon_rank")
-for fasta_record in fasta2record.values():
-
-    lcas = [calculator.calc_lca(fasta_record.peptides[peptide]) for peptide in fasta_record.peptides]
-    lca = calculator.calc_lca(lcas)
-
-    taxon = calculator.tree.taxons[lca]
-    print(">{},{},{},{}".format(fasta_record.fasta_id, taxon.taxon_id, taxon.name, taxon.rank))
+calculator.cleanup()

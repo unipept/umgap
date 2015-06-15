@@ -1,10 +1,10 @@
 #!/bin/bash
 
 usage(){
-  echo "Usage: $0 uniprot_identifiers_file pept2prot_fasta_file"
+  echo "Usage: cat pept2prot.fst | $0 uniprot_identifiers_file" >&2
   exit 1
 }
 
-(($# != 2)) && usage
+(($# != 1)) && usage
 
-grep -v -f $1 $2
+grep -v -F -f $1
