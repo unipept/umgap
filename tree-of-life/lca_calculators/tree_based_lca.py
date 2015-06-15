@@ -1,41 +1,119 @@
+from functools import reduce
+import os
 import sys
 import time
 
+import numpy
+import ctypes as ct
+
+from lca_calculators.tree_of_life import get_tree, serialize_tree, RMQLIB_PATH
 from lca_calculators.lca_calculator import LCA_Calculator
-import lca_calculators.vendor.rmq as rmq
+from lca_calculators.lca_calculator import DEFAULT_DATA_DIR
+
+
+class rmqinfo(ct.Structure):
+    _fields_ = [
+        ("alen", ct.c_int),
+        ("array", ct.POINTER(ct.c_int)),
+        ("sparse", ct.POINTER(ct.POINTER(ct.c_int))),
+        ("block_min", ct.POINTER(ct.c_int)),
+        ("labels", ct.POINTER(ct.c_int))
+    ]
 
 
 class Tree_LCA_Calculator(LCA_Calculator):
 
-    def __init__(self):
+    def __init__(self, rmqdatadir=None):
         super().__init__()
+
+        self.rmqdatadir = rmqdatadir or DEFAULT_DATA_DIR
+
+        if os.path.isdir(self.rmqdatadir):
+            starttime = time.time()
+            print("Getting data from disk. Time: {}".format(starttime), file=sys.stderr)
+            self.get_rmq_from_npy()
+            self.get_tree_from_npy()
+            print("Got data from disk: {}, time elapsed: {}".format(time.time(), time.time()-starttime), file=sys.stderr)
+            print("---", file=sys.stderr)
+
+        else:
+            print("Warning: no seralized data found. Building tree from taxons.tsv and serializing the result. Use serialize=False to not store the result to disk.", file=sys.stderr)
+            self.from_tree()
+            self.store_data()
+            self.get_tree_from_npy()
+
+
+        self.librmq = ct.cdll.LoadLibrary(RMQLIB_PATH)
+        self.preprocess_rmq()
+
+
+    def store_data(self):
+        starttime = time.time()
+        print("Storing data to disk. Time: {}".format(starttime), file=sys.stderr)
+
+        # Serialize the tree
+        serialize_tree(self.tree, self.rmqdatadir)
+
+        # Create the arrays
+        if not os.path.isdir(self.rmqdatadir):
+            os.makedirs(self.rmqdatadir)
+        numpy.save(os.path.join(self.rmqdatadir, "euler_tour.npy"), self.euler_tour)
+        numpy.save(os.path.join(self.rmqdatadir, "levels.npy"), self.levels)
+        numpy.save(os.path.join(self.rmqdatadir, "first_occurences.npy"), self.first_occurences)
+
+        print("Stored data to disk: {}, time elapsed: {}".format(time.time(), time.time()-starttime), file=sys.stderr)
+        print("---", file=sys.stderr)
+
+
+    def get_rmq_from_npy(self):
+        """Gets the needed npy data from the preprocessed RMQ"""
+        self.euler_tour = numpy.load(os.path.join(self.rmqdatadir, "euler_tour.npy"))
+        self.levels = numpy.load(os.path.join(self.rmqdatadir, "levels.npy"))
+        self.first_occurences = numpy.load(os.path.join(self.rmqdatadir, "first_occurences.npy"))
+
+
+    def get_tree_from_npy(self):
+        """Gets the needed npy data from the preprocessed tree"""
+        self.names = numpy.load(os.path.join(self.rmqdatadir, "names.npy"))
+        self.ranks = numpy.load(os.path.join(self.rmqdatadir, "ranks.npy"))
+        self.valid_taxon_ids = numpy.load(os.path.join(self.rmqdatadir, "valid_taxon_ids.npy"))
+        self.valid_ranked_taxon_ids = numpy.load(os.path.join(self.rmqdatadir, "valid_ranked_taxon_ids.npy"))
+
+
+    def from_tree(self):
+        self.tree = get_tree()
 
         starttime = time.time()
         print("Preprocessing LCA arrays. Time: {}".format(starttime), file=sys.stderr)
-        self.euler_tour =[None] * (2*self.tree.real_size - 1)
-        self.levels = [None] * (2*self.tree.real_size - 1)
-        self.first_occurences = [None] * self.tree.size
+
+        self.euler_tour = numpy.array([0] * (2*self.tree.real_size - 1), dtype=numpy.intc)
+        self.levels = numpy.array([0] * (2*self.tree.real_size - 1), dtype=numpy.intc)
+        self.first_occurences = numpy.array([0] * self.tree.size, dtype=numpy.intc)
 
         self.dfs_run(self.tree.taxons[1], 0, 0)
 
-        print()
         print("Preprocessed LCA arrays: {}, time elapsed: {}".format(time.time(), time.time()-starttime), file=sys.stderr)
-        print("---", file=sys.stderr)
-
-        # Preprocess the RMQ
-        starttime = time.time()
-        print("Preprocessing RMQ. Time: {}".format(starttime), file=sys.stderr)
-        self.rmqinfo = self.preprocess_rmq()
-        print("Preprocessed RMQ. Time: {}, time elapsed: {}".format(time.time(), time.time()-starttime), file=sys.stderr)
         print("---", file=sys.stderr)
 
 
     def preprocess_rmq(self):
-        return rmq.rm_query_preprocess(self.levels, len(self.levels))
+        # Preprocess the RMQ
+        starttime = time.time()
+        print("Preprocessing RMQ. Time: {}".format(starttime), file=sys.stderr)
+
+        levelsp = numpy.ctypeslib.ndpointer(dtype=numpy.intc, ndim=1, flags='C_CONTIGUOUS')
+
+        self.librmq.rm_query_preprocess.restype = ct.POINTER(rmqinfo)
+        self.librmq.rm_query_preprocess.argtypes = [levelsp, ct.c_int]
+
+        self.rmqinfo = self.librmq.rm_query_preprocess(self.levels, len(self.levels))
+
+        print("Preprocessed RMQ. Time: {}, time elapsed: {}".format(time.time(), time.time()-starttime), file=sys.stderr)
+        print("---", file=sys.stderr)
 
 
     def free_rmqinfo(self):
-        rmq.rm_free(self.rmqinfo)
+        self.librmq.rm_free(self.rmqinfo)
 
 
     def dfs_run(self, taxon, iteration, level):
@@ -55,77 +133,83 @@ class Tree_LCA_Calculator(LCA_Calculator):
         return iteration + 1
 
 
-    def calc_lca(self, taxons):
+    def _calc_lca_pair(self, acc, second):
+        level_of_highest_join, first = acc
+
+        # Get their occurence in the levels/euler_tour array
+        first_index = self.first_occurences[first]
+        second_index = self.first_occurences[second]
+
+        #print("DEBUG:", file=sys.stderr)
+        #print("LCA BY {} AND {} ".format(
+            #self.tree.taxons[self.euler_tour[first_index]].taxon_id,
+            #self.tree.taxons[self.euler_tour[second_index]].taxon_id
+        #), file=sys.stderr)
+
+        # Calculate the index of their LCA
+        rmq_index = self.get_rmq(first_index, second_index)
+
+        #print("LCA BY IS {} AT LEVEL {} ".format(
+            #self.tree.taxons[self.euler_tour[rmq_index]].taxon_id,
+            #self.levels[rmq_index]
+        #), file=sys.stderr)
+
+        # We've found a split, take it and update the highest_join level
+        if rmq_index != first_index and rmq_index != second_index:
+            lca_index = rmq_index
+            level_of_highest_join = self.levels[rmq_index]
+        else:
+            # We're on a single lineage here, take the bottom one
+            if rmq_index == first_index:
+                lca_index = second_index
+            elif rmq_index == second_index:
+                lca_index = first_index
+
+            # Don't go lower than the max join though
+            if self.levels[lca_index] > level_of_highest_join:
+                lca_index = rmq_index
+
+
+        #print("Found LCA: {}".format(self.euler_tour[lca_index]), file=sys.stderr)
+        #print("Level of highest join: {}".format(level_of_highest_join), file=sys.stderr)
+        #print(file=sys.stderr)
+
+        return level_of_highest_join, self.euler_tour[lca_index]
+
+
+    def calc_lca(self, taxon_ids, allow_no_rank=False):
         """Given a list of taxon ids, calculate the LCA"""
 
-        if not taxons:
-            return None
+        # Map taxons their valid counterpart
+        taxon_ids = (self.map_to_valid_taxon_id(taxon_id, allow_no_rank) for taxon_id in taxon_ids)
 
-        # Map sort to their first valid parent
-        taxons = [self.tree.taxons[taxon].get_parent(allow_no_rank=False, allow_invalid=False).taxon_id if not self.tree.taxons[taxon].valid_taxon else taxon for taxon in taxons]
+        #print("DEBUG:", file=sys.stderr)
         #print([self.tree.taxons[taxon].name for taxon in taxons], file=sys.stderr)
-
-        # Don't do duplicate calculations, set the list first
-        taxons = list(set(taxons))
 
         # Put the highest join level as high as possible
         level_of_highest_join = sys.maxsize
 
-        # Iterate over the taxons, joining two taxons at a time
-        while len(taxons) > 1:
-            # Get two taxons
-            first = taxons.pop()
-            second = taxons.pop()
+        try:
+            first = next(taxon_ids)
+        except StopIteration:
+            return None
 
-            # Get their occurence in the levels/euler_tour array
-            first_index = self.first_occurences[first]
-            second_index = self.first_occurences[second]
+        level_of_highest_join, taxon_id = reduce(self._calc_lca_pair, taxon_ids, (level_of_highest_join, first))
 
-            #print("DEBUG:", file=sys.stderr)
-            #print("LCA BY {} AND {} ".format(
-                #self.tree.taxons[self.euler_tour[first_index]].taxon_id,
-                #self.tree.taxons[self.euler_tour[second_index]].taxon_id
-            #), file=sys.stderr)
+        return self.map_to_valid_taxon_id(taxon_id, allow_no_rank=allow_no_rank)
 
-            # Calculate the index of their LCA
-            rmq_index = self.get_rmq(first_index, second_index)
 
-            #print("LCA BY IS {} AT LEVEL {} ".format(
-                #self.tree.taxons[self.euler_tour[rmq_index]].taxon_id,
-                #self.levels[rmq_index]
-            #), file=sys.stderr)
-
-            # We've found a split, take it and update the highest_join level
-            if rmq_index != first_index and rmq_index != second_index:
-                lca_index = rmq_index
-                level_of_highest_join = self.levels[rmq_index]
-            else:
-                # We're on a single lineage here, take the bottom one
-                if rmq_index == first_index:
-                    lca_index = second_index
-                elif rmq_index == second_index:
-                    lca_index = first_index
-
-                # Don't go lower than the max join though
-                if self.levels[lca_index] > level_of_highest_join:
-                    lca_index = rmq_index
-
-            taxons.append(self.euler_tour[lca_index])
-
-            #print("Found LCA: {}".format(self.euler_tour[lca_index]), file=sys.stderr)
-            #print("Level of highest join: {}".format(level_of_highest_join), file=sys.stderr)
-            #print(file=sys.stderr)
-
-        result = self.tree.taxons[taxons.pop()]
-
-        if result.valid_taxon and result.rank != "no rank":
-            return result.taxon_id
+    def map_to_valid_taxon_id(self, taxon_id, allow_no_rank=False):
+        if allow_no_rank:
+            return self.valid_taxon_ids[taxon_id]
         else:
-            return result.get_parent(allow_no_rank=False, allow_invalid=False).taxon_id
+            return self.valid_ranked_taxon_ids[taxon_id]
 
 
     def get_rmq(self, start, end):
-        return rmq.rm_query(self.rmqinfo, start, end)
+        self.librmq.rm_query.restype = ct.c_int
+        self.librmq.rm_query.argtypes = [ct.POINTER(rmqinfo), ct.c_int, ct.c_int]
+        return self.librmq.rm_query(self.rmqinfo, start, end)
 
 
     def cleanup(self):

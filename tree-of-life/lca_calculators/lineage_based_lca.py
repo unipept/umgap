@@ -9,6 +9,7 @@ class Lineage_LCA_Calculator(LCA_Calculator):
     def __init__(self):
         super().__init__()
 
+        self.tree = get_tree()
         self.genus_check = False
 
 
