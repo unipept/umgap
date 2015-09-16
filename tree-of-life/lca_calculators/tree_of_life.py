@@ -66,7 +66,7 @@ class Tree():
                 line[1],
                 line[2],
                 int(line[3]),
-                bool(ord(line[4]))
+                '1' == format(ord(line[4][0]), 'b')
             )
 
 
