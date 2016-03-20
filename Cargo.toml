@@ -1,0 +1,8 @@
+[package]
+name = "index"
+version = "0.1.0"
+authors = ["Stijn Seghers <seghers_stijn@hotmail.com>"]
+
+[dependencies]
+csv = "0.14"
+fst = "0.1"
