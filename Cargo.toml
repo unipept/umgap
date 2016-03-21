@@ -6,3 +6,11 @@ authors = ["Stijn Seghers <seghers_stijn@hotmail.com>"]
 [dependencies]
 csv = "0.14"
 fst = "0.1"
+
+[[bin]]
+name = "build-index"
+path = "src/build.rs"
+
+[[bin]]
+name = "prot2kmer2lca"
+path = "src/query.rs"
