@@ -25,7 +25,7 @@ fn build(csv_filename: &String, fst_filename: &String) -> Result<()> {
 
     try!(map.finish());
 
-    return Ok(());
+    Ok(())
 }
 
 fn main() {
