@@ -1,5 +1,5 @@
 [root]
-name = "index"
+name = "kmer-index"
 version = "0.1.0"
 dependencies = [
  "csv 0.14.3 (registry+https://github.com/rust-lang/crates.io-index)",
