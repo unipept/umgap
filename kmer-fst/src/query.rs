@@ -2,26 +2,21 @@ extern crate csv;
 extern crate fst;
 
 mod errors;
-
-use std::fs::File;
-use std::io;
-use std::io::BufRead;
+mod fasta;
 
 use errors::Result;
 
 
 fn query(fst_filename: &String, query_filename: &String) -> Result<()> {
     let map = try!(fst::Map::from_path(fst_filename));
-    println!("Number of kmers: {}", map.len());
+    let reader = try!(fasta::Reader::from_file(query_filename));
 
-    let query_file = try!(File::open(query_filename));
-    let reader = io::BufReader::new(query_file);
-
-    for query_sequence in reader.lines() {
-        let query_sequence = try!(query_sequence);
-        let taxon_id = map.get(&query_sequence);
+    for query in reader.records() {
+        let query = try!(query);
+        print!("{}", query.header);
+        let taxon_id = map.get(&query.sequence[..7]);
         match taxon_id {
-            None            => (),  // println!("No match for {}", &query_sequence),
+            None            => println!("0"),
             Some(taxon_idx) => println!("{}", taxon_idx),
         }
     }
