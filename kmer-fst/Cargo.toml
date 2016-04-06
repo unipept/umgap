@@ -1,7 +1,7 @@
 [package]
-name = "index"
+name = "kmer-index"
 version = "0.1.0"
-authors = ["Stijn Seghers <seghers_stijn@hotmail.com>"]
+authors = ["Stijn Seghers <stijn.seghers@gmail.com>"]
 
 [dependencies]
 csv = "0.14"
