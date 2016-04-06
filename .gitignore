@@ -1,1 +1,11 @@
+# Python
 *.pyc
+__pycache__
+
+# Rust
+target
+*.fst
+
+# Data
+*.tsv
+*.txt
