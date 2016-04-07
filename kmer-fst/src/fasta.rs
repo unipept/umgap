@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io;
 use std::io::BufRead;
+use std::io::Lines;
 use std::io::BufReader;
 use std::path::Path;
 
@@ -9,24 +10,22 @@ use errors::Result;
 
 
 pub struct Reader<R: io::Read> {
-    reader: BufReader<R>,
+    lines: Lines<BufReader<R>>,
 }
 
 
 impl<R: io::Read> Reader<R> {
     pub fn new(reader: R) -> Self {
         Reader {
-            reader: BufReader::new(reader),
+            lines: BufReader::new(reader).lines(),
         }
     }
 
     pub fn read_record(&mut self) -> Result<Option<Record>> {
-        let mut header = String::new();
-        let bytes_read = try!(self.reader.read_line(&mut header));
-
-        if bytes_read == 0 {
-            return Ok(None);
-        }
+        let header = match self.lines.next() {
+            None         => return Ok(None),
+            Some(header) => try!(header),
+        };
 
         if !header.starts_with('>') {
             return Err(errors::Error::Io(
@@ -34,13 +33,13 @@ impl<R: io::Read> Reader<R> {
                                "Expected > at beginning of fasta header.")));
         }
 
-        let mut sequence = String::new();
-        let bytes_read = try!(self.reader.read_line(&mut sequence));
+        let sequence = match self.lines.next() {
+            None => return Err(errors::Error::Io(io::Error::new(io::ErrorKind::Other, "Encountered empty sequence at end of file."))),
+            Some(sequence) => try!(sequence),
+        };
 
-        if bytes_read == 0 || sequence.starts_with('>') {
-            return Err(errors::Error::Io(
-                io::Error::new(io::ErrorKind::Other,
-                               "Encountered empty sequence.")));
+        if sequence.starts_with('>') {
+            return Err(errors::Error::Io(io::Error::new(io::ErrorKind::Other, "Encountered empty sequence.")));
         }
 
         Ok(Some(Record { header: header, sequence: sequence }))
