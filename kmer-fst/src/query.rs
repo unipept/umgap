@@ -11,10 +11,13 @@ fn query(fst_filename: &String, query_filename: &String) -> Result<()> {
     let map = try!(fst::Map::from_path(fst_filename));
     let reader = try!(fasta::Reader::from_file(query_filename));
 
+    println!("fasta_header,peptide,taxon_id");
     for query in reader.records() {
         let query = try!(query);
-        print!("{}", query.header);
-        let taxon_id = map.get(&query.sequence[..7]);
+        print!("{},", query.header);
+        let kmer = &query.sequence[..7];
+        print!("{},", kmer);
+        let taxon_id = map.get(kmer);
         match taxon_id {
             None            => println!("0"),
             Some(taxon_idx) => println!("{}", taxon_idx),
