@@ -22,7 +22,7 @@ fn query(fst_filename: &String, query_filename: &String) -> Result<()> {
             print!("{},", kmer);
             let taxon_id = map.get(kmer);
             match taxon_id {
-                None            => println!("0"),
+                None            => println!("1"),
                 Some(taxon_idx) => println!("{}", taxon_idx),
             }
         }
