@@ -17,13 +17,10 @@ fn query(fst_filename: &String, query_filename: &String) -> Result<()> {
     for prot in reader.records() {
         let prot = try!(prot);
         for i in 0..(prot.sequence.len() - K + 1) {
-            print!("{},", prot.header);
             let kmer = &prot.sequence[i..i + 7];
-            print!("{},", kmer);
             let taxon_id = map.get(kmer);
-            match taxon_id {
-                None            => println!("1"),
-                Some(taxon_idx) => println!("{}", taxon_idx),
+            if let Some(taxon_id) = taxon_id {
+                println!("{},{},{}", prot.header, kmer, taxon_id)
             }
         }
     }
