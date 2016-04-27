@@ -51,7 +51,7 @@ fn array() -> Vec<usize> {
 #[test]
 fn test_rmq_single_block() {
     let array = array();
-    let info = RMQ::new(&array);
+    let info = RMQ::new(array);
     assert_eq!(5, info.query(0, 9));
     assert_eq!(18, info.query(10, 19));
 }
@@ -59,14 +59,14 @@ fn test_rmq_single_block() {
 #[test]
 fn test_rmq_two_blocks() {
     let array = array();
-    let info = RMQ::new(&array);
+    let info = RMQ::new(array);
     assert_eq!(5, info.query(0, 39));
 }
 
 #[test]
 fn test_rmq_three_blocks() {
     let array = array();
-    let info = RMQ::new(&array);
+    let info = RMQ::new(array);
     assert_eq!(5, info.query(0, 69));
     assert_eq!(99, info.query(40, 99));
 }
@@ -74,7 +74,7 @@ fn test_rmq_three_blocks() {
 #[test]
 fn test_rmq_more_blocks() {
     let array = array();
-    let info = RMQ::new(&array);
+    let info = RMQ::new(array);
     assert_eq!(5, info.query(0, 99));
     assert_eq!(25, info.query(10, 99));
     assert_eq!(99, info.query(30, 99));
