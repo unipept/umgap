@@ -80,3 +80,15 @@ fn test_rmq_more_blocks() {
     assert_eq!(99, info.query(30, 99));
 }
 
+#[test]
+fn test_wave_of_33() {
+    let array = vec![
+        1, 2, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4,
+        3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4,
+        3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4,
+        3, 4, 3, 4, 3, 4, 3, 4, 3, 2, 1
+    ];
+    let info = RMQ::new(array);
+    assert_eq!(2, info.query(2, 64));
+}
+
