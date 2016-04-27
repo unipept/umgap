@@ -1,6 +1,6 @@
 
-pub struct RMQ<'a, T: Ord + 'a> {
-    pub array: &'a Vec<T>, // The original array
+pub struct RMQ<T: Ord> {
+    pub array: Vec<T>, // The original array
     pub block_min: Vec<usize>, // The position (index in array) of the minimum for each block
     pub sparse: Vec<Vec<usize>>, // RMQ of sequences of blocks. sparse[i][j] is the position of the minimum in block[i] to block[i + 2**{j+1} - 1]
     pub labels: Vec<usize> // The j'th bit of labels[i] is 1 iff j is the first position (in the block) left of i where array[j] < array[i]
@@ -13,8 +13,8 @@ fn intlog2(n: usize) -> usize {
     ((n as u32).leading_zeros() ^ 31) as usize
 }
 
-impl<'a, T: Ord> RMQ<'a, T> {
-    pub fn block_min(array: &'a Vec<T>) -> Vec<usize> {
+impl<T: Ord> RMQ<T> {
+    pub fn block_min(array: &Vec<T>) -> Vec<usize> {
         array.chunks(32)
              .map(|c| c.iter().enumerate()
                        .min_by_key(|&(_, val)| val)
@@ -23,24 +23,24 @@ impl<'a, T: Ord> RMQ<'a, T> {
              .collect()
     }
 
-    fn aggregate_minima(array: &'a Vec<T>, shift: usize, minima: &Vec<usize>) -> Vec<usize> {
+    fn aggregate_minima(array: &Vec<T>, shift: usize, minima: &Vec<usize>) -> Vec<usize> {
         minima.iter().zip(minima.iter().skip(shift)).map(|(&l, &r)|
             if array[l] < array[r] { l } else { r }
         ).collect()
     }
 
-    pub fn sparse(array: &'a Vec<T>, block_min: &Vec<usize>) -> Vec<Vec<usize>> {
+    pub fn sparse(array: &Vec<T>, block_min: &Vec<usize>) -> Vec<Vec<usize>> {
         let length = intlog2(block_min.len());
         let mut sparse = Vec::with_capacity(length);
-        sparse.push(RMQ::<'a, T>::aggregate_minima(array, 1, block_min));
+        sparse.push(RMQ::<T>::aggregate_minima(array, 1, block_min));
         for i in 1..length {
-            let minima = RMQ::<'a, T>::aggregate_minima(array, 1 << i, &sparse[i - 1]);
+            let minima = RMQ::<T>::aggregate_minima(array, 1 << i, &sparse[i - 1]);
             sparse.push(minima);
         }
         sparse
     }
 
-    pub fn labels(array: &'a Vec<T>) -> Vec<usize> {
+    pub fn labels(array: &Vec<T>) -> Vec<usize> {
         let mut gstack = Vec::with_capacity(32);
         let mut labels = Vec::with_capacity(array.len());
         for i in 0..array.len() {
@@ -60,10 +60,10 @@ impl<'a, T: Ord> RMQ<'a, T> {
         labels
     }
 
-    pub fn new(array: &'a Vec<T>) -> RMQ<'a, T> {
-        let block_min = RMQ::<'a, T>::block_min(array);
-        let sparse    = RMQ::<'a, T>::sparse(array, &block_min);
-        let labels    = RMQ::<'a, T>::labels(array);
+    pub fn new(array: Vec<T>) -> RMQ<T> {
+        let block_min = RMQ::<T>::block_min(&array);
+        let sparse    = RMQ::<T>::sparse(&array, &block_min);
+        let labels    = RMQ::<T>::labels(&array);
         RMQ {
             array:     array,
             block_min: block_min,
@@ -82,14 +82,14 @@ impl<'a, T: Ord> RMQ<'a, T> {
         }
     }
 
-    pub fn query(&'a self, start: usize, end: usize) -> usize {
+    pub fn query(&self, start: usize, end: usize) -> usize {
         if start == end { return start; }
         let (left, right)  = if start < end { (start, end) } else { (end, start) };
         let block_diff     = (right >> 5) - (left >> 5);
         match block_diff {
             0 => {
                 /* one inblock query, in left_block from (l % 32) to (r % 32) */
-                RMQ::<'a, T>::min_in_block(&self.labels, left, right)
+                RMQ::<T>::min_in_block(&self.labels, left, right)
             },
             1 => {
                 /* two inblock queries:
@@ -97,13 +97,13 @@ impl<'a, T: Ord> RMQ<'a, T> {
                  *   - in right_block from 0 to (r % 32)
                  * minimum is the minimum of these two
                  */
-                let l = RMQ::<'a, T>::min_in_block(&self.labels, left, clearbits(left, 5) + 31);
-                let r = RMQ::<'a, T>::min_in_block(&self.labels, clearbits(right, 5), right);
+                let l = RMQ::<T>::min_in_block(&self.labels, left, clearbits(left, 5) + 31);
+                let r = RMQ::<T>::min_in_block(&self.labels, clearbits(right, 5), right);
                 if self.array[l] <= self.array[r] { l } else { r }
             },
             _ => {
-                let l = RMQ::<'a, T>::min_in_block(&self.labels, left, clearbits(left, 5) + 31);
-                let r = RMQ::<'a, T>::min_in_block(&self.labels, clearbits(right, 5), right);
+                let l = RMQ::<T>::min_in_block(&self.labels, left, clearbits(left, 5) + 31);
+                let r = RMQ::<T>::min_in_block(&self.labels, clearbits(right, 5), right);
                 let m = if block_diff == 2 {
                     self.block_min[(left >> 5) + 1]
                 } else {
