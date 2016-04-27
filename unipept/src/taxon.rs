@@ -109,9 +109,10 @@ pub struct TaxonTree {
 impl TaxonTree {
     pub fn new(taxons: &Vec<Taxon>) -> TaxonTree {
         let mut map = HashMap::with_capacity(taxons.len());
-        let     max = taxons[taxons.len() - 1].id;
+        let mut max = taxons[0].id;
         let mut roots: HashSet<TaxonId> = taxons.into_iter().map(|t| t.id).collect();
         for taxon in taxons {
+            if taxon.id > max { max = taxon.id }
             if taxon.id == taxon.parent { continue; }
             let siblings = map.entry(taxon.parent).or_insert(Vec::new());
             siblings.push(taxon.id);

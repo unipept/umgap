@@ -78,18 +78,9 @@ impl LCACalculator {
         } else {
             &self.valid_ancestors
         };
-        let mut iter = taxons.into_iter().map(|&t| {
-            let mut p = t;
-            while p != 1 {
-                print!("{} -> ", p);
-                p = self.taxons[ancestors[p].unwrap()].clone().unwrap().parent;
-            }
-            println!("1");
-            ancestors[t].expect("Unrecognized Taxon ID")
-        });
+        let mut iter = taxons.into_iter().map(|&t| ancestors[t].expect("Unrecognized Taxon ID"));
         let initial_level: Option<usize> = None;
         let first = iter.next().expect("LCA called on empty list");
-        println!("{}", first);
         let (_, lca) = iter.fold((initial_level, first), |(join_level, left), right| {
             if left == right { return (join_level, left); }
             let left_index  = *self.first_occurences.get(&left).expect("Unrecognized Taxon ID");
@@ -104,11 +95,9 @@ impl LCACalculator {
             if join_level.map(|l| self.rmq_info.array[lca_index] > l).unwrap_or(false) {
                 lca_index = rmq_index;
             }
-            println!(" + {} = {} ({})", right, self.euler_tour[lca_index], rmq_index);
             (level, self.euler_tour[lca_index])
         });
         ancestors[lca].expect("Big bug: lca should exist.")
     }
-    //pub fn names(Taxon(id)) -> String {}
-    //pub fn ranks(Taxon(id)) -> Rank {}
 }
+
