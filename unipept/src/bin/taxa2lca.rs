@@ -26,7 +26,7 @@ fn main() {
                          .split(' ')
                          .map(|tid| tid.parse::<TaxonId>().unwrap())
                          .collect();
-        println!("{}", calculator.calc_lca(&taxons, false));
+        println!("{}", calculator.calc_lca(&taxons, true));
     }
     //println!("done.");
 }
