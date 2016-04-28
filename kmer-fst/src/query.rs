@@ -1,13 +1,8 @@
 extern crate csv;
 extern crate fst;
-extern crate itertools;
 
 mod errors;
 mod fasta;
-
-use std::str::Chars;
-
-use itertools::PutBackN;
 
 use errors::Result;
 
@@ -21,35 +16,16 @@ fn query(fst_filename: &String, query_filename: &String) -> Result<()> {
     println!("fasta_header,peptide,taxon_id");
     for prot in reader.records() {
         let prot = try!(prot);
-        let mut sequence = PutBackN::new(prot.sequence.chars());
-        while let Some(kmer) = peek_chars(&mut sequence, K) {
-            let taxon_id = map.get(&kmer);
+        for i in 0..(prot.sequence.len() - K + 1) {
+            let kmer = &prot.sequence[i..i + 7];
+            let taxon_id = map.get(kmer);
             if let Some(taxon_id) = taxon_id {
                 println!("{},{},{}", prot.header, kmer, taxon_id)
             }
-            sequence.next();
         }
     }
 
     Ok(())
-}
-
-fn peek_chars(it: &mut PutBackN<Chars>, n: usize) -> Option<String> {
-    let mut tmp = String::new();
-
-    for _ in 0..n {
-        if let Some(c) = it.next() {
-            tmp.push(c);
-        } else {
-            return None;
-        }
-    }
-
-    for i in tmp.chars().rev() {
-        it.put_back(i);
-    }
-
-    Some(tmp)
 }
 
 fn main() {
