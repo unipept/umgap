@@ -1,5 +1,7 @@
 
-pub struct RMQ<T: Ord> {
+use std::fmt::Display;
+
+pub struct RMQ<T: Ord + Display> {
     pub array: Vec<T>, // The original array
     pub block_min: Vec<usize>, // The position (index in array) of the minimum for each block
     pub sparse: Vec<Vec<usize>>, // RMQ of sequences of blocks. sparse[i][j] is the position of the minimum in block[i] to block[i + 2**{j+1} - 1]
@@ -13,13 +15,14 @@ fn intlog2(n: usize) -> usize {
     ((n as u32).leading_zeros() ^ 31) as usize
 }
 
-impl<T: Ord> RMQ<T> {
+impl<T: Ord + Display> RMQ<T> {
     pub fn block_min(array: &Vec<T>) -> Vec<usize> {
         array.chunks(32)
-             .map(|c| c.iter().enumerate()
-                       .min_by_key(|&(_, val)| val)
-                       .expect("So, it has come to this.")
-                       .0)
+             .enumerate()
+             .map(|(i, c)| c.iter().enumerate()
+                            .min_by_key(|&(_, val)| val)
+                            .expect("So, it has come to this.")
+                            .0 + i * 32)
              .collect()
     }
 
@@ -102,9 +105,14 @@ impl<T: Ord> RMQ<T> {
                 if self.array[l] <= self.array[r] { l } else { r }
             },
             _ => {
+                //println!("case >2 ({})", block_diff);
                 let l = RMQ::<T>::min_in_block(&self.labels, left, clearbits(left, 5) + 31);
                 let r = RMQ::<T>::min_in_block(&self.labels, clearbits(right, 5), right);
                 let m = if block_diff == 2 {
+                    //println!("length: {}", self.array.len());
+                    //println!("block: {}", (left >> 5) + 1);
+                    //println!("[{}, {}, {}, ...]", self.array[33], self.array[34], self.array[35]);
+                    //for min in self.block_min.iter() { println!("{}", min); }
                     self.block_min[(left >> 5) + 1]
                 } else {
                     let k = intlog2(block_diff - 1) - 1;
@@ -112,6 +120,7 @@ impl<T: Ord> RMQ<T> {
                     let t2 = self.sparse[k][(right >> 5) - (1 << (k + 1))];
                     if self.array[t1] <= self.array[t2] { t1 } else { t2 }
                 };
+                //println!("l={} ({}), m={} ({}), r={} ({})", l, self.array[l], m, self.array[m], r, self.array[r]);
                 let ex = if self.array[l] <= self.array[m] { l } else { m };
                 if self.array[ex] <= self.array[r] { ex } else { r }
             }
