@@ -4,6 +4,7 @@ version = "0.1.0"
 dependencies = [
  "csv 0.14.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "fst 0.1.29 (registry+https://github.com/rust-lang/crates.io-index)",
+ "itertools 0.4.13 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -45,6 +46,11 @@ dependencies = [
  "regex-syntax 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "utf8-ranges 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
+
+[[package]]
+name = "itertools"
+version = "0.4.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "kernel32-sys"
