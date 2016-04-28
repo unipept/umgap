@@ -6,6 +6,7 @@ authors = ["Stijn Seghers <stijn.seghers@gmail.com>"]
 [dependencies]
 csv = "0.14"
 fst = "0.1"
+itertools = "0.4"
 
 [[bin]]
 name = "build-index"
