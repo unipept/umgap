@@ -1,6 +1,7 @@
 
 extern crate unipept;
 
+use std::env;
 use std::io;
 use std::io::BufRead;
 use std::fs::File;
@@ -11,10 +12,12 @@ use unipept::lca::LCACalculator;
 
 fn main() {
     //print!("Reading the taxons tree... ");
-    let taxon_file = File::open("taxons.tsv").unwrap();
+    let filename = env::args().skip(1).next().unwrap();
+    let taxon_file = File::open(filename).unwrap();
     let reader = io::BufReader::new(taxon_file);
     let calculator = LCACalculator::new(reader.lines().map(|mline| {
-        mline.unwrap().parse::<Taxon>().unwrap()
+        let line = mline.unwrap();
+        line.parse::<Taxon>().unwrap()
     }).collect());
     //println!("done.");
 
@@ -26,7 +29,7 @@ fn main() {
                          .split(' ')
                          .map(|tid| tid.parse::<TaxonId>().unwrap())
                          .collect();
-        println!("{}", calculator.calc_lca(&taxons, true));
+        println!("{}", calculator.calc_lca(&taxons, false));
     }
     //println!("done.");
 }
