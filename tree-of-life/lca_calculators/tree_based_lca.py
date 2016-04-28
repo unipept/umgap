@@ -201,9 +201,12 @@ class Tree_LCA_Calculator(LCA_Calculator):
 
     def map_to_valid_taxon_id(self, taxon_id, allow_no_rank=False):
         if allow_no_rank:
-            return self.valid_taxon_ids[taxon_id]
+            valid_id = self.valid_taxon_ids[taxon_id]
         else:
-            return self.valid_ranked_taxon_ids[taxon_id]
+            valid_id = self.valid_ranked_taxon_ids[taxon_id]
+        if not valid_id:
+            print('Taxon', taxon_id, 'is not valid', file=sys.stderr)
+        return valid_id
 
 
     def get_rmq(self, start, end):
