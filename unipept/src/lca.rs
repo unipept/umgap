@@ -44,12 +44,6 @@ impl LCACalculator {
                 Some(ref taxon) => taxon.valid && taxon.rank != taxon::Rank::NoRank
             }
         });
-        //for ancestor in ranked_ancestors.iter().take(10) {
-        //    match *ancestor {
-        //        None => println!("None"),
-        //        Some(ancestor) => println!("{}", ancestor)
-        //    }
-        //}
 
         // Euler tour
         let mut euler_tour       = Vec::with_capacity(length);
