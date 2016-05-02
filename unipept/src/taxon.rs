@@ -1,4 +1,7 @@
 
+use std::io;
+use std::io::BufRead;
+use std::fs::File;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
@@ -98,6 +101,22 @@ impl FromStr for Taxon {
             _                                            => Err("Couldn't parse the valid byte")
         }
     }
+}
+
+pub fn read_taxa_file(filename: &str) -> Result<Vec<Taxon>, &'static str> {
+    let file   = try!(File::open(filename).map_err(|_| "Failed opening taxon file."));
+    let reader = io::BufReader::new(file);
+    let mut taxa = Vec::new();
+    for line in reader.lines() {
+        match line {
+            Err(_)   => return Err("Failed to read all lines."),
+            Ok(line) => match line.parse::<Taxon>() {
+                Err(e) => return Err(e),
+                Ok(taxon) => taxa.push(taxon)
+            }
+        }
+    }
+    Ok(taxa)
 }
 
 pub struct TaxonTree {
