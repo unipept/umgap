@@ -1,3 +1,4 @@
+#[macro_use]
 extern crate clap;
 extern crate csv;
 extern crate fst;
@@ -10,18 +11,16 @@ use std::fs;
 
 use errors::Result;
 
-static K : usize = 7;
 
-
-fn query(fst_filename: &String, query_filename: &String) -> Result<()> {
+fn query(fst_filename: &String, k: usize, query_filename: &String) -> Result<()> {
     let map = try!(fst::Map::from_path(fst_filename));
     let reader = try!(get_reader(query_filename));
 
     println!("fasta_header,peptide,taxon_id");
     for prot in reader.records() {
         let prot = try!(prot);
-        for i in 0..(prot.sequence.len() - K + 1) {
-            let kmer = &prot.sequence[i..i + K];
+        for i in 0..(prot.sequence.len() - k + 1) {
+            let kmer = &prot.sequence[i..i + k];
             if let Some(taxon_id) = map.get(kmer) {
                 println!("{},{},{}", prot.header, kmer, taxon_id)
             }
@@ -44,15 +43,18 @@ fn main() {
         .arg(clap::Arg::with_name("fst")
              .required(true)
              .help("An FST to query"))
+        .arg(clap::Arg::with_name("k-mer length")
+             .required(true)
+             .help("The length of the k-mers in the FST"))
         .arg(clap::Arg::with_name("query file")
-             .help("A FASTA formatted file of amino acid sequences. Omit or use '-' to read form stdin"));
+             .help("A FASTA formatted file of amino acid sequences. \
+                   Omit or use '-' to read form stdin"));
 
     let matches = app.get_matches();
 
     let fst_filename = String::from(matches.value_of("fst").unwrap());
+    let k = value_t!(matches, "k-mer length", usize).unwrap();
     let query_filename = String::from(matches.value_of("query file").unwrap_or("-"));
 
-    println!("fst {} query {}", fst_filename, query_filename);
-
-    query(&fst_filename, &query_filename).unwrap();
+    query(&fst_filename, k, &query_filename).unwrap();
 }
