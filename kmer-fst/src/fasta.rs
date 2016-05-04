@@ -1,20 +1,19 @@
-use std::fs::File;
 use std::io;
 use std::io::BufRead;
-use std::io::Lines;
 use std::io::BufReader;
-use std::path::Path;
+use std::io::Lines;
+use std::io::Read;
 
 use errors;
 use errors::Result;
 
 
-pub struct Reader<R: io::Read> {
+pub struct Reader<R: Read> {
     lines: Lines<BufReader<R>>,
 }
 
 
-impl<R: io::Read> Reader<R> {
+impl<R: Read> Reader<R> {
     pub fn new(reader: R) -> Self {
         Reader {
             lines: BufReader::new(reader).lines(),
@@ -50,12 +49,6 @@ impl<R: io::Read> Reader<R> {
     }
 }
 
-impl Reader<File> {
-    pub fn from_file<P: AsRef<Path>>(path: P) -> io::Result<Self> {
-        File::open(path).map(Reader::new)
-    }
-}
-
 
 pub struct Record {
     pub header: String,
@@ -63,12 +56,12 @@ pub struct Record {
 }
 
 
-pub struct Records<R: io::Read> {
+pub struct Records<R: Read> {
     reader: Reader<R>,
 }
 
 
-impl<R: io::Read> Iterator for Records<R> {
+impl<R: Read> Iterator for Records<R> {
     type Item = Result<Record>;
 
     fn next(&mut self) -> Option<Result<Record>> {
