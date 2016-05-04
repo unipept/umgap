@@ -1,3 +1,4 @@
+extern crate clap;
 extern crate csv;
 extern crate fst;
 
@@ -39,23 +40,19 @@ fn get_reader(query_filename: &String) -> Result<fasta::Reader<Box<io::Read>>> {
 }
 
 fn main() {
-    use std::env;
+    let app = clap::App::new("prot2kmer2lca")
+        .arg(clap::Arg::with_name("fst")
+             .required(true)
+             .help("An FST to query"))
+        .arg(clap::Arg::with_name("query file")
+             .help("A FASTA formatted file of amino acid sequences. Omit or use '-' to read form stdin"));
 
-    let mut args: Vec<String> = env::args().collect();
+    let matches = app.get_matches();
 
-    // If no second argument is given, assume a query is given through stdin
-    if args.len() == 2 {
-        args.push(String::from("-"))
-    }
+    let fst_filename = String::from(matches.value_of("fst").unwrap());
+    let query_filename = String::from(matches.value_of("query file").unwrap_or("-"));
 
-    if args.len() != 3 {
-        panic!("Please either supply an FST and query file with protein \
-               sequences in FASTA format, or supply an FST and feed such \
-               a FASTA query file through stdin.")
-    }
+    println!("fst {} query {}", fst_filename, query_filename);
 
-    let fst_filename = &args[1];
-    let query_filename = &args[2];
-
-    query(fst_filename, query_filename).unwrap();
+    query(&fst_filename, &query_filename).unwrap();
 }

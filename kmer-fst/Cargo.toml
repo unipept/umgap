@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["Stijn Seghers <stijn.seghers@gmail.com>"]
 
 [dependencies]
+clap = "2"
 csv = "0.14"
 fst = "0.1"
 
