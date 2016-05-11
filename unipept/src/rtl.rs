@@ -1,17 +1,46 @@
 
 use std::collections::HashMap;
 
+use taxon;
 use taxon::{TaxonId, Taxon};
-use lca::LCACalculator;
 use agg::Aggregator;
 
 pub struct RTLCalculator {
-    pub lca_calculator: LCACalculator,
+    pub ranked_ancestors: Vec<Option<TaxonId>>,
+    pub valid_ancestors: Vec<Option<TaxonId>>
 }
 
 impl RTLCalculator {
     pub fn new(taxons: Vec<Taxon>) -> RTLCalculator {
-        RTLCalculator { lca_calculator: LCACalculator::new(taxons) }
+        // Views on the taxons
+        let tree   = taxon::TaxonTree::new(&taxons);
+        let mut by_id: Vec<Option<Taxon>> = (0..tree.max + 1).map(|_| None).collect();
+        for taxon in taxons {
+            let id = taxon.id;
+            by_id[id] = Some(taxon);
+        }
+
+        // Precomputing
+        let valid_ancestors = tree.filter_ancestors(|i: TaxonId| {
+            let ref mtaxon = by_id[i];
+            match *mtaxon {
+                None => false,
+                Some(ref taxon) => taxon.valid
+            }
+        });
+        let ranked_ancestors = tree.filter_ancestors(|i: TaxonId| {
+            let ref mtaxon = by_id[i];
+            match *mtaxon {
+                None => false,
+                Some(ref taxon) => taxon.valid && taxon.rank != taxon::Rank::NoRank
+            }
+        });
+
+        RTLCalculator {
+            ranked_ancestors: ranked_ancestors,
+            valid_ancestors: valid_ancestors
+        }
+
     }
 }
 
@@ -24,9 +53,9 @@ impl Aggregator for RTLCalculator {
         // current method: for each taxon id, loop to the root and add if the ancestor has a count
         // alternative method: for each taxon id, loop over all other and add if the other is an ancestor
         let ancestors = if ranked_only {
-            &self.lca_calculator.ranked_ancestors
+            &self.ranked_ancestors
         } else {
-            &self.lca_calculator.valid_ancestors
+            &self.valid_ancestors
         };
 
         let mut rtl_counts = counts.clone();
