@@ -10,7 +10,9 @@ use clap::{Arg, App};
 
 use unipept::{PKG_NAME, PKG_VERSION, PKG_AUTHORS, taxon};
 use unipept::taxon::TaxonId;
+use unipept::agg::Aggregator;
 use unipept::lca::LCACalculator;
+use unipept::rtl::RTLCalculator;
 
 const ABOUT: &'static str = "
 Aggregates taxa to a single taxon.
@@ -43,14 +45,32 @@ fn main() {
                                .required(true))
                       .get_matches();
 
+    // Parsing the Taxa file
     let filename = matches.value_of("taxon-file").unwrap(); // required argument
-    let taxons   = taxon::read_taxa_file(filename);
-    if taxons.is_err() {
-        println!("Error: {}", taxons.unwrap_err());
+    let mtaxons  = taxon::read_taxa_file(filename);
+    if mtaxons.is_err() {
+        println!("Error: {}", mtaxons.unwrap_err());
         process::exit(1);
     }
-    let calculator = LCACalculator::new(taxons.unwrap());
+    let taxons = mtaxons.unwrap();
 
+    // Parsing the aggregation method
+    let aggregation = if matches.is_present("mrtl") {
+        "MTRL"
+    } else {
+        matches.value_of("aggregate").unwrap_or("LCA*")
+    };
+
+    let ranked_only = matches.is_present("ranked");
+
+    match aggregation {
+        "MTRL" => aggregate(RTLCalculator::new(taxons), ranked_only),
+        "LCA*" => aggregate(LCACalculator::new(taxons), ranked_only),
+        _      => panic!("Unknown aggregation type.")
+    }
+}
+
+fn aggregate<T: Aggregator>(aggregator: T, ranked_only: bool) {
     let input = io::BufReader::new(io::stdin());
     for line in input.lines() {
         if line.is_err() {
@@ -62,7 +82,7 @@ fn main() {
                          .split(' ')
                          .map(|tid| tid.parse::<TaxonId>().unwrap())
                          .collect();
-        println!("{}", calculator.calc_lca(&taxons, matches.is_present("ranked")));
+        println!("{}", aggregator.aggregate(&taxons, ranked_only));
     }
 }
 

@@ -8,6 +8,7 @@ use rmq::RMQ;
 use taxon::Taxon;
 use taxon::TaxonId;
 use taxon;
+use agg::Aggregator;
 
 pub struct LCACalculator {
     pub taxons: Vec<Option<Taxon>>,
@@ -66,7 +67,22 @@ impl LCACalculator {
         }
     }
 
-    pub fn calc_lca(&self, taxons: &Vec<TaxonId>, ranked_only: bool) -> TaxonId {
+    pub fn lca(&self, left: TaxonId, right: TaxonId, ranked_only: bool) -> TaxonId {
+        if left == right { return left; }
+        let ancestors = if ranked_only {
+            &self.ranked_ancestors
+        } else {
+            &self.valid_ancestors
+        };
+        let left_index  = *self.first_occurences.get(&left).expect("Unrecognized Taxon ID");
+        let right_index = *self.first_occurences.get(&right).expect("Unrecognized Taxon ID");
+        let rmq_index   =  self.rmq_info.query(left_index, right_index);
+        ancestors[self.euler_tour[rmq_index]].expect("LCA should be in the list.")
+    }
+}
+
+impl Aggregator for LCACalculator {
+    fn aggregate(&self, taxons: &Vec<TaxonId>, ranked_only: bool) -> TaxonId {
         let ancestors = if ranked_only {
             &self.ranked_ancestors
         } else {
