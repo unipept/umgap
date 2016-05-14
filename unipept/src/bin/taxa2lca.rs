@@ -41,12 +41,18 @@ fn main() {
 
     let input = io::BufReader::new(io::stdin());
     for line in input.lines() {
-        if line.is_err() {
+        let line = line.unwrap_or_else(|_| {
             println!("Error: failed to read an input line.");
             process::exit(2);
+        });
+
+        // Copy FASTA headers
+        if line.chars().nth(0) == Some('>') {
+            println!("{}", line);
+            continue
         }
-        let taxons = line.unwrap()
-                         .trim_right()
+
+        let taxons = line.trim_right()
                          .split(' ')
                          .map(|tid| tid.parse::<TaxonId>().unwrap())
                          .collect();

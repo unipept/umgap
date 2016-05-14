@@ -19,25 +19,27 @@ fn query(fst_filename: &String, k: usize, query_filename: &String) -> Result<()>
     let reader = try!(get_reader(query_filename));
 
     let mut stdout = io::stdout();
-    try!(writeln!(&mut stdout, "fasta_header,peptide,taxon_id"));
 
-    'prots: for prot in reader.records() {
+    for prot in reader.records() {
         let prot = try!(prot);
+
+        if let Err(e) = writeln!(&mut stdout, "{}", prot.header) {
+            if e.kind() == io::ErrorKind::BrokenPipe {
+                break
+            } else {
+                return Err(Error::Io(e))
+            }
+        }
+
+        let mut delim = "";
         for i in 0..(prot.sequence.len() - k + 1) {
             let kmer = &prot.sequence[i..i + k];
             if let Some(taxon_id) = map.get(kmer) {
-                match writeln!(&mut stdout, "{},{},{}", prot.header, kmer, taxon_id) {
-                    Ok(_) => (),
-                    Err(e) => {
-                        if e.kind() == io::ErrorKind::BrokenPipe {
-                            break 'prots
-                        } else {
-                            return Err(Error::Io(e))
-                        }
-                    }
-                }
+                try!(write!(&mut stdout, "{}{}", delim, taxon_id));
+                delim = " ";
             }
         }
+        try!(writeln!(&mut stdout, ""));
     }
 
     Ok(())
