@@ -1,12 +1,12 @@
-extern crate rmq;
+extern crate unipept;
 
-use rmq::*;
+use unipept::rmq::*;
 
 #[test]
 fn test_block_minima() {
     assert_eq!(
-        vec![3, 1],
-        RMQInfo::block_min(&vec![12, 17, 23, 2, 20, 4, 8, 27, 26, 19, 31, 22, 28, 16, 24, 14, 5, 29, 32, 11, 7, 9, 25, 30, 21, 13, 6, 18, 15, 33, 10, 3, /**/ 33, 1])
+        vec![3, 33],
+        RMQ::block_min(&vec![12, 17, 23, 2, 20, 4, 8, 27, 26, 19, 31, 22, 28, 16, 24, 14, 5, 29, 32, 11, 7, 9, 25, 30, 21, 13, 6, 18, 15, 33, 10, 3, /**/ 33, 1])
     );
 }
 
@@ -16,7 +16,7 @@ fn test_sparse() {
         vec![vec![3, 5, 15, 16, 16, 26, 31, 33],
              vec![3, 5, 16, 16, 31, 33],
              vec![3, 33]],
-        RMQInfo::sparse(
+        RMQ::sparse(
             &vec![12, 17, 23, 2,
                   20, 4,  8,  27,
                   26, 19, 31, 22,
@@ -51,7 +51,7 @@ fn array() -> Vec<usize> {
 #[test]
 fn test_rmq_single_block() {
     let array = array();
-    let info = RMQInfo::new(&array);
+    let info = RMQ::new(array);
     assert_eq!(5, info.query(0, 9));
     assert_eq!(18, info.query(10, 19));
 }
@@ -59,14 +59,14 @@ fn test_rmq_single_block() {
 #[test]
 fn test_rmq_two_blocks() {
     let array = array();
-    let info = RMQInfo::new(&array);
+    let info = RMQ::new(array);
     assert_eq!(5, info.query(0, 39));
 }
 
 #[test]
 fn test_rmq_three_blocks() {
     let array = array();
-    let info = RMQInfo::new(&array);
+    let info = RMQ::new(array);
     assert_eq!(5, info.query(0, 69));
     assert_eq!(99, info.query(40, 99));
 }
@@ -74,9 +74,21 @@ fn test_rmq_three_blocks() {
 #[test]
 fn test_rmq_more_blocks() {
     let array = array();
-    let info = RMQInfo::new(&array);
+    let info = RMQ::new(array);
     assert_eq!(5, info.query(0, 99));
     assert_eq!(25, info.query(10, 99));
     assert_eq!(99, info.query(30, 99));
+}
+
+#[test]
+fn test_wave_of_33() {
+    let array = vec![
+        1, 2, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4,
+        3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4,
+        3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4,
+        3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 2, 1
+    ];
+    let info = RMQ::new(array);
+    assert_eq!(2, info.query(2, 64));
 }
 
