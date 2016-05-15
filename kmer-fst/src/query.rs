@@ -21,6 +21,10 @@ fn query(fst_filename: &String, k: usize, query_filename: &String) -> Result<()>
     for prot in reader.records() {
         let prot = try!(prot);
 
+        if prot.sequence.len() < k {
+            continue
+        }
+
         let lcas = (0..(prot.sequence.len() - k + 1))
             .map(|i| &prot.sequence[i..i + k])
             .filter_map(|kmer| map.get(kmer))
