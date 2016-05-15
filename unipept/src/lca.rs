@@ -66,7 +66,7 @@ impl LCACalculator {
         }
     }
 
-    pub fn calc_lca(&self, taxons: &Vec<TaxonId>, ranked_only: bool) -> TaxonId {
+    pub fn calc_lca(&self, taxons: &Vec<TaxonId>, ranked_only: bool) -> &Taxon {
         let ancestors = if ranked_only {
             &self.ranked_ancestors
         } else {
@@ -91,7 +91,8 @@ impl LCACalculator {
             }
             (level, self.euler_tour[lca_index])
         });
-        ancestors[lca].expect("Big bug: lca should exist.")
+        let lca_taxon_id = ancestors[lca].expect("Big bug: lca should exist.");
+        self.taxons[lca_taxon_id].as_ref().expect("Big bug: internal inconsistency.")
     }
 }
 
