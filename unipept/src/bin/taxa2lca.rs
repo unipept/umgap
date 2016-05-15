@@ -32,12 +32,11 @@ fn main() {
                       .get_matches();
 
     let filename = matches.value_of("taxon-file").unwrap(); // required argument
-    let taxons   = taxon::read_taxa_file(filename);
-    if taxons.is_err() {
-        println!("Error: {}", taxons.unwrap_err());
+    let taxons = taxon::read_taxa_file(filename).unwrap_or_else(|err| {
+        println!("Error: {}", err);
         process::exit(1);
-    }
-    let calculator = LCACalculator::new(taxons.unwrap());
+    });
+    let calculator = LCACalculator::new(taxons);
 
     let input = io::BufReader::new(io::stdin());
     for line in input.lines() {
@@ -56,7 +55,8 @@ fn main() {
                          .split(' ')
                          .map(|tid| tid.parse::<TaxonId>().unwrap())
                          .collect();
-        println!("{}", calculator.calc_lca(&taxons, matches.is_present("ranked")));
+        let lca = calculator.calc_lca(&taxons, matches.is_present("ranked"));
+        println!("{},{},{}", lca.id, lca.name, lca.rank);
     }
 }
 
