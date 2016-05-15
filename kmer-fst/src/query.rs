@@ -1,7 +1,7 @@
-#[macro_use]
-extern crate clap;
+#[macro_use] extern crate clap;
 extern crate csv;
 extern crate fst;
+extern crate itertools;
 
 mod errors;
 mod fasta;
@@ -18,28 +18,25 @@ fn query(fst_filename: &String, k: usize, query_filename: &String) -> Result<()>
     let map = try!(fst::Map::from_path(fst_filename));
     let reader = try!(get_reader(query_filename));
 
-    let mut stdout = io::stdout();
-
     for prot in reader.records() {
         let prot = try!(prot);
 
-        if let Err(e) = writeln!(&mut stdout, "{}", prot.header) {
-            if e.kind() == io::ErrorKind::BrokenPipe {
-                break
-            } else {
-                return Err(Error::Io(e))
-            }
-        }
+        let lcas = (0..(prot.sequence.len() - k + 1))
+            .map(|i| &prot.sequence[i..i + k])
+            .filter_map(|kmer| map.get(kmer))
+            .map(|lca| lca.to_string())
+            .collect::<Vec<_>>()
+            .join(" ");
 
-        let mut delim = "";
-        for i in 0..(prot.sequence.len() - k + 1) {
-            let kmer = &prot.sequence[i..i + k];
-            if let Some(taxon_id) = map.get(kmer) {
-                try!(write!(&mut stdout, "{}{}", delim, taxon_id));
-                delim = " ";
+        if ! lcas.is_empty() {
+            if let Err(e) = writeln!(io::stdout(), "{}\n{}", prot.header, lcas) {
+                if e.kind() == io::ErrorKind::BrokenPipe {
+                    break
+                } else {
+                    return Err(Error::Io(e))
+                }
             }
         }
-        try!(writeln!(&mut stdout, ""));
     }
 
     Ok(())
