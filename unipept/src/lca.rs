@@ -82,7 +82,7 @@ impl LCACalculator {
 }
 
 impl Aggregator for LCACalculator {
-    fn aggregate(&self, taxons: &Vec<TaxonId>, ranked_only: bool) -> TaxonId {
+    fn aggregate(&self, taxons: &Vec<TaxonId>, ranked_only: bool) -> &Taxon {
         let ancestors = if ranked_only {
             &self.ranked_ancestors
         } else {
@@ -107,7 +107,8 @@ impl Aggregator for LCACalculator {
             }
             (level, self.euler_tour[lca_index])
         });
-        ancestors[lca].expect("Big bug: lca should exist.")
+        let lca_taxon_id = ancestors[lca].expect("Big bug: lca should exist.");
+        self.taxons[lca_taxon_id].as_ref().expect("Taxonomy inconsistency.")
     }
 }
 

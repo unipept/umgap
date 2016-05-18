@@ -1,0 +1,11 @@
+# Rust build dir
+target
+
+# FST files
+*.fst
+
+# Data
+*.faa
+*.lca
+*.tsv
+*.txt
