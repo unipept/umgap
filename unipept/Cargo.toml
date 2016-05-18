@@ -1,7 +1,8 @@
 [package]
 name = "unipept"
 version = "0.1.0"
-authors = ["Felix Van der Jeugt <felix.vanderjeugt@gmail.com>", "hello"]
+authors = ["Felix Van der Jeugt <felix.vanderjeugt@gmail.com>",
+           "Stijn Seghers <stijn.seghers@gmail.com>"]
 
 [dependencies]
 clap = "2.3.0"

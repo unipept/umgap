@@ -1,7 +1,9 @@
 
+pub mod taxon;
+pub mod agg;
 pub mod rmq;
 pub mod lca;
-pub mod taxon;
+pub mod rtl;
 
 pub const PKG_VERSION: &'static str = env!("CARGO_PKG_VERSION");
 pub const PKG_NAME:    &'static str = env!("CARGO_PKG_NAME");
