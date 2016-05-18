@@ -1,4 +1,3 @@
-
 extern crate unipept;
 extern crate clap;
 
@@ -47,12 +46,10 @@ fn main() {
 
     // Parsing the Taxa file
     let filename = matches.value_of("taxon-file").unwrap(); // required argument
-    let mtaxons  = taxon::read_taxa_file(filename);
-    if mtaxons.is_err() {
-        println!("Error: {}", mtaxons.unwrap_err());
+    let taxons = taxon::read_taxa_file(filename).unwrap_or_else(|err| {
+        println!("Error: {}", err);
         process::exit(1);
-    }
-    let taxons = mtaxons.unwrap();
+    });
 
     // Parsing the aggregation method
     let aggregation = if matches.is_present("mrtl") {
@@ -73,16 +70,23 @@ fn main() {
 fn aggregate<T: Aggregator>(aggregator: T, ranked_only: bool) {
     let input = io::BufReader::new(io::stdin());
     for line in input.lines() {
-        if line.is_err() {
+        let line = line.unwrap_or_else(|_| {
             println!("Error: failed to read an input line.");
             process::exit(2);
+        });
+
+        // Copy FASTA headers
+        if line.chars().nth(0) == Some('>') {
+            println!("{}", line);
+            continue
         }
-        let taxons = line.unwrap()
-                         .trim_right()
+
+        let taxons = line.trim_right()
                          .split(' ')
                          .map(|tid| tid.parse::<TaxonId>().unwrap())
                          .collect();
-        println!("{}", aggregator.aggregate(&taxons, ranked_only));
+
+        let aggregate = aggregator.aggregate(&taxons, ranked_only);
+        println!("{},{},{}", aggregate.id, aggregate.name, aggregate.rank);
     }
 }
-

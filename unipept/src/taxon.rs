@@ -1,4 +1,4 @@
-
+use std::fmt;
 use std::io;
 use std::io::BufRead;
 use std::fs::File;
@@ -56,6 +56,43 @@ impl FromStr for Rank {
             "forma"            => Ok(Rank::Forma),
             _                  => Err("Unknown taxon rank.")
         }
+    }
+}
+
+impl fmt::Display for Rank {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let stringified = match *self {
+            Rank::NoRank          => "no rank",
+            Rank::Superkingdom    => "superkingdom",
+            Rank::Kingdom         => "kingdom",
+            Rank::Subkingdom      => "subkingdom",
+            Rank::Superphylum     => "superphylum",
+            Rank::Phylum          => "phylum",
+            Rank::Subphylum       => "subphylum",
+            Rank::Superclass      => "superclass",
+            Rank::Class           => "class",
+            Rank::Subclass        => "subclass",
+            Rank::Infraclass      => "infraclass",
+            Rank::Superorder      => "superorder",
+            Rank::Order           => "order",
+            Rank::Suborder        => "suborder",
+            Rank::Infraorder      => "infraorder",
+            Rank::Parvorder       => "parvorder",
+            Rank::Superfamily     => "superfamily",
+            Rank::Family          => "family",
+            Rank::Subfamily       => "subfamily",
+            Rank::Tribe           => "tribe",
+            Rank::Subtribe        => "subtribe",
+            Rank::Genus           => "genus",
+            Rank::Subgenus        => "subgenus",
+            Rank::SpeciesGroup    => "species group",
+            Rank::SpeciesSubgroup => "species subgroup",
+            Rank::Species         => "species",
+            Rank::Subspecies      => "subspecies",
+            Rank::Varietas        => "varietas",
+            Rank::Forma           => "forma",
+        };
+        write!(f, "{}", stringified)
     }
 }
 

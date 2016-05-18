@@ -1,0 +1,18 @@
+[package]
+name = "kmer-index"
+version = "0.1.0"
+authors = ["Stijn Seghers <stijn.seghers@gmail.com>"]
+
+[dependencies]
+clap = "2"
+csv = "0.14"
+fst = "0.1"
+itertools = "0.4"
+
+[[bin]]
+name = "build-index"
+path = "src/build.rs"
+
+[[bin]]
+name = "prot2kmer2lca"
+path = "src/query.rs"

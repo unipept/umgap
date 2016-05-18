@@ -6,6 +6,7 @@ use taxon::{TaxonId, Taxon};
 use agg::Aggregator;
 
 pub struct RTLCalculator {
+    pub taxons: Vec<Option<Taxon>>,
     pub ranked_ancestors: Vec<Option<TaxonId>>,
     pub valid_ancestors: Vec<Option<TaxonId>>
 }
@@ -37,6 +38,7 @@ impl RTLCalculator {
         });
 
         RTLCalculator {
+            taxons: by_id,
             ranked_ancestors: ranked_ancestors,
             valid_ancestors: valid_ancestors
         }
@@ -45,7 +47,7 @@ impl RTLCalculator {
 }
 
 impl Aggregator for RTLCalculator {
-    fn aggregate(&self, taxons: &Vec<TaxonId>, ranked_only: bool) -> TaxonId {
+    fn aggregate(&self, taxons: &Vec<TaxonId>, ranked_only: bool) -> &Taxon {
         // Count the occurences
         let mut counts = HashMap::new();
         for taxon in taxons { *counts.entry(*taxon).or_insert(0) += 1; }
@@ -68,9 +70,10 @@ impl Aggregator for RTLCalculator {
             }
         }
 
-        *rtl_counts.iter()
-                   .max_by_key(|&(_, count)| count)
-                   .unwrap_or((&1, &0))
-                   .0
+        let rtl_taxon_id = *rtl_counts.iter()
+                                      .max_by_key(|&(_, count)| count)
+                                      .unwrap_or((&1, &0))
+                                      .0;
+        self.taxons[rtl_taxon_id].as_ref().expect("Taxonomy inconsistency.")
     }
 }

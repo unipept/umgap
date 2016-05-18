@@ -1,7 +1,5 @@
-
-use taxon::TaxonId;
+use taxon::{Taxon, TaxonId};
 
 pub trait Aggregator {
-    fn aggregate(&self, taxons: &Vec<TaxonId>, ranked_only: bool) -> TaxonId;
+    fn aggregate(&self, taxons: &Vec<TaxonId>, ranked_only: bool) -> &Taxon;
 }
-
