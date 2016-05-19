@@ -61,13 +61,13 @@ fn main() {
     let ranked_only = matches.is_present("ranked");
 
     match aggregation {
-        "MTRL" => aggregate(RTLCalculator::new(taxons), ranked_only),
-        "LCA*" => aggregate(LCACalculator::new(taxons), ranked_only),
+        "MTRL" => aggregate(RTLCalculator::new(taxons, ranked_only)),
+        "LCA*" => aggregate(LCACalculator::new(taxons, ranked_only)),
         _      => panic!("Unknown aggregation type.")
     }
 }
 
-fn aggregate<T: Aggregator>(aggregator: T, ranked_only: bool) {
+fn aggregate<T: Aggregator>(aggregator: T) {
     let input = io::BufReader::new(io::stdin());
     for line in input.lines() {
         let line = line.unwrap_or_else(|_| {
@@ -86,7 +86,7 @@ fn aggregate<T: Aggregator>(aggregator: T, ranked_only: bool) {
                          .map(|tid| tid.parse::<TaxonId>().unwrap())
                          .collect();
 
-        let aggregate = aggregator.aggregate(&taxons, ranked_only);
+        let aggregate = aggregator.aggregate(&taxons);
         println!("{},{},{}", aggregate.id, aggregate.name, aggregate.rank);
     }
 }
