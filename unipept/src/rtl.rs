@@ -14,11 +14,7 @@ impl Aggregator for RTLCalculator {
     fn new(taxons: Vec<Taxon>, ranked_only: bool) -> Self {
         // Views on the taxons
         let tree   = taxon::TaxonTree::new(&taxons);
-        let mut by_id: Vec<Option<Taxon>> = (0..tree.max + 1).map(|_| None).collect();
-        for taxon in taxons {
-            let id = taxon.id;
-            by_id[id] = Some(taxon);
-        }
+        let by_id  = taxon::taxa_vector_by_id(taxons);
 
         // Precomputing
         let ancestors = if ranked_only {
