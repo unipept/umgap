@@ -15,12 +15,21 @@ pub struct LCACalculator {
     pub first_occurences: HashMap<TaxonId, usize>,
     pub euler_tour: Vec<TaxonId>,
     pub rmq_info: RMQ<usize>,
-    pub valid_ancestors: Vec<Option<TaxonId>>,
-    pub ranked_ancestors: Vec<Option<TaxonId>>
+    pub ancestors: Vec<Option<TaxonId>>,
 }
 
 impl LCACalculator {
-    pub fn new(taxons: Vec<Taxon>) -> LCACalculator {
+    pub fn lca(&self, left: TaxonId, right: TaxonId) -> TaxonId {
+        if left == right { return left; }
+        let left_index  = *self.first_occurences.get(&left).expect("Unrecognized Taxon ID");
+        let right_index = *self.first_occurences.get(&right).expect("Unrecognized Taxon ID");
+        let rmq_index   =  self.rmq_info.query(left_index, right_index);
+        self.ancestors[self.euler_tour[rmq_index]].expect("LCA should be in the list.")
+    }
+}
+
+impl Aggregator for LCACalculator {
+    fn new(taxons: Vec<Taxon>, ranked_only: bool) -> Self {
         // Views on the taxons
         let     length = taxons.len();
         let     tree   = taxon::TaxonTree::new(&taxons);
@@ -31,20 +40,23 @@ impl LCACalculator {
         }
 
         // Precomputing
-        let valid_ancestors = tree.filter_ancestors(|i: TaxonId| {
-            let ref mtaxon = by_id[i];
-            match *mtaxon {
-                None => false,
-                Some(ref taxon) => taxon.valid
-            }
-        });
-        let ranked_ancestors = tree.filter_ancestors(|i: TaxonId| {
-            let ref mtaxon = by_id[i];
-            match *mtaxon {
-                None => false,
-                Some(ref taxon) => taxon.valid && taxon.rank != taxon::Rank::NoRank
-            }
-        });
+        let ancestors = if ranked_only {
+            tree.filter_ancestors(|i: TaxonId| {
+                let ref mtaxon = by_id[i];
+                match *mtaxon {
+                    None => false,
+                    Some(ref taxon) => taxon.valid && taxon.rank != taxon::Rank::NoRank
+                }
+            })
+        } else {
+            tree.filter_ancestors(|i: TaxonId| {
+                let ref mtaxon = by_id[i];
+                match *mtaxon {
+                    None => false,
+                    Some(ref taxon) => taxon.valid
+                }
+            })
+        };
 
         // Euler tour
         let mut euler_tour       = Vec::with_capacity(length);
@@ -62,33 +74,12 @@ impl LCACalculator {
             first_occurences: first_occurences,
             euler_tour: euler_tour,
             rmq_info: RMQ::new(depths),
-            valid_ancestors: valid_ancestors,
-            ranked_ancestors: ranked_ancestors
+            ancestors: ancestors
         }
     }
 
-    pub fn lca(&self, left: TaxonId, right: TaxonId, ranked_only: bool) -> TaxonId {
-        if left == right { return left; }
-        let ancestors = if ranked_only {
-            &self.ranked_ancestors
-        } else {
-            &self.valid_ancestors
-        };
-        let left_index  = *self.first_occurences.get(&left).expect("Unrecognized Taxon ID");
-        let right_index = *self.first_occurences.get(&right).expect("Unrecognized Taxon ID");
-        let rmq_index   =  self.rmq_info.query(left_index, right_index);
-        ancestors[self.euler_tour[rmq_index]].expect("LCA should be in the list.")
-    }
-}
-
-impl Aggregator for LCACalculator {
-    fn aggregate(&self, taxons: &Vec<TaxonId>, ranked_only: bool) -> &Taxon {
-        let ancestors = if ranked_only {
-            &self.ranked_ancestors
-        } else {
-            &self.valid_ancestors
-        };
-        let mut iter = taxons.into_iter().map(|&t| ancestors[t].expect("Unrecognized Taxon ID"));
+    fn aggregate(&self, taxons: &Vec<TaxonId>) -> &Taxon {
+        let mut iter = taxons.into_iter().map(|&t| self.ancestors[t].expect("Unrecognized Taxon ID"));
         let initial_level: Option<usize> = None;
         let first = iter.next().expect("LCA called on empty list");
         let (_, lca) = iter.fold((initial_level, first), |(join_level, left), right| {
@@ -107,7 +98,7 @@ impl Aggregator for LCACalculator {
             }
             (level, self.euler_tour[lca_index])
         });
-        let lca_taxon_id = ancestors[lca].expect("Big bug: lca should exist.");
+        let lca_taxon_id = self.ancestors[lca].expect("Big bug: lca should exist.");
         self.taxons[lca_taxon_id].as_ref().expect("Taxonomy inconsistency.")
     }
 }

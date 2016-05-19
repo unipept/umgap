@@ -19,33 +19,34 @@ fn taxon_list() -> Vec<Taxon> {
 #[test]
 fn test_two_on_same_path() {
     let taxon_list = taxon_list();
-    let calculator = LCACalculator::new(taxon_list);
-    assert_eq!(185752, calculator.aggregate(&vec![12884, 185752], false).id);
-    assert_eq!(185752, calculator.aggregate(&vec![185752, 12884], false).id);
-    assert_eq!(2, calculator.aggregate(&vec![1, 2], false).id);
-    assert_eq!(2, calculator.aggregate(&vec![2, 1], false).id);
+    let calculator = LCACalculator::new(taxon_list, false);
+    assert_eq!(185752, calculator.aggregate(&vec![12884, 185752]).id);
+    assert_eq!(185752, calculator.aggregate(&vec![185752, 12884]).id);
+    assert_eq!(2, calculator.aggregate(&vec![1, 2]).id);
+    assert_eq!(2, calculator.aggregate(&vec![2, 1]).id);
 }
 
 #[test]
 fn test_two_on_fork() {
-    let taxon_list = taxon_list();
-    let calculator = LCACalculator::new(taxon_list);
-    assert_eq!(1, calculator.aggregate(&vec![2, 10239], false).id);
-    assert_eq!(1, calculator.aggregate(&vec![10239, 2], false).id);
-    assert_eq!(12884, calculator.aggregate(&vec![185751, 185752], true).id);
-    assert_eq!(12884, calculator.aggregate(&vec![185752, 185751], true).id);
+    let calculator = LCACalculator::new(taxon_list(), false);
+    assert_eq!(1, calculator.aggregate(&vec![2, 10239]).id);
+    assert_eq!(1, calculator.aggregate(&vec![10239, 2]).id);
+
+    let calculator = LCACalculator::new(taxon_list(), true);
+    assert_eq!(12884, calculator.aggregate(&vec![185751, 185752]).id);
+    assert_eq!(12884, calculator.aggregate(&vec![185752, 185751]).id);
 }
 
 #[test]
 fn test_three_on_triangle() {
     let taxon_list = taxon_list();
-    let calculator = LCACalculator::new(taxon_list);
-    assert_eq!(12884, calculator.aggregate(&vec![12884, 185751, 185752], false).id);
-    assert_eq!(12884, calculator.aggregate(&vec![12884, 185752, 185751], false).id);
-    assert_eq!(12884, calculator.aggregate(&vec![185751, 12884, 185752], false).id);
-    assert_eq!(12884, calculator.aggregate(&vec![185752, 12884, 185751], false).id);
-    assert_eq!(12884, calculator.aggregate(&vec![185751, 185752, 12884], false).id);
-    assert_eq!(12884, calculator.aggregate(&vec![185752, 185751, 12884], false).id);
+    let calculator = LCACalculator::new(taxon_list, false);
+    assert_eq!(12884, calculator.aggregate(&vec![12884, 185751, 185752]).id);
+    assert_eq!(12884, calculator.aggregate(&vec![12884, 185752, 185751]).id);
+    assert_eq!(12884, calculator.aggregate(&vec![185751, 12884, 185752]).id);
+    assert_eq!(12884, calculator.aggregate(&vec![185752, 12884, 185751]).id);
+    assert_eq!(12884, calculator.aggregate(&vec![185751, 185752, 12884]).id);
+    assert_eq!(12884, calculator.aggregate(&vec![185752, 185751, 12884]).id);
 }
 
 fn taxon(id: TaxonId, parent: TaxonId) -> Taxon {
@@ -75,11 +76,11 @@ fn large_taxon_list() -> Vec<Taxon> {
 #[test]
 fn test_with_deeper_interns() {
     let taxon_list = large_taxon_list();
-    let calculator = LCACalculator::new(taxon_list);
-    assert_eq!(3, calculator.aggregate(&vec![9, 7], false).id);
-    assert_eq!(3, calculator.aggregate(&vec![9, 10], false).id);
-    assert_eq!(3, calculator.aggregate(&vec![7, 9], false).id);
-    assert_eq!(3, calculator.aggregate(&vec![14, 8], false).id);
-    assert_eq!(3, calculator.aggregate(&vec![14, 8], false).id);
+    let calculator = LCACalculator::new(taxon_list, false);
+    assert_eq!(3, calculator.aggregate(&vec![9, 7]).id);
+    assert_eq!(3, calculator.aggregate(&vec![9, 10]).id);
+    assert_eq!(3, calculator.aggregate(&vec![7, 9]).id);
+    assert_eq!(3, calculator.aggregate(&vec![14, 8]).id);
+    assert_eq!(3, calculator.aggregate(&vec![14, 8]).id);
 }
 

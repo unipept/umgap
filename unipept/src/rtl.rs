@@ -7,12 +7,11 @@ use agg::Aggregator;
 
 pub struct RTLCalculator {
     pub taxons: Vec<Option<Taxon>>,
-    pub ranked_ancestors: Vec<Option<TaxonId>>,
-    pub valid_ancestors: Vec<Option<TaxonId>>
+    pub ancestors: Vec<Option<TaxonId>>,
 }
 
-impl RTLCalculator {
-    pub fn new(taxons: Vec<Taxon>) -> RTLCalculator {
+impl Aggregator for RTLCalculator {
+    fn new(taxons: Vec<Taxon>, ranked_only: bool) -> Self {
         // Views on the taxons
         let tree   = taxon::TaxonTree::new(&taxons);
         let mut by_id: Vec<Option<Taxon>> = (0..tree.max + 1).map(|_| None).collect();
@@ -22,48 +21,42 @@ impl RTLCalculator {
         }
 
         // Precomputing
-        let valid_ancestors = tree.filter_ancestors(|i: TaxonId| {
-            let ref mtaxon = by_id[i];
-            match *mtaxon {
-                None => false,
-                Some(ref taxon) => taxon.valid
-            }
-        });
-        let ranked_ancestors = tree.filter_ancestors(|i: TaxonId| {
-            let ref mtaxon = by_id[i];
-            match *mtaxon {
-                None => false,
-                Some(ref taxon) => taxon.valid && taxon.rank != taxon::Rank::NoRank
-            }
-        });
+        let ancestors = if ranked_only {
+            tree.filter_ancestors(|i: TaxonId| {
+                let ref mtaxon = by_id[i];
+                match *mtaxon {
+                    None => false,
+                    Some(ref taxon) => taxon.valid && taxon.rank != taxon::Rank::NoRank
+                }
+            })
+        } else {
+            tree.filter_ancestors(|i: TaxonId| {
+                let ref mtaxon = by_id[i];
+                match *mtaxon {
+                    None => false,
+                    Some(ref taxon) => taxon.valid
+                }
+            })
+        };
 
         RTLCalculator {
             taxons: by_id,
-            ranked_ancestors: ranked_ancestors,
-            valid_ancestors: valid_ancestors
+            ancestors: ancestors,
         }
 
     }
-}
-
-impl Aggregator for RTLCalculator {
-    fn aggregate(&self, taxons: &Vec<TaxonId>, ranked_only: bool) -> &Taxon {
+    fn aggregate(&self, taxons: &Vec<TaxonId>) -> &Taxon {
         // Count the occurences
         let mut counts = HashMap::new();
         for taxon in taxons { *counts.entry(*taxon).or_insert(0) += 1; }
 
         // current method: for each taxon id, loop to the root and add if the ancestor has a count
         // alternative method: for each taxon id, loop over all other and add if the other is an ancestor
-        let ancestors = if ranked_only {
-            &self.ranked_ancestors
-        } else {
-            &self.valid_ancestors
-        };
 
         let mut rtl_counts = counts.clone();
         for (taxon, count) in rtl_counts.iter_mut() {
             let mut next = *taxon;
-            while let Some(ancestor) = ancestors[next] {
+            while let Some(ancestor) = self.ancestors[next] {
                 if ancestor == next { break; }
                 *count += *counts.get(&next).unwrap_or(&0);
                 next = ancestor;
