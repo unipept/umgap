@@ -220,6 +220,16 @@ impl TaxonTree {
     pub fn child_count(&self, whose: TaxonId) -> usize {
         self.children.get(&whose).map(|v| v.len()).unwrap_or(0)
     }
+
+    pub fn ancestors(&self, taxons: &Vec<Option<Taxon>>, ranked_only: bool) -> Vec<Option<TaxonId>> {
+        self.filter_ancestors(|i: TaxonId| {
+            let ref mtaxon = taxons[i];
+            match *mtaxon {
+                None => false,
+                Some(ref taxon) => taxon.valid && (!ranked_only || taxon.rank != Rank::NoRank)
+            }
+        })
+    }
 }
 
 pub type Depth = usize;
