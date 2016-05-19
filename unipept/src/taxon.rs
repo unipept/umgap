@@ -213,7 +213,7 @@ impl TaxonTree {
     pub fn filter_ancestors<F>(&self, filter: F) -> Vec<Option<TaxonId>>
     where F: Fn(TaxonId) -> bool {
         let mut valid_ancestors = (0..self.max + 1).map(|_| None).collect();
-        self.with_filtered(&mut valid_ancestors, self.root, None, &filter);
+        self.with_filtered(&mut valid_ancestors, self.root, Some(self.root), &filter);
         valid_ancestors
     }
 
