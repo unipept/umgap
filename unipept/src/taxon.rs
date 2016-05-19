@@ -156,10 +156,22 @@ pub fn read_taxa_file(filename: &str) -> Result<Vec<Taxon>, &'static str> {
     Ok(taxa)
 }
 
+pub fn taxa_vector_by_id(taxons: Vec<Taxon>) -> Vec<Option<Taxon>> {
+    // new vec, with at least the length of the current one
+    let max_id = taxons.iter().map(|t: &Taxon| t.id).max().unwrap_or(0);
+    let mut by_id = Vec::with_capacity(max_id + 1);
+    by_id.resize(max_id + 1, None);
+    for taxon in taxons {
+        let id = taxon.id;
+        by_id[id] = Some(taxon);
+    }
+    by_id
+}
+
 pub struct TaxonTree {
     pub root: TaxonId,
     pub children: HashMap<TaxonId, Vec<TaxonId>>,
-    pub max: TaxonId
+    max: TaxonId
 }
 
 impl TaxonTree {
