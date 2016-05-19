@@ -31,28 +31,10 @@ impl LCACalculator {
 impl Aggregator for LCACalculator {
     fn new(taxons: Vec<Taxon>, ranked_only: bool) -> Self {
         // Views on the taxons
-        let length = taxons.len();
-        let tree   = taxon::TaxonTree::new(&taxons);
-        let by_id  = taxon::taxa_vector_by_id(taxons);
-
-        // Precomputing
-        let ancestors = if ranked_only {
-            tree.filter_ancestors(|i: TaxonId| {
-                let ref mtaxon = by_id[i];
-                match *mtaxon {
-                    None => false,
-                    Some(ref taxon) => taxon.valid && taxon.rank != taxon::Rank::NoRank
-                }
-            })
-        } else {
-            tree.filter_ancestors(|i: TaxonId| {
-                let ref mtaxon = by_id[i];
-                match *mtaxon {
-                    None => false,
-                    Some(ref taxon) => taxon.valid
-                }
-            })
-        };
+        let length    = taxons.len();
+        let tree      = taxon::TaxonTree::new(&taxons);
+        let by_id     = taxon::taxa_vector_by_id(taxons);
+        let ancestors = tree.ancestors(&by_id, ranked_only);
 
         // Euler tour
         let mut euler_tour       = Vec::with_capacity(length);
