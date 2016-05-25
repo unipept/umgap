@@ -221,7 +221,7 @@ impl TaxonTree {
         self.children.get(&whose).map(|v| v.len()).unwrap_or(0)
     }
 
-    pub fn ancestors(&self, taxons: &Vec<Option<Taxon>>, ranked_only: bool) -> Vec<Option<TaxonId>> {
+    pub fn snapping(&self, taxons: &Vec<Option<Taxon>>, ranked_only: bool) -> Vec<Option<TaxonId>> {
         self.filter_ancestors(|i: TaxonId| {
             let ref mtaxon = taxons[i];
             match *mtaxon {
