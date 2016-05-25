@@ -15,7 +15,7 @@ pub struct LCACalculator {
     pub first_occurences: HashMap<TaxonId, usize>,
     pub euler_tour: Vec<TaxonId>,
     pub rmq_info: RMQ<usize>,
-    pub ancestors: Vec<Option<TaxonId>>,
+    pub snapping: Vec<Option<TaxonId>>,
 }
 
 impl LCACalculator {
@@ -24,7 +24,7 @@ impl LCACalculator {
         let left_index  = *self.first_occurences.get(&left).expect("Unrecognized Taxon ID");
         let right_index = *self.first_occurences.get(&right).expect("Unrecognized Taxon ID");
         let rmq_index   =  self.rmq_info.query(left_index, right_index);
-        self.ancestors[self.euler_tour[rmq_index]].expect("LCA should be in the list.")
+        self.snapping[self.euler_tour[rmq_index]].expect("LCA should be in the list.")
     }
 }
 
@@ -34,7 +34,7 @@ impl Aggregator for LCACalculator {
         let length    = taxons.len();
         let tree      = taxon::TaxonTree::new(&taxons);
         let by_id     = taxon::taxa_vector_by_id(taxons);
-        let ancestors = tree.ancestors(&by_id, ranked_only);
+        let snapping = tree.snapping(&by_id, ranked_only);
 
         // Euler tour
         let mut euler_tour       = Vec::with_capacity(length);
@@ -52,12 +52,12 @@ impl Aggregator for LCACalculator {
             first_occurences: first_occurences,
             euler_tour: euler_tour,
             rmq_info: RMQ::new(depths),
-            ancestors: ancestors
+            snapping: snapping
         }
     }
 
     fn aggregate(&self, taxons: &Vec<TaxonId>) -> &Taxon {
-        let mut iter = taxons.into_iter().map(|&t| self.ancestors[t].expect("Unrecognized Taxon ID"));
+        let mut iter = taxons.into_iter().map(|&t| self.snapping[t].expect("Unrecognized Taxon ID"));
         let initial_level: Option<usize> = None;
         let first = iter.next().expect("LCA called on empty list");
         let (_, lca) = iter.fold((initial_level, first), |(join_level, left), right| {
@@ -76,7 +76,7 @@ impl Aggregator for LCACalculator {
             }
             (level, self.euler_tour[lca_index])
         });
-        let lca_taxon_id = self.ancestors[lca].expect("Big bug: lca should exist.");
+        let lca_taxon_id = self.snapping[lca].expect("Big bug: lca should exist.");
         self.taxons[lca_taxon_id].as_ref().expect("Taxonomy inconsistency.")
     }
 }

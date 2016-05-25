@@ -15,14 +15,20 @@ impl Aggregator for RTLCalculator {
         // Views on the taxons
         let tree      = taxon::TaxonTree::new(&taxons);
         let by_id     = taxon::taxa_vector_by_id(taxons);
-        let ancestors = tree.ancestors(&by_id, ranked_only);
+        let snapping  = tree.snapping(&by_id, ranked_only);
+
+        let mut ancestors: Vec<Option<TaxonId>> = by_id.iter().map(|mtaxon| match mtaxon {
+            &Some(ref taxon) => snapping[taxon.parent],
+            &None            => None
+        }).collect();
+        ancestors[1] = None;
 
         RTLCalculator {
             taxons: by_id,
-            ancestors: ancestors,
+            ancestors: ancestors
         }
-
     }
+
     fn aggregate(&self, taxons: &Vec<TaxonId>) -> &Taxon {
         // Count the occurences
         let mut counts = HashMap::new();
@@ -35,10 +41,13 @@ impl Aggregator for RTLCalculator {
         for (taxon, count) in rtl_counts.iter_mut() {
             let mut next = *taxon;
             while let Some(ancestor) = self.ancestors[next] {
-                if ancestor == next { break; }
-                *count += *counts.get(&next).unwrap_or(&0);
+                *count += *counts.get(&ancestor).unwrap_or(&0);
                 next = ancestor;
             }
+        }
+
+        for (taxon, count) in rtl_counts.iter() {
+            println!("{} -> {}", taxon, count);
         }
 
         let rtl_taxon_id = *rtl_counts.iter()
