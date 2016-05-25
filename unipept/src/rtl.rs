@@ -46,10 +46,6 @@ impl Aggregator for RTLCalculator {
             }
         }
 
-        for (taxon, count) in rtl_counts.iter() {
-            println!("{} -> {}", taxon, count);
-        }
-
         let rtl_taxon_id = *rtl_counts.iter()
                                       .max_by_key(|&(_, count)| count)
                                       .unwrap_or((&1, &0))
