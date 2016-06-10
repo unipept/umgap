@@ -1,17 +1,20 @@
 extern crate unipept;
 extern crate clap;
+extern crate num_rational;
 
 use std::process;
 use std::io;
 use std::io::BufRead;
 
 use clap::{Arg, App};
+use num_rational::Ratio;
 
 use unipept::{PKG_NAME, PKG_VERSION, PKG_AUTHORS, taxon};
 use unipept::taxon::TaxonId;
 use unipept::agg::Aggregator;
 use unipept::lca::LCACalculator;
 use unipept::rtl::RTLCalculator;
+use unipept::mix::MixCalculator;
 
 const ABOUT: &'static str = "
 Aggregates taxa to a single taxon.
@@ -32,12 +35,23 @@ fn main() {
                                .long("aggregate")
                                .takes_value(true)
                                .conflicts_with("mrtl")
-                               .possible_values(&["LCA*", "MRTL"]))
+                               .conflicts_with("both")
+                               .possible_values(&["LCA*", "MRTL", "both"]))
                       .arg(Arg::with_name("mrtl")
                                .help("Short for --aggregate=MRTL")
                                .short("m")
                                .long("mrtl")
                                .conflicts_with("aggregate"))
+                      .arg(Arg::with_name("both")
+                               .help("Short for --aggregate=both")
+                               .short("b")
+                               .long("both")
+                               .conflicts_with("aggregate"))
+                      .arg(Arg::with_name("factor")
+                               .help("Factor used with aggregate both")
+                               .short("f")
+                               .long("factor")
+                               .takes_value(true))
                       .arg(Arg::with_name("taxon-file")
                                .help("The NCBI taxonomy tsv-file")
                                .index(1)
@@ -52,17 +66,21 @@ fn main() {
     });
 
     // Parsing the aggregation method
-    let aggregation = if matches.is_present("mrtl") {
-        "MTRL"
-    } else {
-        matches.value_of("aggregate").unwrap_or("LCA*")
-    };
+    let aggregation = if matches.is_present("mrtl") { "MTRL" }
+                 else if matches.is_present("both") { "both" }
+                 else { matches.value_of("aggregate").unwrap_or("LCA*") };
 
     let ranked_only = matches.is_present("ranked");
+    let factor      = matches.value_of("factor").unwrap_or("0")
+                             .parse::<Ratio<usize>>().unwrap_or_else(|_| {
+                                 println!("Error: failed to parse the factor.");
+                                 process::exit(2);
+                             });
 
     match aggregation {
         "MTRL" => aggregate(RTLCalculator::new(taxons, ranked_only)),
         "LCA*" => aggregate(LCACalculator::new(taxons, ranked_only)),
+        "both" => aggregate(MixCalculator::new(taxons, ranked_only, factor)),
         _      => panic!("Unknown aggregation type.")
     }
 }

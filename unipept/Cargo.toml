@@ -6,3 +6,5 @@ authors = ["Felix Van der Jeugt <felix.vanderjeugt@gmail.com>",
 
 [dependencies]
 clap = "2.3.0"
+num-rational = "0.1.32"
+num-traits = "0.1.32"

@@ -10,8 +10,8 @@ pub struct RTLCalculator {
     pub ancestors: Vec<Option<TaxonId>>,
 }
 
-impl Aggregator for RTLCalculator {
-    fn new(taxons: Vec<Taxon>, ranked_only: bool) -> Self {
+impl RTLCalculator {
+    pub fn new(taxons: Vec<Taxon>, ranked_only: bool) -> Self {
         // Views on the taxons
         let tree      = taxon::TaxonTree::new(&taxons);
         let by_id     = taxon::taxa_vector_by_id(taxons);
@@ -28,7 +28,9 @@ impl Aggregator for RTLCalculator {
             ancestors: ancestors
         }
     }
+}
 
+impl Aggregator for RTLCalculator {
     fn aggregate(&self, taxons: &Vec<TaxonId>) -> &Taxon {
         // Count the occurences
         let mut counts = HashMap::new();
