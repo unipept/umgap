@@ -19,17 +19,7 @@ pub struct LCACalculator {
 }
 
 impl LCACalculator {
-    pub fn lca(&self, left: TaxonId, right: TaxonId) -> TaxonId {
-        if left == right { return left; }
-        let left_index  = *self.first_occurences.get(&left).expect("Unrecognized Taxon ID");
-        let right_index = *self.first_occurences.get(&right).expect("Unrecognized Taxon ID");
-        let rmq_index   =  self.rmq_info.query(left_index, right_index);
-        self.snapping[self.euler_tour[rmq_index]].expect("LCA should be in the list.")
-    }
-}
-
-impl Aggregator for LCACalculator {
-    fn new(taxons: Vec<Taxon>, ranked_only: bool) -> Self {
+    pub fn new(taxons: Vec<Taxon>, ranked_only: bool) -> Self {
         // Views on the taxons
         let length    = taxons.len();
         let tree      = taxon::TaxonTree::new(&taxons);
@@ -56,6 +46,16 @@ impl Aggregator for LCACalculator {
         }
     }
 
+    pub fn lca(&self, left: TaxonId, right: TaxonId) -> TaxonId {
+        if left == right { return left; }
+        let left_index  = *self.first_occurences.get(&left).expect("Unrecognized Taxon ID");
+        let right_index = *self.first_occurences.get(&right).expect("Unrecognized Taxon ID");
+        let rmq_index   =  self.rmq_info.query(left_index, right_index);
+        self.snapping[self.euler_tour[rmq_index]].expect("LCA should be in the list.")
+    }
+}
+
+impl Aggregator for LCACalculator {
     fn aggregate(&self, taxons: &Vec<TaxonId>) -> &Taxon {
         let mut iter = taxons.into_iter().map(|&t| self.snapping[t].expect("Unrecognized Taxon ID"));
         let initial_level: Option<usize> = None;
