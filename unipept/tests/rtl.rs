@@ -2,7 +2,7 @@
 extern crate unipept;
 
 use unipept::agg::*;
-use unipept::rtl::*;
+use unipept::rmq::rtl::*;
 
 mod fixtures;
 

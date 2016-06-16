@@ -7,7 +7,7 @@ use std::collections::VecDeque;
 use self::num_traits::identities::One;
 use self::num_rational::Ratio;
 
-use lca::LCACalculator;
+use rmq::lca::LCACalculator;
 use taxon::{Taxon, TaxonId};
 use agg::Aggregator;
 

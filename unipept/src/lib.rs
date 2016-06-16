@@ -2,9 +2,6 @@
 pub mod taxon;
 pub mod agg;
 pub mod rmq;
-pub mod lca;
-pub mod rtl;
-pub mod mix;
 pub mod tree;
 
 pub const PKG_VERSION: &'static str = env!("CARGO_PKG_VERSION");

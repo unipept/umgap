@@ -3,7 +3,7 @@ extern crate unipept;
 
 use unipept::taxon::*;
 use unipept::agg::*;
-use unipept::lca::*;
+use unipept::rmq::lca::*;
 
 mod fixtures;
 

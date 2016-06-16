@@ -12,10 +12,8 @@ use num_rational::Ratio;
 use unipept::{PKG_NAME, PKG_VERSION, PKG_AUTHORS, taxon};
 use unipept::taxon::TaxonId;
 use unipept::agg::Aggregator;
-use unipept::lca::LCACalculator;
-use unipept::rtl::RTLCalculator;
-use unipept::mix::MixCalculator;
-use unipept::tree::TreeBasedAggregator;
+use unipept::rmq;
+use unipept::tree;
 
 const ABOUT: &'static str = "
 Aggregates taxa to a single taxon.
@@ -66,10 +64,10 @@ fn main() {
                              });
 
     match aggregation {
-        "MTRL" => aggregate(RTLCalculator::new(taxons, ranked_only)),
-        "LCA*" => aggregate(LCACalculator::new(taxons, ranked_only)),
-        "both" => aggregate(MixCalculator::new(taxons, ranked_only, factor)),
-        "tree" => aggregate(TreeBasedAggregator::new(taxons, ranked_only)),
+        "MTRL" => aggregate(rmq::rtl::RTLCalculator::new(taxons, ranked_only)),
+        "LCA*" => aggregate(rmq::lca::LCACalculator::new(taxons, ranked_only)),
+        "both" => aggregate(rmq::mix::MixCalculator::new(taxons, ranked_only, factor)),
+        "tree" => aggregate(tree::lca::LCACalculator::new(taxons, ranked_only)),
         _      => panic!("Unknown aggregation type.")
     }
 }
