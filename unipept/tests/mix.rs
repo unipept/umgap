@@ -5,7 +5,7 @@ use num_rational::Ratio;
 extern crate unipept;
 use unipept::taxon::*;
 use unipept::agg::*;
-use unipept::mix::*;
+use unipept::rmq::mix::*;
 
 fn taxon_list() -> Vec<Taxon> {
     vec![

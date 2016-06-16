@@ -1,6 +1,6 @@
 extern crate unipept;
 
-use unipept::rmq::*;
+use unipept::rmq::rmq::*;
 
 #[test]
 fn test_block_minima() {

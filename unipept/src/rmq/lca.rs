@@ -4,10 +4,9 @@
 
 use std::collections::HashMap;
 
-use rmq::RMQ;
-use taxon::Taxon;
-use taxon::TaxonId;
+use rmq::rmq::RMQ;
 use taxon;
+use taxon::{Taxon, TaxonId};
 use agg::Aggregator;
 
 pub struct LCACalculator {
