@@ -15,6 +15,7 @@ use unipept::agg::Aggregator;
 use unipept::lca::LCACalculator;
 use unipept::rtl::RTLCalculator;
 use unipept::mix::MixCalculator;
+use unipept::tree::TreeBasedAggregator;
 
 const ABOUT: &'static str = "
 Aggregates taxa to a single taxon.
@@ -36,17 +37,7 @@ fn main() {
                                .takes_value(true)
                                .conflicts_with("mrtl")
                                .conflicts_with("both")
-                               .possible_values(&["LCA*", "MRTL", "both"]))
-                      .arg(Arg::with_name("mrtl")
-                               .help("Short for --aggregate=MRTL")
-                               .short("m")
-                               .long("mrtl")
-                               .conflicts_with("aggregate"))
-                      .arg(Arg::with_name("both")
-                               .help("Short for --aggregate=both")
-                               .short("b")
-                               .long("both")
-                               .conflicts_with("aggregate"))
+                               .possible_values(&["LCA*", "MRTL", "both", "tree"]))
                       .arg(Arg::with_name("factor")
                                .help("Factor used with aggregate both")
                                .short("f")
@@ -66,10 +57,7 @@ fn main() {
     });
 
     // Parsing the aggregation method
-    let aggregation = if matches.is_present("mrtl") { "MTRL" }
-                 else if matches.is_present("both") { "both" }
-                 else { matches.value_of("aggregate").unwrap_or("LCA*") };
-
+    let aggregation = matches.value_of("aggregate").unwrap_or("LCA*");
     let ranked_only = matches.is_present("ranked");
     let factor      = matches.value_of("factor").unwrap_or("0")
                              .parse::<Ratio<usize>>().unwrap_or_else(|_| {
@@ -81,6 +69,7 @@ fn main() {
         "MTRL" => aggregate(RTLCalculator::new(taxons, ranked_only)),
         "LCA*" => aggregate(LCACalculator::new(taxons, ranked_only)),
         "both" => aggregate(MixCalculator::new(taxons, ranked_only, factor)),
+        "tree" => aggregate(TreeBasedAggregator::new(taxons, ranked_only)),
         _      => panic!("Unknown aggregation type.")
     }
 }

@@ -3,6 +3,10 @@ extern crate unipept;
 
 use unipept::taxon::*;
 
+mod fixtures;
+
+use fixtures::taxon_list;
+
 #[test]
 fn test_taxon_parsing() {
     assert_eq!(Ok(Taxon::from_static(1, "root", Rank::NoRank, 1,  true)),  "1	root	no rank	1	\x01".parse());
@@ -20,14 +24,7 @@ fn test_taxon_parsing() {
 
 #[test]
 fn test_euler_tour() {
-    let taxon_list = vec![
-        Taxon::from_static(1,      "root",          Rank::NoRank,       1,     true),
-        Taxon::from_static(2,      "Bacteria",      Rank::Superkingdom, 1,     true),
-        Taxon::from_static(10239,  "Viruses",       Rank::Superkingdom, 1,     true),
-        Taxon::from_static(12884,  "Viroids",       Rank::Superkingdom, 1,     true),
-        Taxon::from_static(185751, "Pospiviroidae", Rank::Family,       12884, true),
-        Taxon::from_static(185752, "Avsunviroidae", Rank::Family,       12884, true),
-    ];
+    let taxon_list = taxon_list();
     let tree = TaxonTree::new(&taxon_list);
     let euler: Vec<(TaxonId, Depth)> = tree.into_iter().collect();
     assert_eq!(

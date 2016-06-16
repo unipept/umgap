@@ -52,6 +52,6 @@ impl Aggregator for RTLCalculator {
                                       .max_by_key(|&(_, count)| count)
                                       .unwrap_or((&1, &0))
                                       .0;
-        self.taxons[rtl_taxon_id].as_ref().expect("Taxonomy inconsistency.")
+        self.taxons[rtl_taxon_id].as_ref().expect("Taxonomic inconsistency.")
     }
 }
