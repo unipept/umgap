@@ -9,7 +9,7 @@ use self::num_rational::Ratio;
 
 use rmq::lca::LCACalculator;
 use taxon::{Taxon, TaxonId};
-use agg::Aggregator;
+use agg::{Aggregator, count};
 
 pub struct MixCalculator {
     lca_calculator: LCACalculator,
@@ -43,16 +43,7 @@ fn factorize(weights: Weights, factor: Ratio<usize>) -> Ratio<usize> {
 
 impl Aggregator for MixCalculator {
     fn aggregate(&self, taxons: &Vec<TaxonId>) -> &Taxon {
-        // Count the occurences
-        let mut counts = HashMap::new();
-        for taxon in taxons {
-            *counts.entry(*taxon).or_insert(0) += 1;
-        }
-
-        /* TODO: Collapsing of taxons with a single (present) child onto that child, to calculate
-         * the LCA* in stead of the LCA. This calls for a tree implementation of the algorithm
-         * below. */
-
+        let     counts                             = count(taxons);
         let mut weights: HashMap<TaxonId, Weights> = HashMap::with_capacity(counts.len());
         let mut queue:   VecDeque<TaxonId>         = counts.keys().map(|&t| t).collect();
 
@@ -62,16 +53,12 @@ impl Aggregator for MixCalculator {
                 let lca = self.lca_calculator.lca(left, right);
                 if lca == left || lca == right {
                     let mut weight = weights.entry(left).or_insert(Weights::new());
-                    if lca == left  { weight.lca += count; println!("{} lies below {}, so adding {} to lca of {}", right, left, count, left); }
-                    if lca == right { weight.rtl += count; println!("{} lies below {}, so adding {} to rtl of {}", left, right, count, left); }
+                    if lca == left  { weight.lca += count; }
+                    if lca == right { weight.rtl += count; }
                 } else {
                     queue.push_back(lca);
                 }
             }
-        }
-
-        for (taxon, weight) in weights.iter() {
-            println!("{}: lca({}) and rtl({}), so {}", taxon, weight.lca, weight.rtl, factorize(*weight, self.factor));
         }
 
         let mix = weights.iter()

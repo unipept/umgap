@@ -47,6 +47,17 @@ impl<T: Default + Copy> SubTree<T> {
             children: new.children.iter().map(|c| c.collapse(combine)).collect()
         }
     }
+
+    pub fn aggregate<F>(&self, combine: &F) -> Self
+    where F: Fn(T, T) -> T {
+        let children: Vec<SubTree<T>> = self.children.iter().map(|c| c.aggregate(combine)).collect();
+        let value                     = children.iter().map(|c| c.value).fold(self.value, combine);
+        SubTree {
+            root: self.root,
+            value: value,
+            children: children
+        }
+    }
 }
 
 impl<T: Default + Copy + ToString> SubTree<T> {

@@ -28,14 +28,18 @@ fn main() {
                                .help("Restrict to taxa with a taxonomic rank")
                                .short("r")
                                .long("ranked"))
+                      .arg(Arg::with_name("method")
+                               .help("The method to use (default RMQ)")
+                               .short("m")
+                               .long("method")
+                               .takes_value(true)
+                               .possible_values(&["RMQ", "tree"]))
                       .arg(Arg::with_name("aggregate")
                                .help("The aggregation to use (default LCA*).")
                                .short("a")
                                .long("aggregate")
                                .takes_value(true)
-                               .conflicts_with("mrtl")
-                               .conflicts_with("both")
-                               .possible_values(&["LCA*", "MRTL", "both", "tree"]))
+                               .possible_values(&["LCA*", "MRTL", "both"]))
                       .arg(Arg::with_name("factor")
                                .help("Factor used with aggregate both")
                                .short("f")
@@ -55,6 +59,7 @@ fn main() {
     });
 
     // Parsing the aggregation method
+    let method      = matches.value_of("method").unwrap_or("RMQ");
     let aggregation = matches.value_of("aggregate").unwrap_or("LCA*");
     let ranked_only = matches.is_present("ranked");
     let factor      = matches.value_of("factor").unwrap_or("0")
@@ -63,11 +68,12 @@ fn main() {
                                  process::exit(2);
                              });
 
-    match aggregation {
-        "MTRL" => aggregate(rmq::rtl::RTLCalculator::new(taxons, ranked_only)),
-        "LCA*" => aggregate(rmq::lca::LCACalculator::new(taxons, ranked_only)),
-        "both" => aggregate(rmq::mix::MixCalculator::new(taxons, ranked_only, factor)),
-        "tree" => aggregate(tree::lca::LCACalculator::new(taxons, ranked_only)),
+    match (method, aggregation) {
+        ("RMQ",  "MTRL") => aggregate(rmq::rtl::RTLCalculator::new(taxons, ranked_only)),
+        ("RMQ",  "LCA*") => aggregate(rmq::lca::LCACalculator::new(taxons, ranked_only)),
+        ("RMQ",  "both") => aggregate(rmq::mix::MixCalculator::new(taxons, ranked_only, factor)),
+        ("tree", "LCA*") => aggregate(tree::lca::LCACalculator::new(taxons, ranked_only)),
+        ("tree", "both") => aggregate(tree::mix::MixCalculator::new(taxons, ranked_only, factor)),
         _      => panic!("Unknown aggregation type.")
     }
 }

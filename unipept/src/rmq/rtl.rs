@@ -1,9 +1,7 @@
 
-use std::collections::HashMap;
-
 use taxon;
 use taxon::{TaxonId, Taxon};
-use agg::Aggregator;
+use agg::{Aggregator, count};
 
 pub struct RTLCalculator {
     pub taxons: Vec<Option<Taxon>>,
@@ -32,13 +30,7 @@ impl RTLCalculator {
 
 impl Aggregator for RTLCalculator {
     fn aggregate(&self, taxons: &Vec<TaxonId>) -> &Taxon {
-        // Count the occurences
-        let mut counts = HashMap::new();
-        for taxon in taxons { *counts.entry(*taxon).or_insert(0) += 1; }
-
-        // current method: for each taxon id, loop to the root and add if the ancestor has a count
-        // alternative method: for each taxon id, loop over all other and add if the other is an ancestor
-
+        let counts         = count(taxons);
         let mut rtl_counts = counts.clone();
         for (taxon, count) in rtl_counts.iter_mut() {
             let mut next = *taxon;
