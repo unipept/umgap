@@ -105,14 +105,9 @@ impl<T: Ord + Display> RMQ<T> {
                 if self.array[l] <= self.array[r] { l } else { r }
             },
             _ => {
-                //println!("case >2 ({})", block_diff);
                 let l = RMQ::<T>::min_in_block(&self.labels, left, clearbits(left, 5) + 31);
                 let r = RMQ::<T>::min_in_block(&self.labels, clearbits(right, 5), right);
                 let m = if block_diff == 2 {
-                    //println!("length: {}", self.array.len());
-                    //println!("block: {}", (left >> 5) + 1);
-                    //println!("[{}, {}, {}, ...]", self.array[33], self.array[34], self.array[35]);
-                    //for min in self.block_min.iter() { println!("{}", min); }
                     self.block_min[(left >> 5) + 1]
                 } else {
                     let k = intlog2(block_diff - 1) - 1;
@@ -120,7 +115,6 @@ impl<T: Ord + Display> RMQ<T> {
                     let t2 = self.sparse[k][(right >> 5) - (1 << (k + 1))];
                     if self.array[t1] <= self.array[t2] { t1 } else { t2 }
                 };
-                //println!("l={} ({}), m={} ({}), r={} ({})", l, self.array[l], m, self.array[m], r, self.array[r]);
                 let ex = if self.array[l] <= self.array[m] { l } else { m };
                 if self.array[ex] <= self.array[r] { ex } else { r }
             }

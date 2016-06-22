@@ -144,14 +144,9 @@ pub fn read_taxa_file(filename: &str) -> Result<Vec<Taxon>, &'static str> {
     let file   = try!(File::open(filename).map_err(|_| "Failed opening taxon file."));
     let reader = io::BufReader::new(file);
     let mut taxa = Vec::new();
-    for line in reader.lines() {
-        match line {
-            Err(_)   => return Err("Failed to read all lines."),
-            Ok(line) => match line.parse::<Taxon>() {
-                Err(e) => return Err(e),
-                Ok(taxon) => taxa.push(taxon)
-            }
-        }
+    for mline in reader.lines() {
+        let line = try!(mline.map_err(|_| "Failed to read all lines."));
+        taxa.push(try!(line.parse::<Taxon>()));
     }
     Ok(taxa)
 }
@@ -200,12 +195,9 @@ impl TaxonTree {
     where F: Fn(TaxonId) -> bool {
         let ancestor = if filter(current) { Some(current) } else { ancestor };
         ancestors[current] = ancestor;
-        match self.children.get(&current) {
-            None => {},
-            Some(children) => {
-                for child in children {
-                    self.with_filtered(&mut ancestors, *child, ancestor, filter);
-                }
+        if let Some(children) = self.children.get(&current) {
+            for child in children {
+                self.with_filtered(&mut ancestors, *child, ancestor, filter);
             }
         }
     }
@@ -223,11 +215,10 @@ impl TaxonTree {
 
     pub fn snapping(&self, taxons: &Vec<Option<Taxon>>, ranked_only: bool) -> Vec<Option<TaxonId>> {
         self.filter_ancestors(|i: TaxonId| {
-            let ref mtaxon = taxons[i];
-            match *mtaxon {
-                None => false,
-                Some(ref taxon) => taxon.valid && (!ranked_only || taxon.rank != Rank::NoRank)
-            }
+            taxons[i]
+                .as_ref()
+                .map(|t| t.valid && (!ranked_only || t.rank != Rank::NoRank))
+                .unwrap_or(false)
         })
     }
 }
