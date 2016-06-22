@@ -15,10 +15,10 @@ impl RTLCalculator {
         let by_id     = taxon::taxa_vector_by_id(taxons);
         let snapping  = tree.snapping(&by_id, ranked_only);
 
-        let mut ancestors: Vec<Option<TaxonId>> = by_id.iter().map(|mtaxon| match mtaxon {
-            &Some(ref taxon) => snapping[taxon.parent],
-            &None            => None
-        }).collect();
+        let mut ancestors: Vec<Option<TaxonId>> = by_id
+            .iter()
+            .map(|mtaxon| mtaxon.as_ref().and_then(|t| snapping[t.parent]))
+            .collect();
         ancestors[1] = None;
 
         RTLCalculator {
