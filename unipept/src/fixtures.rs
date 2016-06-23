@@ -1,9 +1,7 @@
 
-extern crate unipept;
+use taxon::*;
 
-use unipept::taxon::*;
-
-pub fn taxon_list() -> Vec<Taxon> {
+fn taxon_list() -> Vec<Taxon> {
     vec![
         Taxon::from_static(1,      "root",          Rank::NoRank,       1,     true),
         Taxon::from_static(2,      "Bacteria",      Rank::Superkingdom, 1,     true),
@@ -13,4 +11,7 @@ pub fn taxon_list() -> Vec<Taxon> {
         Taxon::from_static(185752, "Avsunviroidae", Rank::Family,       12884, true),
     ]
 }
+
+pub fn tree()  -> TaxonTree          { TaxonTree::new(&taxon_list()) }
+pub fn by_id() -> Vec<Option<Taxon>> { taxa_vector_by_id(taxon_list()) }
 

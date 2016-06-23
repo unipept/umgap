@@ -69,3 +69,39 @@ impl Aggregator for MixCalculator {
     }
 
 }
+
+#[cfg(test)]
+mod tests {
+    extern crate num_rational;
+    use self::num_rational::Ratio;
+
+    use super::MixCalculator;
+    use agg::Aggregator;
+    use fixtures;
+
+    #[test]
+    fn test_full_rtl() {
+        let calculator = MixCalculator::new(fixtures::tree(), Ratio::new(0, 1));
+        assert_eq!(185751, calculator.aggregate(&vec![12884, 185751]));
+        assert_eq!(185752, calculator.aggregate(&vec![12884, 185751, 185752, 185752]));
+        assert_eq!(10239, calculator.aggregate(&vec![1, 1, 10239, 10239, 10239, 12884, 185751, 185752]));
+    }
+
+    #[test]
+    fn test_full_lca() {
+        let calculator = MixCalculator::new(fixtures::tree(), Ratio::new(1, 1));
+        assert_eq!(12884, calculator.aggregate(&vec![12884, 185751]));
+        assert_eq!(12884, calculator.aggregate(&vec![12884, 185751, 185752, 185752]));
+        assert_eq!(1, calculator.aggregate(&vec![1, 1, 10239, 10239, 10239, 12884, 185751, 185752]));
+    }
+
+    /* TODO: third example might fail because 12884 and 185751 have the same score. */
+    #[test]
+    #[ignore]
+    fn test_one_half() {
+        let calculator = MixCalculator::new(fixtures::tree(), Ratio::new(1, 2));
+        assert_eq!(185751, calculator.aggregate(&vec![12884, 185751]));
+        assert_eq!(185751, calculator.aggregate(&vec![12884, 185751]));
+        assert_eq!(185751, calculator.aggregate(&vec![1, 12884, 12284, 185751]));
+    }
+}
