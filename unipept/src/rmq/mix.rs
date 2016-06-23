@@ -8,7 +8,7 @@ use self::num_traits::identities::One;
 use self::num_rational::Ratio;
 
 use rmq::lca::LCACalculator;
-use taxon::{Taxon, TaxonId};
+use taxon::{TaxonId, TaxonTree};
 use agg::{Aggregator, count};
 
 pub struct MixCalculator {
@@ -29,9 +29,9 @@ impl Weights {
 }
 
 impl MixCalculator {
-    pub fn new(taxons: Vec<Taxon>, ranked_only: bool, factor: Ratio<usize>) -> Self {
+    pub fn new(taxonomy: TaxonTree, factor: Ratio<usize>) -> Self {
         MixCalculator {
-            lca_calculator: LCACalculator::new(taxons, ranked_only),
+            lca_calculator: LCACalculator::new(taxonomy),
             factor: factor
         }
     }
@@ -42,7 +42,7 @@ fn factorize(weights: Weights, factor: Ratio<usize>) -> Ratio<usize> {
 }
 
 impl Aggregator for MixCalculator {
-    fn aggregate(&self, taxons: &Vec<TaxonId>) -> &Taxon {
+    fn aggregate(&self, taxons: &Vec<TaxonId>) -> TaxonId {
         let     counts                             = count(taxons);
         let mut weights: HashMap<TaxonId, Weights> = HashMap::with_capacity(counts.len());
         let mut queue:   VecDeque<TaxonId>         = counts.keys().map(|&t| t).collect();
@@ -61,11 +61,11 @@ impl Aggregator for MixCalculator {
             }
         }
 
-        let mix = weights.iter()
-                         .max_by_key(|&(_, w)| factorize(*w, self.factor))
-                         .expect("Should be at least one taxon")
-                         .0;
-        self.lca_calculator.taxons[*mix].as_ref().expect("None existing taxon.")
+        *weights
+            .iter()
+            .max_by_key(|&(_, w)| factorize(*w, self.factor))
+            .expect("Should be at least one taxon")
+            .0
     }
 
 }

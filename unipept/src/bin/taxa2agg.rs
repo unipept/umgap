@@ -63,27 +63,36 @@ fn main() {
     let aggregation = matches.value_of("aggregate").unwrap_or("LCA*");
     let ranked_only = matches.is_present("ranked");
     let factor      = matches.value_of("factor").unwrap_or("0")
-                             .parse::<Ratio<usize>>().unwrap_or_else(|_| {
+                             .parse::<Ratio<usize>>().unwrap_or_else(|err| {
                                  println!("Error: failed to parse the factor.");
+                                 println!("Example of a valid factor: 3/4.");
+                                 println!("{}", err);
                                  process::exit(2);
                              });
 
-    match (method, aggregation) {
-        ("RMQ",  "MTRL") => aggregate(rmq::rtl::RTLCalculator::new(taxons, ranked_only)),
-        ("RMQ",  "LCA*") => aggregate(rmq::lca::LCACalculator::new(taxons, ranked_only)),
-        ("RMQ",  "both") => aggregate(rmq::mix::MixCalculator::new(taxons, ranked_only, factor)),
-        ("tree", "LCA*") => aggregate(tree::lca::LCACalculator::new(taxons, ranked_only)),
-        ("tree", "both") => aggregate(tree::mix::MixCalculator::new(taxons, ranked_only, factor)),
-        _      => panic!("Unknown aggregation type.")
-    }
-}
+    // Parsing the taxons
+    let tree     = taxon::TaxonTree::new(&taxons);
+    let by_id    = taxon::taxa_vector_by_id(taxons);
+    let snapping = tree.snapping(&by_id, ranked_only);
 
-fn aggregate<T: Aggregator>(aggregator: T) {
+    let aggregator: Box<Aggregator> = match (method, aggregation) {
+        ("RMQ",  "MTRL") => Box::new(rmq::rtl::RTLCalculator::new(&by_id)),
+        ("RMQ",  "LCA*") => Box::new(rmq::lca::LCACalculator::new(tree)),
+        ("RMQ",  "both") => Box::new(rmq::mix::MixCalculator::new(tree, factor)),
+        ("tree", "LCA*") => Box::new(tree::lca::LCACalculator::new(tree.root, &by_id)),
+        ("tree", "both") => Box::new(tree::mix::MixCalculator::new(tree.root, &by_id, factor)),
+        _                => {
+            println!("Invalid method/aggregation combination: {} and {}", method, aggregation);
+            process::exit(3);
+        }
+    };
+
     let input = io::BufReader::new(io::stdin());
     for line in input.lines() {
-        let line = line.unwrap_or_else(|_| {
+        let line = line.unwrap_or_else(|err| {
             println!("Error: failed to read an input line.");
-            process::exit(2);
+            println!("{}", err);
+            process::exit(4);
         });
 
         // Copy FASTA headers
@@ -98,6 +107,8 @@ fn aggregate<T: Aggregator>(aggregator: T) {
                          .collect();
 
         let aggregate = aggregator.aggregate(&taxons);
-        println!("{},{},{}", aggregate.id, aggregate.name, aggregate.rank);
+        let taxon = by_id[snapping[aggregate].unwrap()].as_ref().unwrap();
+        println!("{},{},{}", taxon.id, taxon.name, taxon.rank);
     }
 }
+

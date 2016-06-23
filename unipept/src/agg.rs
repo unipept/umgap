@@ -1,10 +1,10 @@
 
 use std::collections::HashMap;
 
-use taxon::{Taxon, TaxonId};
+use taxon::TaxonId;
 
 pub trait Aggregator {
-    fn aggregate(&self, taxons: &Vec<TaxonId>) -> &Taxon;
+    fn aggregate(&self, taxons: &Vec<TaxonId>) -> TaxonId;
 }
 
 pub fn count(taxons: &Vec<TaxonId>) -> HashMap<TaxonId, usize> {

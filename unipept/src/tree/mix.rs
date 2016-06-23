@@ -12,22 +12,21 @@ use tree::lca::LCACalculator;
 
 pub struct MixCalculator {
     root: TaxonId,
-    taxons: Vec<Option<Taxon>>,
-    snapping: Vec<Option<TaxonId>>,
+    parents: Vec<Option<TaxonId>>,
     factor: Ratio<usize>
 }
 
 impl MixCalculator {
-    pub fn new(taxons: Vec<Taxon>, ranked_only: bool, factor: Ratio<usize>) -> Self {
-        let LCACalculator { root: r, taxons: t, snapping: s } = LCACalculator::new(taxons, ranked_only);
-        MixCalculator { factor: factor, root: r, taxons: t, snapping: s }
+    pub fn new(root: TaxonId, taxonomy: &Vec<Option<Taxon>>, factor: Ratio<usize>) -> Self {
+        let LCACalculator { root: r, parents: p } = LCACalculator::new(root, taxonomy);
+        MixCalculator { factor: factor, root: r, parents: p }
     }
 }
 
 impl agg::Aggregator for MixCalculator {
-    fn aggregate(&self, taxons: &Vec<TaxonId>) -> &Taxon {
+    fn aggregate(&self, taxons: &Vec<TaxonId>) -> TaxonId {
         let counts  = agg::count(taxons);
-        let subtree = SubTree::new(self.root, &self.taxons, counts).unwrap()
+        let subtree = SubTree::new(self.root, &self.parents, counts).unwrap()
             .collapse(&Add::add)
             .aggregate(&Add::add);
 
@@ -37,8 +36,7 @@ impl agg::Aggregator for MixCalculator {
             base = max;
         }
 
-        let consensus = self.snapping[base.root].expect("LCA does not exist");
-        self.taxons[consensus].as_ref().expect("No LCA* found.")
+        base.root
     }
 }
 

@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::collections::VecDeque;
 
-use taxon::{Taxon, TaxonId};
+use taxon::TaxonId;
 
 pub struct SubTree<T: Default + Copy> {
     pub root: TaxonId,
@@ -12,11 +12,11 @@ pub struct SubTree<T: Default + Copy> {
 }
 
 impl<T: Default + Copy> SubTree<T> {
-    pub fn new(root: TaxonId, taxonomy: &Vec<Option<Taxon>>, taxons: HashMap<TaxonId, T>) -> Result<Self, String> {
+    pub fn new(root: TaxonId, parents: &Vec<Option<TaxonId>>, taxons: HashMap<TaxonId, T>) -> Result<Self, String> {
         let mut tree: HashMap<TaxonId, HashSet<TaxonId>> = HashMap::with_capacity(taxons.len());
         let mut queue: VecDeque<TaxonId> = taxons.keys().map(|t| *t).collect();
         while let Some(id) = queue.pop_front() {
-            let parent = try!(taxonomy[id].as_ref().ok_or("Error: unknown taxon in input.")).parent;
+            let parent = try!(parents[id].ok_or("Error: unknown taxon in input."));
             if id == parent { continue; }
             if !tree.contains_key(&parent) { queue.push_back(parent); }
             let siblings = tree.entry(parent).or_insert(HashSet::new());
