@@ -39,3 +39,37 @@ impl Aggregator for RTLCalculator {
             .0
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::RTLCalculator;
+    use agg::Aggregator;
+    use fixtures;
+
+
+    #[test]
+    fn test_all_on_same_path() {
+        let calculator = RTLCalculator::new(&fixtures::by_id());
+        assert_eq!(1, calculator.aggregate(&vec![1]));
+        assert_eq!(12884, calculator.aggregate(&vec![1, 12884]));
+        assert_eq!(185751, calculator.aggregate(&vec![1, 12884, 185751]));
+    }
+
+    #[test]
+    fn favouring_root() {
+        let calculator = RTLCalculator::new(&fixtures::by_id());
+        assert_eq!(185751, calculator.aggregate(&vec![1, 1, 1, 185751, 1, 1]));
+    }
+
+    #[test]
+    fn leaning_close() {
+        let calculator = RTLCalculator::new(&fixtures::by_id());
+        assert_eq!(185751, calculator.aggregate(&vec![1, 1, 185752, 185751, 185751, 1]));
+    }
+
+    #[test]
+    fn non_deterministic() {
+        let calculator = RTLCalculator::new(&fixtures::by_id());
+        assert!(vec![185751, 185752].contains(&calculator.aggregate(&vec![1, 1, 185752, 185751, 1])))
+    }
+}

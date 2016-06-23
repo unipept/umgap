@@ -1,7 +1,4 @@
 
-// Serialize:
-// https://doc.rust-lang.org/rustc-serialize/rustc_serialize/index.html
-
 use std::collections::HashMap;
 
 use rmq::rmq::RMQ;
@@ -64,6 +61,77 @@ impl Aggregator for LCACalculator {
             }
             (level, self.euler_tour[lca_index])
         }).1
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::LCACalculator;
+    use agg::Aggregator;
+    use taxon::*;
+    use fixtures;
+
+    #[test]
+    fn test_two_on_same_path() {
+        let calculator = LCACalculator::new(fixtures::tree());
+        assert_eq!(185752, calculator.aggregate(&vec![12884, 185752]));
+        assert_eq!(185752, calculator.aggregate(&vec![185752, 12884]));
+        assert_eq!(2, calculator.aggregate(&vec![1, 2]));
+        assert_eq!(2, calculator.aggregate(&vec![2, 1]));
+    }
+
+    #[test]
+    fn test_two_on_fork() {
+        let calculator = LCACalculator::new(fixtures::tree());
+        assert_eq!(1, calculator.aggregate(&vec![2, 10239]));
+        assert_eq!(1, calculator.aggregate(&vec![10239, 2]));
+        assert_eq!(12884, calculator.aggregate(&vec![185751, 185752]));
+        assert_eq!(12884, calculator.aggregate(&vec![185752, 185751]));
+    }
+
+    #[test]
+    fn test_three_on_triangle() {
+        let calculator = LCACalculator::new(fixtures::tree());
+        assert_eq!(12884, calculator.aggregate(&vec![12884, 185751, 185752]));
+        assert_eq!(12884, calculator.aggregate(&vec![12884, 185752, 185751]));
+        assert_eq!(12884, calculator.aggregate(&vec![185751, 12884, 185752]));
+        assert_eq!(12884, calculator.aggregate(&vec![185752, 12884, 185751]));
+        assert_eq!(12884, calculator.aggregate(&vec![185751, 185752, 12884]));
+        assert_eq!(12884, calculator.aggregate(&vec![185752, 185751, 12884]));
+    }
+
+    fn taxon(id: TaxonId, parent: TaxonId) -> Taxon {
+        Taxon::from_static(id, "", Rank::NoRank, parent, true)
+    }
+
+    fn large_taxon_list() -> Vec<Taxon> {
+        vec![
+            taxon(1, 1),
+              taxon(2, 1),
+                taxon(5, 2),
+                taxon(6, 2),
+              taxon(3, 1),
+                taxon(7, 3),
+                  taxon(10, 7),
+                    taxon(13, 10),
+                      taxon(14, 13),
+                  taxon(15, 3),
+                taxon(8, 3),
+                  taxon(11, 8),
+                  taxon(12, 8),
+                taxon(9, 3),
+              taxon(4, 1)
+        ]
+    }
+
+    #[test]
+    fn test_with_deeper_interns() {
+        let large_calculator = LCACalculator::new(TaxonTree::new(&large_taxon_list()));
+        assert_eq!(3, large_calculator.aggregate(&vec![9, 7]));
+        assert_eq!(3, large_calculator.aggregate(&vec![9, 10]));
+        assert_eq!(3, large_calculator.aggregate(&vec![7, 9]));
+        assert_eq!(3, large_calculator.aggregate(&vec![14, 8]));
+        assert_eq!(3, large_calculator.aggregate(&vec![14, 8]));
     }
 }
 
