@@ -1,7 +1,7 @@
 
 use taxon::*;
 
-fn taxon_list() -> Vec<Taxon> {
+pub fn taxon_list() -> Vec<Taxon> {
     vec![
         Taxon::from_static(1,      "root",          Rank::NoRank,       1,     true),
         Taxon::from_static(2,      "Bacteria",      Rank::Superkingdom, 1,     true),
