@@ -42,7 +42,7 @@ fn factorize(weights: Weights, factor: Ratio<usize>) -> Ratio<usize> {
 }
 
 impl Aggregator for MixCalculator {
-    fn aggregate(&self, taxons: &Vec<TaxonId>) -> TaxonId {
+    fn aggregate(&self, taxons: &Vec<TaxonId>) -> Result<TaxonId, String> {
         let     counts                             = count(taxons);
         let mut weights: HashMap<TaxonId, Weights> = HashMap::with_capacity(counts.len());
         let mut queue:   VecDeque<TaxonId>         = counts.keys().map(|&t| t).collect();
@@ -61,11 +61,10 @@ impl Aggregator for MixCalculator {
             }
         }
 
-        *weights
-            .iter()
-            .max_by_key(|&(_, w)| factorize(*w, self.factor))
-            .expect("Should be at least one taxon")
-            .0
+        weights.iter()
+               .max_by_key(|&(_, w)| factorize(*w, self.factor))
+               .map(|tup| *tup.0)
+               .ok_or("Aggregation called on empty list.".to_owned())
     }
 
 }
@@ -82,17 +81,17 @@ mod tests {
     #[test]
     fn test_full_rtl() {
         let calculator = MixCalculator::new(fixtures::tree(), Ratio::new(0, 1));
-        assert_eq!(185751, calculator.aggregate(&vec![12884, 185751]));
-        assert_eq!(185752, calculator.aggregate(&vec![12884, 185751, 185752, 185752]));
-        assert_eq!(10239, calculator.aggregate(&vec![1, 1, 10239, 10239, 10239, 12884, 185751, 185752]));
+        assert_eq!(Ok(185751), calculator.aggregate(&vec![12884, 185751]));
+        assert_eq!(Ok(185752), calculator.aggregate(&vec![12884, 185751, 185752, 185752]));
+        assert_eq!(Ok(10239), calculator.aggregate(&vec![1, 1, 10239, 10239, 10239, 12884, 185751, 185752]));
     }
 
     #[test]
     fn test_full_lca() {
         let calculator = MixCalculator::new(fixtures::tree(), Ratio::new(1, 1));
-        assert_eq!(12884, calculator.aggregate(&vec![12884, 185751]));
-        assert_eq!(12884, calculator.aggregate(&vec![12884, 185751, 185752, 185752]));
-        assert_eq!(1, calculator.aggregate(&vec![1, 1, 10239, 10239, 10239, 12884, 185751, 185752]));
+        assert_eq!(Ok(12884), calculator.aggregate(&vec![12884, 185751]));
+        assert_eq!(Ok(12884), calculator.aggregate(&vec![12884, 185751, 185752, 185752]));
+        assert_eq!(Ok(1), calculator.aggregate(&vec![1, 1, 10239, 10239, 10239, 12884, 185751, 185752]));
     }
 
     /* TODO: third example might fail because 12884 and 185751 have the same score. */
@@ -100,8 +99,8 @@ mod tests {
     #[ignore]
     fn test_one_half() {
         let calculator = MixCalculator::new(fixtures::tree(), Ratio::new(1, 2));
-        assert_eq!(185751, calculator.aggregate(&vec![12884, 185751]));
-        assert_eq!(185751, calculator.aggregate(&vec![12884, 185751]));
-        assert_eq!(185751, calculator.aggregate(&vec![1, 12884, 12284, 185751]));
+        assert_eq!(Ok(185751), calculator.aggregate(&vec![12884, 185751]));
+        assert_eq!(Ok(185751), calculator.aggregate(&vec![12884, 185751]));
+        assert_eq!(Ok(185751), calculator.aggregate(&vec![1, 12884, 12284, 185751]));
     }
 }

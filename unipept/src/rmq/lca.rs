@@ -41,11 +41,11 @@ impl LCACalculator {
 }
 
 impl Aggregator for LCACalculator {
-    fn aggregate(&self, taxons: &Vec<TaxonId>) -> TaxonId {
+    fn aggregate(&self, taxons: &Vec<TaxonId>) -> Result<TaxonId, String> {
         let mut iter = taxons.into_iter();
         let initial_level: Option<usize> = None;
-        let first = *iter.next().expect("LCA called on empty list");
-        iter.fold((initial_level, first), |(join_level, left), &right| {
+        let first = *try!(iter.next().ok_or("Aggregation called on empty list."));
+        Ok(iter.fold((initial_level, first), |(join_level, left), &right| {
             if left == right { return (join_level, left); }
             let left_index  = *self.first_occurences.get(&left).expect("Unrecognized Taxon ID");
             let right_index = *self.first_occurences.get(&right).expect("Unrecognized Taxon ID");
@@ -60,7 +60,7 @@ impl Aggregator for LCACalculator {
                 lca_index = rmq_index;
             }
             (level, self.euler_tour[lca_index])
-        }).1
+        }).1)
     }
 }
 
@@ -74,30 +74,30 @@ mod tests {
     #[test]
     fn test_two_on_same_path() {
         let calculator = LCACalculator::new(fixtures::tree());
-        assert_eq!(185752, calculator.aggregate(&vec![12884, 185752]));
-        assert_eq!(185752, calculator.aggregate(&vec![185752, 12884]));
-        assert_eq!(2, calculator.aggregate(&vec![1, 2]));
-        assert_eq!(2, calculator.aggregate(&vec![2, 1]));
+        assert_eq!(Ok(185752), calculator.aggregate(&vec![12884, 185752]));
+        assert_eq!(Ok(185752), calculator.aggregate(&vec![185752, 12884]));
+        assert_eq!(Ok(2), calculator.aggregate(&vec![1, 2]));
+        assert_eq!(Ok(2), calculator.aggregate(&vec![2, 1]));
     }
 
     #[test]
     fn test_two_on_fork() {
         let calculator = LCACalculator::new(fixtures::tree());
-        assert_eq!(1, calculator.aggregate(&vec![2, 10239]));
-        assert_eq!(1, calculator.aggregate(&vec![10239, 2]));
-        assert_eq!(12884, calculator.aggregate(&vec![185751, 185752]));
-        assert_eq!(12884, calculator.aggregate(&vec![185752, 185751]));
+        assert_eq!(Ok(1), calculator.aggregate(&vec![2, 10239]));
+        assert_eq!(Ok(1), calculator.aggregate(&vec![10239, 2]));
+        assert_eq!(Ok(12884), calculator.aggregate(&vec![185751, 185752]));
+        assert_eq!(Ok(12884), calculator.aggregate(&vec![185752, 185751]));
     }
 
     #[test]
     fn test_three_on_triangle() {
         let calculator = LCACalculator::new(fixtures::tree());
-        assert_eq!(12884, calculator.aggregate(&vec![12884, 185751, 185752]));
-        assert_eq!(12884, calculator.aggregate(&vec![12884, 185752, 185751]));
-        assert_eq!(12884, calculator.aggregate(&vec![185751, 12884, 185752]));
-        assert_eq!(12884, calculator.aggregate(&vec![185752, 12884, 185751]));
-        assert_eq!(12884, calculator.aggregate(&vec![185751, 185752, 12884]));
-        assert_eq!(12884, calculator.aggregate(&vec![185752, 185751, 12884]));
+        assert_eq!(Ok(12884), calculator.aggregate(&vec![12884, 185751, 185752]));
+        assert_eq!(Ok(12884), calculator.aggregate(&vec![12884, 185752, 185751]));
+        assert_eq!(Ok(12884), calculator.aggregate(&vec![185751, 12884, 185752]));
+        assert_eq!(Ok(12884), calculator.aggregate(&vec![185752, 12884, 185751]));
+        assert_eq!(Ok(12884), calculator.aggregate(&vec![185751, 185752, 12884]));
+        assert_eq!(Ok(12884), calculator.aggregate(&vec![185752, 185751, 12884]));
     }
 
     fn taxon(id: TaxonId, parent: TaxonId) -> Taxon {
@@ -127,11 +127,11 @@ mod tests {
     #[test]
     fn test_with_deeper_interns() {
         let large_calculator = LCACalculator::new(TaxonTree::new(&large_taxon_list()));
-        assert_eq!(3, large_calculator.aggregate(&vec![9, 7]));
-        assert_eq!(3, large_calculator.aggregate(&vec![9, 10]));
-        assert_eq!(3, large_calculator.aggregate(&vec![7, 9]));
-        assert_eq!(3, large_calculator.aggregate(&vec![14, 8]));
-        assert_eq!(3, large_calculator.aggregate(&vec![14, 8]));
+        assert_eq!(Ok(3), large_calculator.aggregate(&vec![9, 7]));
+        assert_eq!(Ok(3), large_calculator.aggregate(&vec![9, 10]));
+        assert_eq!(Ok(3), large_calculator.aggregate(&vec![7, 9]));
+        assert_eq!(Ok(3), large_calculator.aggregate(&vec![14, 8]));
+        assert_eq!(Ok(3), large_calculator.aggregate(&vec![14, 8]));
     }
 }
 
