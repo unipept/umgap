@@ -106,7 +106,10 @@ fn main() {
                          .map(|tid| tid.parse::<TaxonId>().unwrap())
                          .collect();
 
-        let aggregate = aggregator.aggregate(&taxons);
+        let aggregate = aggregator.aggregate(&taxons).unwrap_or_else(|err| {
+            println!("Error: failed to aggregate some line: {}", err);
+            process::exit(5)
+        });
         let taxon = by_id[snapping[aggregate].unwrap()].as_ref().unwrap();
         println!("{},{},{}", taxon.id, taxon.name, taxon.rank);
     }
