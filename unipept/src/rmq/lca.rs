@@ -31,36 +31,43 @@ impl LCACalculator {
         }
     }
 
-    pub fn lca(&self, left: TaxonId, right: TaxonId) -> TaxonId {
-        if left == right { return left; }
-        let left_index  = *self.first_occurences.get(&left).expect("Unrecognized Taxon ID");
-        let right_index = *self.first_occurences.get(&right).expect("Unrecognized Taxon ID");
+    pub fn lca(&self, left: TaxonId, right: TaxonId) -> Result<TaxonId, String> {
+        if left == right { return Ok(left); }
+        let left_index  = *try!(self.first_occurences.get(&left).ok_or(format!("Unrecognized Taxon ID: {}.", left)));
+        let right_index = *try!(self.first_occurences.get(&right).ok_or(format!("Unrecognized Taxon ID: {}.", right)));
         let rmq_index   =  self.rmq_info.query(left_index, right_index);
-        self.euler_tour[rmq_index]
+        Ok(self.euler_tour[rmq_index])
     }
 }
 
 impl Aggregator for LCACalculator {
     fn aggregate(&self, taxons: &Vec<TaxonId>) -> Result<TaxonId, String> {
-        let mut iter = taxons.into_iter();
-        let initial_level: Option<usize> = None;
-        let first = *try!(iter.next().ok_or("Aggregation called on empty list."));
-        Ok(iter.fold((initial_level, first), |(join_level, left), &right| {
-            if left == right { return (join_level, left); }
-            let left_index  = *self.first_occurences.get(&left).expect("Unrecognized Taxon ID");
-            let right_index = *self.first_occurences.get(&right).expect("Unrecognized Taxon ID");
-            let rmq_index   = self.rmq_info.query(left_index, right_index);
-            let (mut lca_index, level) = match (rmq_index == left_index, rmq_index == right_index) {
-                (false, false) => (rmq_index, Some(self.rmq_info.array[rmq_index])),
-                (true,  false) => (right_index, join_level),
-                (false, true)  => (left_index, join_level),
+        if taxons.len() == 0 { return Err("Aggregation called on empty list.".to_owned()); }
+        let mut indices = taxons.iter().map(|t| 
+            self.first_occurences
+                .get(&t)
+                .ok_or(format!("Unrecognized Taxon ID {}.", t))
+        );
+        let mut consensus = *try!(indices.next().unwrap());
+        let mut join_level: Option<usize> = None;
+        for next_result in indices {
+            let next = *try!(next_result);
+            if consensus == next { continue; }
+            let rmq = self.rmq_info.query(consensus, next);
+            let (mut lca, level) = match (rmq == consensus, rmq == next) {
+                (false, false) => (rmq, Some(self.rmq_info.array[rmq])),
+                (true,  false) => (next, join_level),
+                (false, true)  => (consensus, join_level),
                 (true,  true)  => panic!("Impossibru!")
             };
-            if join_level.map(|l| self.rmq_info.array[lca_index] > l).unwrap_or(false) {
-                lca_index = rmq_index;
+            if join_level.map(|l| self.rmq_info.array[lca] > l).unwrap_or(false) {
+                // join is below join level, we can't lower it
+                lca = rmq;
             }
-            (level, self.euler_tour[lca_index])
-        }).1)
+            consensus = lca;
+            join_level = level
+        }
+        Ok(self.euler_tour[consensus])
     }
 }
 
