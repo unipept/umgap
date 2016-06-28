@@ -76,7 +76,7 @@ fn main() {
     let snapping = tree.snapping(&by_id, ranked_only);
 
     let aggregator: Box<Aggregator> = match (method, aggregation) {
-        ("RMQ",  "MTRL") => Box::new(rmq::rtl::RTLCalculator::new(&by_id)),
+        ("RMQ",  "MTRL") => Box::new(rmq::rtl::RTLCalculator::new(tree.root, &by_id)),
         ("RMQ",  "LCA*") => Box::new(rmq::lca::LCACalculator::new(tree)),
         ("RMQ",  "both") => Box::new(rmq::mix::MixCalculator::new(tree, factor)),
         ("tree", "LCA*") => Box::new(tree::lca::LCACalculator::new(tree.root, &by_id)),
