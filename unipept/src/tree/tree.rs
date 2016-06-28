@@ -12,11 +12,11 @@ pub struct SubTree<T: Default + Copy> {
 }
 
 impl<T: Default + Copy> SubTree<T> {
-    pub fn new(root: TaxonId, parents: &Vec<Option<TaxonId>>, taxons: HashMap<TaxonId, T>) -> Result<Self, String> {
+    pub fn new(root: TaxonId, parents: &Vec<Option<TaxonId>>, taxons: HashMap<TaxonId, T>) -> Result<Self, TaxonId> {
         let mut tree: HashMap<TaxonId, HashSet<TaxonId>> = HashMap::with_capacity(taxons.len());
         let mut queue: VecDeque<TaxonId> = taxons.keys().map(|t| *t).collect();
         while let Some(id) = queue.pop_front() {
-            let parent = try!(parents[id].ok_or("Error: unknown taxon in input."));
+            let parent = try!(parents[id].ok_or(id));
             if id == parent { continue; }
             if !tree.contains_key(&parent) { queue.push_back(parent); }
             let siblings = tree.entry(parent).or_insert(HashSet::new());

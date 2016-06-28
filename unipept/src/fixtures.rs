@@ -1,6 +1,7 @@
 
 use taxon::*;
 
+pub const ROOT: TaxonId = 1;
 pub fn taxon_list() -> Vec<Taxon> {
     vec![
         Taxon::from_static(1,      "root",          Rank::NoRank,       1,     true),

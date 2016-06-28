@@ -1,7 +1,7 @@
 
 use std::ops::Add;
 
-use agg::{Aggregator, count};
+use agg;
 use taxon::{Taxon, TaxonId};
 use tree::tree::SubTree;
 
@@ -19,10 +19,10 @@ impl LCACalculator {
     }
 }
 
-impl Aggregator for LCACalculator {
-    fn aggregate(&self, taxons: &Vec<TaxonId>) -> Result<TaxonId, String> {
-        if taxons.len() == 0 { return Err("Aggregation called on empty list.".to_owned()); }
-        let counts  = count(taxons);
+impl agg::Aggregator for LCACalculator {
+    fn aggregate(&self, taxons: &Vec<TaxonId>) -> Result<TaxonId, agg::Error> {
+        if taxons.len() == 0 { return Err(agg::Error::EmptyInput); }
+        let counts  = agg::count(taxons);
         let subtree = try!(SubTree::new(self.root, &self.parents, counts)).collapse(&Add::add);
         Ok(subtree.root)
     }

@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use rmq::rmq::RMQ;
 use taxon;
 use taxon::TaxonId;
-use agg::Aggregator;
+use agg;
 
 pub struct LCACalculator {
     pub first_occurences: HashMap<TaxonId, usize>,
@@ -31,22 +31,21 @@ impl LCACalculator {
         }
     }
 
-    pub fn lca(&self, left: TaxonId, right: TaxonId) -> Result<TaxonId, String> {
-        if left == right { return Ok(left); }
-        let left_index  = *try!(self.first_occurences.get(&left).ok_or(format!("Unrecognized Taxon ID: {}.", left)));
-        let right_index = *try!(self.first_occurences.get(&right).ok_or(format!("Unrecognized Taxon ID: {}.", right)));
+    pub fn lca(&self, left: TaxonId, right: TaxonId) -> Result<TaxonId, agg::Error> {
+        let left_index  = *try!(self.first_occurences.get(&left).ok_or(agg::Error::UnknownTaxon(left)));
+        let right_index = *try!(self.first_occurences.get(&right).ok_or(agg::Error::UnknownTaxon(right)));
         let rmq_index   =  self.rmq_info.query(left_index, right_index);
         Ok(self.euler_tour[rmq_index])
     }
 }
 
-impl Aggregator for LCACalculator {
-    fn aggregate(&self, taxons: &Vec<TaxonId>) -> Result<TaxonId, String> {
-        if taxons.len() == 0 { return Err("Aggregation called on empty list.".to_owned()); }
+impl agg::Aggregator for LCACalculator {
+    fn aggregate(&self, taxons: &Vec<TaxonId>) -> Result<TaxonId, agg::Error> {
+        if taxons.len() == 0 { return Err(agg::Error::EmptyInput); }
         let mut indices = taxons.iter().map(|t| 
             self.first_occurences
                 .get(&t)
-                .ok_or(format!("Unrecognized Taxon ID {}.", t))
+                .ok_or(agg::Error::UnknownTaxon(*t))
         );
         let mut consensus = *try!(indices.next().unwrap());
         let mut join_level: Option<usize> = None;

@@ -24,8 +24,8 @@ impl MixCalculator {
 }
 
 impl agg::Aggregator for MixCalculator {
-    fn aggregate(&self, taxons: &Vec<TaxonId>) -> Result<TaxonId, String> {
-        if taxons.len() == 0 { return Err("Aggregation called on empty list.".to_owned()); }
+    fn aggregate(&self, taxons: &Vec<TaxonId>) -> Result<TaxonId, agg::Error> {
+        if taxons.len() == 0 { return Err(agg::Error::EmptyInput); }
         let counts  = agg::count(taxons);
         let subtree = try!(SubTree::new(self.root, &self.parents, counts))
             .collapse(&Add::add)

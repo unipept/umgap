@@ -9,7 +9,7 @@ use self::num_rational::Ratio;
 
 use rmq::lca::LCACalculator;
 use taxon::{TaxonId, TaxonTree};
-use agg::{Aggregator, count};
+use agg;
 
 pub struct MixCalculator {
     lca_calculator: LCACalculator,
@@ -41,9 +41,9 @@ fn factorize(weights: Weights, factor: Ratio<usize>) -> Ratio<usize> {
     Ratio::from_integer(weights.lca) * factor + Ratio::from_integer(weights.rtl) * (Ratio::one() - factor)
 }
 
-impl Aggregator for MixCalculator {
-    fn aggregate(&self, taxons: &Vec<TaxonId>) -> Result<TaxonId, String> {
-        let     counts                             = count(taxons);
+impl agg::Aggregator for MixCalculator {
+    fn aggregate(&self, taxons: &Vec<TaxonId>) -> Result<TaxonId, agg::Error> {
+        let     counts                             = agg::count(taxons);
         let mut weights: HashMap<TaxonId, Weights> = HashMap::with_capacity(counts.len());
         let mut queue:   VecDeque<TaxonId>         = counts.keys().map(|&t| t).collect();
 
@@ -64,7 +64,7 @@ impl Aggregator for MixCalculator {
         weights.iter()
                .max_by_key(|&(_, w)| factorize(*w, self.factor))
                .map(|tup| *tup.0)
-               .ok_or("Aggregation called on empty list.".to_owned())
+               .ok_or(agg::Error::EmptyInput)
     }
 
 }
