@@ -49,9 +49,10 @@ impl LCACalculator {
 impl agg::Aggregator for LCACalculator {
     fn aggregate(&self, taxons: &Vec<TaxonId>) -> Result<TaxonId, agg::Error> {
         if taxons.len() == 0 { return Err(agg::Error::EmptyInput); }
-        let mut indices = taxons.iter().map(|t| self.first_occurence(*t));
-        let mut consensus = try!(indices.next().unwrap());
-        let mut join_level: Option<usize> = None;
+        let unique         = agg::count(taxons);
+        let mut indices    = unique.keys().map(|t| self.first_occurence(*t));
+        let mut consensus  = try!(indices.next().unwrap());
+        let mut join_level = None::<usize>;
         for next_result in indices {
             let next = try!(next_result);
             if consensus == next { continue; }
