@@ -32,25 +32,28 @@ impl LCACalculator {
     }
 
     pub fn lca(&self, left: TaxonId, right: TaxonId) -> Result<TaxonId, agg::Error> {
-        let left_index  = *try!(self.first_occurences.get(&left).ok_or(agg::Error::UnknownTaxon(left)));
-        let right_index = *try!(self.first_occurences.get(&right).ok_or(agg::Error::UnknownTaxon(right)));
-        let rmq_index   =  self.rmq_info.query(left_index, right_index);
+        let left_index  = try!(self.first_occurence(left));
+        let right_index = try!(self.first_occurence(right));
+        let rmq_index   = self.rmq_info.query(left_index, right_index);
         Ok(self.euler_tour[rmq_index])
+    }
+
+    fn first_occurence(&self, taxon_id: TaxonId) -> Result<usize, agg::Error> {
+        self.first_occurences
+            .get(&taxon_id)
+            .ok_or(agg::Error::UnknownTaxon(taxon_id))
+            .map(|t| *t)
     }
 }
 
 impl agg::Aggregator for LCACalculator {
     fn aggregate(&self, taxons: &Vec<TaxonId>) -> Result<TaxonId, agg::Error> {
         if taxons.len() == 0 { return Err(agg::Error::EmptyInput); }
-        let mut indices = taxons.iter().map(|t| 
-            self.first_occurences
-                .get(&t)
-                .ok_or(agg::Error::UnknownTaxon(*t))
-        );
-        let mut consensus = *try!(indices.next().unwrap());
+        let mut indices = taxons.iter().map(|t| self.first_occurence(*t));
+        let mut consensus = try!(indices.next().unwrap());
         let mut join_level: Option<usize> = None;
         for next_result in indices {
-            let next = *try!(next_result);
+            let next = try!(next_result);
             if consensus == next { continue; }
             let rmq = self.rmq_info.query(consensus, next);
             let (mut lca, level) = match (rmq == consensus, rmq == next) {
