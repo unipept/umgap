@@ -1,14 +1,15 @@
-extern crate unipept;
-extern crate clap;
-extern crate num_rational;
 
 use std::process;
 use std::io;
 use std::io::BufRead;
 
+extern crate clap;
 use clap::{Arg, App};
+
+extern crate num_rational;
 use num_rational::Ratio;
 
+extern crate unipept;
 use unipept::{PKG_NAME, PKG_VERSION, PKG_AUTHORS, taxon};
 use unipept::taxon::TaxonId;
 use unipept::agg::Aggregator;

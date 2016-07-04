@@ -1,10 +1,12 @@
+
 use std::error;
 use std::fmt;
 use std::io;
 use std::result;
 
-use csv;
-use fst;
+extern crate csv;
+
+extern crate fst;
 
 
 pub type Result<T> = result::Result<T, Error>;

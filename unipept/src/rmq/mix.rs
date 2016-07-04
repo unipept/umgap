@@ -1,10 +1,11 @@
-extern crate num_rational;
-extern crate num_traits;
 
 use std::collections::HashMap;
 use std::collections::VecDeque;
 
+extern crate num_traits;
 use self::num_traits::identities::One;
+
+extern crate num_rational;
 use self::num_rational::Ratio;
 
 use rmq::lca::LCACalculator;
