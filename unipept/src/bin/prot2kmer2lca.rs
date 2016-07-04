@@ -1,17 +1,15 @@
 #[macro_use] extern crate clap;
-extern crate csv;
 extern crate fst;
 extern crate itertools;
-
-mod errors;
-mod fasta;
 
 use std::io;
 use std::io::Write;
 use std::fs;
 
-use errors::Error;
-use errors::Result;
+extern crate unipept;
+use unipept::errors::Error;
+use unipept::errors::Result;
+use unipept::io::fasta;
 
 
 fn query(fst_filename: &String, k: usize, query_filename: &String) -> Result<()> {

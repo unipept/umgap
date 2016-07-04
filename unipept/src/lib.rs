@@ -3,6 +3,8 @@ pub mod taxon;
 pub mod agg;
 pub mod rmq;
 pub mod tree;
+pub mod errors;
+pub mod io;
 
 #[cfg(test)]
 pub mod fixtures;

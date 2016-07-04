@@ -1,7 +1,7 @@
-extern crate num_rational;
 
 use std::ops::Add;
 
+extern crate num_rational;
 use self::num_rational::Ratio;
 
 use agg;

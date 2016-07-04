@@ -1,12 +1,11 @@
 extern crate csv;
 extern crate fst;
 
-mod errors;
-
 use std::fs::File;
 use std::io;
 
-use errors::Result;
+extern crate unipept;
+use unipept::errors::Result;
 
 
 fn build(csv_filename: &String, fst_filename: &String) -> Result<()> {
