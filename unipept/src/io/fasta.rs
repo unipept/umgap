@@ -3,10 +3,13 @@ use std::io::BufRead;
 use std::io::BufReader;
 use std::io::Lines;
 use std::io::Read;
+use std::io::Write;
 
 use errors;
 use errors::Result;
 
+
+const FASTA_WIDTH: usize = 70;
 
 pub struct Reader<R: Read> {
     lines: Lines<BufReader<R>>,
@@ -72,3 +75,26 @@ impl<R: Read> Iterator for Records<R> {
         }
     }
 }
+
+
+pub struct Writer<W: Write> {
+    buffer: io::BufWriter<W>,
+}
+
+impl<W: Write> Writer<W> {
+    pub fn new(writer: W) -> Self {
+        Writer {
+            buffer: io::BufWriter::new(writer),
+        }
+    }
+
+    pub fn write_record(&mut self, record: Record) -> Result<()> {
+        try!(write!(self.buffer, "{}\n", record.header));
+        for subseq in record.sequence.as_bytes().chunks(FASTA_WIDTH) {
+            try!(self.buffer.write_all(subseq));
+            try!(self.buffer.write_all(&[b'\n']));
+        }
+        Ok(())
+    }
+}
+
