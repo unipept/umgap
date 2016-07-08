@@ -24,7 +24,7 @@ impl<R: Read> Reader<R> {
     }
 
     pub fn read_record(&mut self) -> Result<Option<Record>> {
-        let header = match self.lines.next() {
+        let mut header = match self.lines.next() {
             None         => return Ok(None),
             Some(header) => try!(header),
         };
@@ -34,6 +34,7 @@ impl<R: Read> Reader<R> {
                 io::Error::new(io::ErrorKind::Other,
                                "Expected > at beginning of fasta header.")));
         }
+        let _ = header.remove(0);
 
         let sequence = match self.lines.next() {
             None => return Err(errors::Error::Io(io::Error::new(io::ErrorKind::Other, "Encountered empty sequence at end of file."))),
@@ -89,7 +90,7 @@ impl<W: Write> Writer<W> {
     }
 
     pub fn write_record(&mut self, record: Record) -> Result<()> {
-        try!(write!(self.buffer, "{}\n", record.header));
+        try!(write!(self.buffer, ">{}\n", record.header));
         for subseq in record.sequence.as_bytes().chunks(FASTA_WIDTH) {
             try!(self.buffer.write_all(subseq));
             try!(self.buffer.write_all(&[b'\n']));
