@@ -90,6 +90,10 @@ impl<W: Write> Writer<W> {
     }
 
     pub fn write_record(&mut self, record: Record) -> Result<()> {
+        self.write_record_ref(&record)
+    }
+
+    pub fn write_record_ref(&mut self, record: &Record) -> Result<()> {
         try!(write!(self.buffer, ">{}\n", record.header));
         for subseq in record.sequence.as_bytes().chunks(FASTA_WIDTH) {
             try!(self.buffer.write_all(subseq));
