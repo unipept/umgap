@@ -16,6 +16,7 @@ pub enum Error {
     Csv(csv::Error),
     Fst(fst::Error),
     Io(io::Error),
+    Str(&'static str),
 }
 
 impl fmt::Display for Error {
@@ -24,6 +25,7 @@ impl fmt::Display for Error {
             Error::Csv(ref err) => err.fmt(f),
             Error::Io(ref err) => err.fmt(f),
             Error::Fst(ref err) => err.fmt(f),
+            Error::Str(ref err) => write!(f, "{}", err),
         }
     }
 }
@@ -34,6 +36,7 @@ impl error::Error for Error {
             Error::Csv(ref err) => err.description(),
             Error::Io(ref err) => err.description(),
             Error::Fst(ref err) => err.description(),
+            Error::Str(ref err) => err,
         }
     }
 }
@@ -53,5 +56,11 @@ impl From<io::Error> for Error {
 impl From<fst::Error> for Error {
     fn from(err: fst::Error) -> Error {
         Error::Fst(err)
+    }
+}
+
+impl From<&'static str> for Error {
+    fn from(err: &'static str) -> Error {
+        Error::Str(err)
     }
 }
