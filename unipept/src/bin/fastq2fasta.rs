@@ -35,6 +35,25 @@ impl<E, I: Iterator<Item=E>> Iterator for Zip<E, I> {
     }
 }
 
+fn open_writer(argument: Option<&str>) -> Result<fasta::Writer<Box<io::Write>>> {
+    let output_arg = try!(argument.ok_or("Please provide a valid output argument."));
+    let output: Box<io::Write> = if output_arg == "-" {
+        Box::new(io::stdout())
+    } else {
+        Box::new(try!(fs::File::create(output_arg)))
+    };
+    Ok(fasta::Writer::new(output))
+}
+
+fn open_reader(argument: &str) -> Result<fastq::Records<Box<io::Read>>> {
+    let input: Box<io::Read> = if argument == "-" {
+        Box::new(io::stdin())
+    } else {
+        Box::new(try!(fs::File::open(argument)))
+    };
+    Ok(fastq::Reader::new(input).records())
+}
+
 fn main() {
     let matches = App::new(PKG_NAME.to_string() + " fastq2fasta")
                       .version(PKG_VERSION)
@@ -43,27 +62,23 @@ fn main() {
                       .arg(Arg::with_name("output")
                                .help("The output file, use '-' or just leave out the option for stdout.")
                                .takes_value(true)
-                               .default_value("-")
                                .long("output")
                                .short("o"))
                       .arg(Arg::with_name("input")
-                               .help("The input files. One of these files may be replaced by - to read form stdin.")
+                               .help("The input files. One of these files may be replaced by - to read from stdin.")
                                .multiple(true)
                                .min_values(1)
                                .index(1))
                       .get_matches();
 
-    let mut writer = fasta::Writer::new(matches.value_of("output")
-                                               .ok_or(io::Error::new(io::ErrorKind::Other, "oh no"))
-                                               .and_then(|filename| fs::File::create(filename))
-                                               .unwrap());
+    let mut writer = open_writer(matches.value_of("output")).unwrap_or_else(|err| {
+        println!("Couldn't open writer: {}", err);
+        process::exit(1);
+    });
+
     let readers = matches.values_of("input").expect("clap forces force a value")
-                         .map(|argument| argument.to_string())
-                         .map(|filename| fs::File::open(filename)
-                                                  .map_err(From::from)
-                                                  .map(fastq::Reader::new)
-                                                  .map(fastq::Reader::records))
-                         .collect::<Result<Vec<fastq::Records<fs::File>>>>()
+                         .map(open_reader)
+                         .collect::<Result<Vec<fastq::Records<Box<io::Read>>>>>()
                          .unwrap_or_else(|err| {
                              println!("Error when opening the input files: {}", err);
                              process::exit(1)
