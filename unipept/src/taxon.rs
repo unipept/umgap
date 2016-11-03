@@ -7,6 +7,7 @@ use std::collections::HashSet;
 
 use std::str::FromStr;
 
+/// Represents the rank of a [Taxon](struct.Taxon.html), i.e. the depth in a [TaxonTree](struct.Taxon.html).
 #[derive(PartialEq, Eq, Debug, Clone, Copy)]
 pub enum Rank {
     NoRank, Superkingdom, Kingdom, Subkingdom, Superphylum, Phylum, Subphylum, Superclass, Class,
@@ -98,6 +99,7 @@ impl fmt::Display for Rank {
 
 pub type TaxonId = usize;
 
+/// Represents a group of organisms with similar qualities.
 #[derive(Clone, PartialEq, Debug)]
 pub struct Taxon {
     pub id: TaxonId,
@@ -119,6 +121,27 @@ impl Taxon {
 
 impl FromStr for Taxon {
     type Err = &'static str;
+
+    /// Parses a taxon from the given string.
+    ///
+    /// # Fields
+    /// A line is defined by 5 columns, separated with a tab.
+    /// Note that all fields are required, in the following order:
+    /// `id`,`name`,`rank`,`parent`,`valid`.
+    ///
+    /// The `valid`-field will be parsed as true for `"\x01"` and false for `"\x00"`.
+    ///
+    /// # Examples
+    /// ```
+    /// let taxon = "1\tFelis catus\tspecies\t4\t\x01".parse::<Taxon>();
+    /// // Will return: Taxon {
+    /// //                  id: 1,
+    /// //                  name: "Felis catus",
+    /// //                  rank: Rank::Species,
+    /// //                  parent: 4,
+    /// //                  valid: true
+    /// //              }
+    /// ```
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let split: Vec<&str> = s.trim_right().split('\t').collect();
 
@@ -140,6 +163,9 @@ impl FromStr for Taxon {
     }
 }
 
+/// Reads in a file where each line can be parsed as a taxon.
+///
+/// See [Taxon::from_str()](struct.Taxon.html#method.from_str) for more details on the line format.
 pub fn read_taxa_file(filename: &str) -> Result<Vec<Taxon>, &'static str> {
     let file   = try!(File::open(filename).map_err(|_| "Failed opening taxon file."));
     let reader = io::BufReader::new(file);
@@ -151,6 +177,7 @@ pub fn read_taxa_file(filename: &str) -> Result<Vec<Taxon>, &'static str> {
     Ok(taxa)
 }
 
+/// Groups a list of taxons by their TaxonId.
 pub fn taxa_vector_by_id(taxons: Vec<Taxon>) -> Vec<Option<Taxon>> {
     // new vec, with at least the length of the current one
     let max_id = taxons.iter().map(|t: &Taxon| t.id).max().unwrap_or(0);
@@ -163,6 +190,8 @@ pub fn taxa_vector_by_id(taxons: Vec<Taxon>) -> Vec<Option<Taxon>> {
     by_id
 }
 
+/// Represents a taxonomy tree. Each node is a [Taxon](struct.Taxon.html) represented by its
+/// TaxonId.
 pub struct TaxonTree {
     pub root: TaxonId,
     pub children: HashMap<TaxonId, Vec<TaxonId>>,
@@ -191,6 +220,8 @@ impl TaxonTree {
         }
     }
 
+    // Takes a (mutable) vector of taxons indexed by their id, and adds the current taxon if it
+    // passes the filter.
     fn with_filtered<F>(&self, mut ancestors: &mut Vec<Option<TaxonId>>, current: TaxonId, ancestor: Option<TaxonId>, filter: &F)
     where F: Fn(TaxonId) -> bool {
         let ancestor = if filter(current) { Some(current) } else { ancestor };
@@ -202,6 +233,7 @@ impl TaxonTree {
         }
     }
 
+    /// Returns a filtered list of taxons (or more specifically, their identifiers)
     pub fn filter_ancestors<F>(&self, filter: F) -> Vec<Option<TaxonId>>
     where F: Fn(TaxonId) -> bool {
         let mut valid_ancestors = (0..self.max + 1).map(|_| None).collect();
@@ -209,10 +241,16 @@ impl TaxonTree {
         valid_ancestors
     }
 
+    /// Returns the amount of children a given taxon has in this tree.
     pub fn child_count(&self, whose: TaxonId) -> usize {
         self.children.get(&whose).map(|v| v.len()).unwrap_or(0)
     }
 
+    /// Converts a list of taxons into their respective taxon id's for this tree.
+    ///
+    /// # Arguments:
+    /// * `taxons`: a vector of taxons, indexed by their TaxonId.
+    /// * `ranked_only`: whether to include only taxons with a rank.
     pub fn snapping(&self, taxons: &Vec<Option<Taxon>>, ranked_only: bool) -> Vec<Option<TaxonId>> {
         self.filter_ancestors(|i: TaxonId| {
             taxons[i]
@@ -225,6 +263,8 @@ impl TaxonTree {
 
 pub type Depth = usize;
 
+/// An iterator that takes a [Euler tour](https://en.wikipedia.org/wiki/Euler_tour_technique)
+/// through a [TaxonTree](struct.TaxonTree.html).
 pub struct EulerIterator {
     tree: TaxonTree,
     path: Vec<(TaxonId, usize, usize)>,

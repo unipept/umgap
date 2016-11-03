@@ -11,7 +11,13 @@ use unipept::errors::Error;
 use unipept::errors::Result;
 use unipept::io::fasta;
 
-
+/// Reads all the records in a specified FASTA file and queries each in an FST for the LCA's.
+/// The result is printed to standard output.
+///
+/// # Arguments
+/// * `fst_filename`: the file which stores the FST
+/// * `k`: specifies the length of the k-mers
+/// * `query_filename`: the FASTA file containing the records to get the LCA from.
 fn query(fst_filename: &String, k: usize, query_filename: &String) -> Result<()> {
     let map = try!(fst::Map::from_path(fst_filename));
     let reader = try!(get_reader(query_filename));
@@ -44,6 +50,10 @@ fn query(fst_filename: &String, k: usize, query_filename: &String) -> Result<()>
     Ok(())
 }
 
+/// Returns the Reader for the given filename, or for stdin if the filename is "-".
+///
+/// # Arguments
+/// * `query_filename`: the file which stores the FST
 fn get_reader(query_filename: &String) -> Result<fasta::Reader<Box<io::Read>>> {
     let reader: Box<io::Read> = match query_filename.as_ref() {
         "-" => Box::new(io::stdin()),
