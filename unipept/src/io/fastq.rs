@@ -8,17 +8,20 @@ use std::fmt;
 use errors;
 use errors::Result;
 
+/// Reads a source (e.g. a file) in [FASTQ format](https://en.wikipedia.org/wiki/FASTQ_format).
 pub struct Reader<R: Read> {
     lines: Peekable<io::Lines<io::BufReader<R>>>,
 }
 
 impl<R: Read> Reader<R> {
+    /// Creates a Reader from the given Read (e.g. a file)
     pub fn new(readable: R) -> Self {
         Reader {
             lines: io::BufReader::new(readable).lines().peekable(),
         }
     }
 
+    /// Reads the next record from the FASTQ file.
     pub fn read_record(&mut self) -> Result<Option<Record>> {
         // reading the header
         let mut header = match self.lines.next() {
@@ -75,15 +78,24 @@ impl<R: Read> Reader<R> {
         }))
     }
 
+    /// Returns a Records struct with itself as its reader.
     pub fn records(self) -> Records<R> {
         Records { reader: self }
     }
 }
 
+/// A record as defined by the FASTQ format.
 #[derive(Debug)]
 pub struct Record {
+    /// The FASTQ header (without the preceding '@')
     pub header: String,
+
+    /// The actual sequence of nucleotides
     pub sequence: String,
+
+    /// The line discribing the quality of the reads.
+    /// Each character is an integer representing the estimated probability of the base being
+    /// incorrect.
     pub quality: String,
 }
 
@@ -93,6 +105,7 @@ impl fmt::Display for Record {
     }
 }
 
+/// Convenience struct which allows for iteration (e.g. using for..in).
 pub struct Records<R: Read> {
     reader: Reader<R>,
 }
