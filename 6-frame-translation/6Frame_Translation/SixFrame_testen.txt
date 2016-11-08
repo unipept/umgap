@@ -1,0 +1,16 @@
+Opmerkingen:
+
+- Reverse strand neemt ook complement
+
+
+
+STAP 1:
+
+1 proteïne geisoleerd
+
+STAP 2:
+
+2 proteïnen
+	- goede afstand ertussen
+	- vlak bij elkaar
+	- eentje uit complement en eentje uit gewone richtingen in zelfde ‘read’
