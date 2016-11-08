@@ -1,0 +1,81 @@
+BioJava
+
+*Vertaal een DNA-sequentie naar proteine sequentie (standaardwaarden):
+
+	ProteinSequence protein = new DNASequence("ATG").getRNASequence().getProteinSequence();
+
+*Fasta files lezen:
+
+	//Try with the FastaReaderHelper
+       LinkedHashMap<String, ProteinSequence> a = FastaReaderHelper.readFastaProteinSequence(new File(args[0]));
+       //FastaReaderHelper.readFastaDNASequence for DNA sequences
+       
+       for (  Entry<String, ProteinSequence> entry : a.entrySet() ) {
+           System.out.println( entry.getValue().getOriginalHeader() + "=" + entry.getValue().getSequenceAsString() );
+       }
+
+	//Try reading with the FastaReader
+       FileInputStream inStream = new FileInputStream( args[0] );
+       FastaReader<ProteinSequence,AminoAcidCompound> fastaReader = 
+           new FastaReader<ProteinSequence,AminoAcidCompound>(
+                   inStream, 
+                   new GenericFastaHeaderParser<ProteinSequence,AminoAcidCompound>(), 
+                   new ProteinSequenceCreator(AminoAcidCompoundSet.getAminoAcidCompoundSet()));
+       LinkedHashMap<String, ProteinSequence> b = fastaReader.process();
+       for (  Entry<String, ProteinSequence> entry : b.entrySet() ) {
+           System.out.println( entry.getValue().getOriginalHeader() + "=" + entry.getValue().getSequenceAsString() );
+       }
+
+*Keuze van welk frame vertaald wordt:
+
+	` DNASequence dna = new DNASequence("AATG");`  
+	` RNASequence rna = dna.getRNASequence(Frame.TWO);`  
+	` ProteinSequence protein = rna.getProteinSequence();`
+
+*Meerdere frames tegelijk vertalen:
+
+	java TranscriptionEngine te = TranscriptionEngine.getDefault(); 
+	Frame[] frames = Frame.getForwardFrames(); 
+	Map<Frame, Sequence<AminoAcidCompound>\> results = te.multipleFrameTranslation(dna, frames);
+
+*Gebruik een andere transcriptie-engine dan de standaard:
+
+	java TranscriptionEngine.Builder b = new TranscriptionEngine.Builder(); 
+	b.table(11).initMet(true).trimStop(true); 
+	TranscriptionEngine engine = b.build();
+
+	Effectieve gebruik bij vertalen:
+
+		` DNASequence dna = new DNASequence("ATG");`  
+		` RNASequence rna = dna.getRNASequence(engine);`  
+		` ProteinSequence protein = rna.getProteinSequence(engine);`
+
+*De klasse die codon tabellen bevat:
+
+	org.biojava3.core.sequence.io.IUPACParser 
+
+	Opties:
+	
+    		1 - UNIVERSAL
+    		2 - VERTEBRATE_MITOCHONDRIAL
+    		3 - YEAST_MITOCHONDRIAL
+    		4 - MOLD_MITOCHONDRIAL
+    		5 - INVERTEBRATE_MITOCHONDRIAL
+    		6 - CILIATE_NUCLEAR
+    		9 - ECHINODERM_MITOCHONDRIAL
+    		10 - EUPLOTID_NUCLEAR
+    		11 - BACTERIAL
+    		12 - ALTERNATIVE_YEAST_NUCLEAR
+    		13 - ASCIDIAN_MITOCHONDRIAL
+    		14 - FLATWORM_MITOCHONDRIAL
+    		15 - BLEPHARISMA_MACRONUCLEAR
+    		16 - 2CHLOROPHYCEAN_MITOCHONDRIAL
+    		21 - TREMATODE_MITOCHONDRIAL
+    		23 - SCENEDESMUS_MITOCHONDRIAL
+
+* Zorg ervoor dat de conventies voor ambigue codons ook herkend worden:
+
+ 	AmbiguityDNACompoundSet ambiguityDNACompoundSet = AmbiguityDNACompoundSet.getDNACompoundSet();
+       	DNASequence dna2 = new DNASequence("WWW",ambiguityDNACompoundSet);
+	
+
