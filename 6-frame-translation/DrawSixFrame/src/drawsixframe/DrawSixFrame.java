@@ -7,16 +7,13 @@ package drawsixframe;
 
 import com.opencsv.CSVReader;
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 
 /**
  *
@@ -33,7 +30,7 @@ public class DrawSixFrame {
         CSVReader reader;
         try {
             reader = new CSVReader(new FileReader("found_lcas.txt"));
-            BufferedReader sixframe = new BufferedReader(new FileReader("six_frame_single"));
+            BufferedReader sixframe = new BufferedReader(new FileReader("single.sixframe"));
             List<String[]> lcas = reader.readAll();
             Iterator<String[]> it = lcas.iterator();
             it.next();

@@ -8,6 +8,7 @@
 !pom.xml
 *.mf
 *.test
+*.sixframe
 found_lcas.txt
 found_peptides.txt
 six_frame_single
