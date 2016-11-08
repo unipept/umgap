@@ -9,7 +9,7 @@
 *.mf
 *.test
 *.sixframe
-found_lcas.txt
+found_lcas*
 found_peptides.txt
 six_frame_single
 nbproject/

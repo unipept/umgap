@@ -1,0 +1,5 @@
+$ echo ">AIL77187.1 membrane protein [Acinetobacter baumannii]" > single_protein.fasta 
+$ cat acinetobacter_baumannii.fasta | sed '/^>/d' | tr -d '\n' | cut -c 97450-98250 >> single_protein.fasta 
+$ mvn exec:java -Dexec.mainClass="com.mycompany.sixframetransl.translate" -Dexec.args="single_protein.fasta 11 False" > output
+$ egrep -v '(INFO|WARNING)' output > six_frame_single
+$ cat six_frame_single | prot2pept | peptfilter | unipept pept2lca > found_lcas.txt

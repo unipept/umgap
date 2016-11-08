@@ -30,6 +30,21 @@ public class DrawSixFrame {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        System.out.println("\\begin{tikzpicture}\n" +
+        "[protein/.style={violet, line width = 6pt, line cap = round},\n" +
+        "root/.style={cyan, line width = 4pt, line cap = round},\n" +
+        "genus/.style={teal!60, line width = 4pt, line cap = round},\n" +
+        "species/.style={teal, line width = 4pt, line cap = round},\n" +
+        "species group/.style={teal!80, line width = 4pt, line cap = round},\n" +
+        "wrong/.style={pink, line width = 4pt, line cap = round},\n" +
+        "superkingdom/.style={teal!10, line width = 4pt, line cap = round}]\n" +
+        "\\draw node[anchor=north] {True sequence} (0,0) -- (24,0) ;\n" +
+        "\\draw (0,-2) -- (24,-2) node[anchor=south] {$+1$};\n" +
+        "\\draw (0,-3) -- (24,-3) node[anchor=south] {$+2$};\n" +
+        "\\draw (0,-4) -- (24,-4) node[anchor=south] {$+3$};\n" +
+        "\\draw (0,-5) -- (24,-5) node[anchor=south] {$-1$};\n" +
+        "\\draw (0,-6) -- (24,-6) node[anchor=south] {$-2$};\n" +
+        "\\draw (0,-7) -- (24,-7) node[anchor=south] {$-3$};");
         proteinSeq.add("MKISDLMTYHGCKNRKELSEKTGYSTVTLWKWENNGIPARTQAVLQVKTKGKLKADLQALTA");
         proteinSeq.add("MSLHSRIRQKLEEKKLRAADLARATKKSPVAVKKWLDGTSVPTAENLKVIAKFLGVSDDWLLYGGPVEQESNNLPQLNVLDIEAFKQKYNIPDSEDAVKFVQTSDKPFPIQKRYVPVKAYSKMGMDGYFTDMGYEGNAGDGYVPTHSAGPRAYGIKGTGDSMFPAIRNGWYVVCDPDAELVPTEFVQVCLKDGRCTIKEFIGINNDVLSLIAVNGGERLSFNMDEVESITAITDIVPPSQHRQEHPYSH");
         taxonomy.addAll(Arrays.asList(correctTaxonomy.split("; ")));
@@ -107,7 +122,8 @@ public class DrawSixFrame {
                 }else{
                     System.out.println("\\draw[wrong] ("+start+",-"+framenr+") -- ("+end+",-"+framenr+");");
                 }
-            }    
+            }
+            System.out.println("\\end{tikzpicture}");
             } catch (IOException ex) {
             System.out.println("File found_lcas.txt not found");
         }
