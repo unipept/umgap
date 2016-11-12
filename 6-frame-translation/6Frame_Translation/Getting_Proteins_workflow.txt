@@ -1,5 +1,16 @@
+Proteine maken en lca’s bepalen
+———————————————————————————————
 $ echo ">AIL77187.1 membrane protein [Acinetobacter baumannii]" > single_protein.fasta 
 $ cat acinetobacter_baumannii.fasta | sed '/^>/d' | tr -d '\n' | cut -c 97450-98250 >> single_protein.fasta 
 $ mvn exec:java -Dexec.mainClass="com.mycompany.sixframetransl.translate" -Dexec.args="single_protein.fasta 11 False" > output
-$ egrep -v '(INFO|WARNING)' output > six_frame_single
-$ cat six_frame_single | prot2pept | peptfilter | unipept pept2lca > found_lcas.txt
+$ egrep -v '(INFO|WARNING)' output > single.sixframe
+$ cat single.sixframe | prot2pept | peptfilter | unipept pept2lca > found_lcas.txt
+
+
+Lineage ophalen
+———————————————
+Gegeven de juiste lineage
+Haal voor elke lijn in found_lcas.txt de lineage op en voeg toe aan die lijn (of apart bestand)
+efetch -db taxonomy -id 470 -format xml | xtract -pattern Taxon -element Lineage
+
+In java indien substring OK, niets doen, indien substring niet OK, tel afstand

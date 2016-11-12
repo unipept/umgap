@@ -216,12 +216,12 @@ superkingdom/.style={teal!10, line width = 4pt, line cap = round}]
 \vspace{2cm}
 \begin{tikzpicture}
 [protein/.style={violet, line width = 6pt, line cap = round},
-root/.style={cyan, line width = 4pt, line cap = round},
-genus/.style={teal!60, line width = 4pt, line cap = round},
-species/.style={teal, line width = 4pt, line cap = round},
-species group/.style={teal!80, line width = 4pt, line cap = round},
+root/.style={teal!10, line width = 4pt, line cap = round},
+genus/.style={teal, line width = 4pt, line cap = round},
+species/.style={teal!80!black, line width = 4pt, line cap = round},
+species group/.style={teal!90!black, line width = 4pt, line cap = round},
 wrong/.style={pink, line width = 4pt, line cap = round},
-superkingdom/.style={teal!10, line width = 4pt, line cap = round}]
+superkingdom/.style={teal!20, line width = 4pt, line cap = round}]
 \draw node[anchor=north] {True sequence} (0,0) -- (24,0) ;
 \draw (0,-2) -- (24,-2) node[anchor=south] {$+1$};
 \draw (0,-3) -- (24,-3) node[anchor=south] {$+2$};
@@ -301,6 +301,214 @@ superkingdom/.style={teal!10, line width = 4pt, line cap = round}]
 \draw[root] (5.533834586466166,-7) -- (5.894736842105264,-7);
 \draw[root] (2.466165413533836,-7) -- (2.8270676691729335,-7);
 \draw[wrong] (1.2631578947368438,-7) -- (1.6842105263157912,-7);
+\end{tikzpicture}
+
+\begin{tikzpicture}
+[protein/.style={violet, line width = 6pt, line cap = round},
+root/.style={teal!20, line width = 4pt, line cap = round},
+genus/.style={teal, line width = 4pt, line cap = round},
+subspecies/.style={teal!90!black, line width = 4pt, line cap = round},
+species/.style={teal!70!black, line width = 4pt, line cap = round},
+species group/.style={teal!80!black, line width = 4pt, line cap = round},
+family/.style={teal!80, line width = 4pt, line cap = round},
+order/.style={teal!70, line width = 4pt, line cap = round},
+class/.style={teal!60, line width = 4pt, line cap = round},
+phylum/.style={teal!50, line width = 4pt, line cap = round},
+kingdom/.style={teal!40, line width = 4pt, line cap = round},
+superkingdom/.style={teal!30, line width = 4pt, line cap = round}]
+\draw node[anchor=north] {True sequence} (0,0) -- (24,0) ;
+\draw (0,-2) -- (24,-2) node[anchor=south] {$+1$};
+\draw (0,-3) -- (24,-3) node[anchor=south] {$+2$};
+\draw (0,-4) -- (24,-4) node[anchor=south] {$+3$};
+\draw (0,-5) -- (24,-5) node[anchor=south] {$-1$};
+\draw (0,-6) -- (24,-6) node[anchor=south] {$-2$};
+\draw (0,-7) -- (24,-7) node[anchor=south] {$-3$};
+\draw[protein] (8.28,0) -- (23.22,0);
+\draw[root] (0.8999999999999999,-2) -- (1.2599999999999998,-2);
+\draw[root] (2.58,-2) -- (2.94,-2);
+\draw[superkingdom] (4.14,-2) -- (4.5,-2);
+\node [below,font=\footnotesize] at (4.5,-2) {Eukaryota};
+\draw[root] (9.299999999999999,-2) -- (9.659999999999998,-2);
+\draw[root] (9.9,-2) -- (10.26,-2);
+\draw[species group] (10.32,-2) -- (11.16,-2);
+\node [below,font=\footnotesize] at (11.16,-2) {Acinetobacter calcoaceticus/baumannii complex};
+\draw[species] (11.4,-2) -- (13.440000000000001,-2);
+\node [below,font=\footnotesize] at (13.440000000000001,-2) {Acinetobacter baumannii};
+\draw[root] (13.559999999999999,-2) -- (14.219999999999999,-2);
+\draw[species group] (14.219999999999999,-2) -- (14.999999999999998,-2);
+\node [below,font=\footnotesize] at (14.999999999999998,-2) {Acinetobacter calcoaceticus/baumannii complex};
+\draw[root] (15.059999999999999,-2) -- (15.36,-2);
+\draw[root] (15.6,-2) -- (17.34,-2);
+\draw[root] (17.34,-2) -- (17.64,-2);
+\draw[root] (17.64,-2) -- (18.3,-2);
+\draw[species group] (18.3,-2) -- (19.740000000000002,-2);
+\node [below,font=\footnotesize] at (19.740000000000002,-2) {Acinetobacter calcoaceticus/baumannii complex};
+\draw[species] (20.16,-2) -- (21.36,-2);
+\node [below,font=\footnotesize] at (21.36,-2) {Acinetobacter baumannii};
+\draw[species] (21.36,-2) -- (22.8,-2);
+\node [below,font=\footnotesize] at (22.8,-2) {Acinetobacter baumannii};
+\draw[root] (22.8,-2) -- (23.220000000000002,-2);
+\draw[root] (0.6,-3) -- (0.8999999999999999,-3);
+\draw[root] (4.74,-3) -- (5.1000000000000005,-3);
+\draw[root] (9.54,-3) -- (9.84,-3);
+\draw[root] (12.54,-3) -- (12.84,-3);
+\draw[root] (13.979999999999999,-3) -- (14.399999999999999,-3);
+\draw[superkingdom] (19.74,-3) -- (20.16,-3);
+\node [below,font=\footnotesize] at (20.16,-3) {Eukaryota};
+\draw[root] (22.5,-3) -- (22.86,-3);
+\draw[root] (22.86,-3) -- (23.16,-3);
+\draw[root] (23.46,-3) -- (23.82,-3);
+\draw[root] (2.4661654135338344,-4) -- (2.827067669172932,-4);
+\draw[root] (14.19548872180451,-4) -- (14.556390977443609,-4);
+\draw[root] (14.616541353383457,-4) -- (14.977443609022554,-4);
+\draw[root] (15.278195488721803,-4) -- (15.578947368421051,-4);
+\draw[root] (19.00751879699248,-4) -- (19.308270676691727,-4);
+\draw[root] (19.308270676691727,-4) -- (19.729323308270676,-4);
+\draw[root] (20.210526315789473,-4) -- (20.51127819548872,-4);
+\draw[root] (20.81203007518797,-4) -- (21.112781954887218,-4);
+\draw[root] (21.954887218045112,-4) -- (22.31578947368421,-4);
+\draw[root] (22.31578947368421,-4) -- (22.616541353383457,-4);
+\draw[root] (22.616541353383457,-4) -- (22.917293233082706,-4);
+\draw[root] (23.518796992481203,-4) -- (23.8796992481203,-4);
+\draw[protein] (2.46,0) -- (6.18,0);
+\draw[root] (11.4,-5) -- (11.700000000000001,-5);
+\draw[root] (8.34,-5) -- (8.64,-5);
+\draw[root] (7.920000000000001,-5) -- (8.22,-5);
+\draw[root] (7.500000000000001,-5) -- (7.800000000000001,-5);
+\draw[root] (6.060000000000001,-5) -- (6.420000000000002,-5);
+\draw[species group] (5.400000000000002,-5) -- (6.060000000000002,-5);
+\node [below,font=\footnotesize] at (6.060000000000002,-5) {Acinetobacter calcoaceticus/baumannii complex};
+\draw[root] (4.920000000000003,-5) -- (5.220000000000002,-5);
+\draw[species group] (4.320000000000002,-5) -- (4.920000000000002,-5);
+\node [below,font=\footnotesize] at (4.920000000000002,-5) {Acinetobacter calcoaceticus/baumannii complex};
+\draw[species group] (3.7800000000000002,-5) -- (4.32,-5);
+\node [below,font=\footnotesize] at (4.32,-5) {Acinetobacter calcoaceticus/baumannii complex};
+\draw[superkingdom] (3.300000000000001,-5) -- (3.780000000000001,-5);
+\node [below,font=\footnotesize] at (3.780000000000001,-5) {Bacteria};
+\draw[species group] (2.4600000000000013,-5) -- (2.9400000000000013,-5);
+\node [below,font=\footnotesize] at (2.9400000000000013,-5) {Acinetobacter calcoaceticus/baumannii complex};
+\draw[root] (19.32,-6) -- (19.62,-6);
+\draw[root] (19.02,-6) -- (19.32,-6);
+\draw[root] (13.02,-6) -- (13.32,-6);
+\draw[root] (12.18,-6) -- (12.48,-6);
+\draw[subspecies] (10.44,-6) -- (10.74,-6);
+\node [below,font=\footnotesize] at (10.74,-6) {Plasmodium yoelii yoelii};
+\draw[root] (8.879999999999999,-6) -- (9.18,-6);
+\draw[root] (8.520000000000001,-6) -- (8.88,-6);
+\draw[root] (7.320000000000001,-6) -- (7.620000000000001,-6);
+\draw[family] (6.9,-6) -- (7.32,-6);
+\node [below,font=\footnotesize] at (7.32,-6) {Vibrionaceae};
+\draw[root] (5.400000000000001,-6) -- (5.760000000000002,-6);
+\draw[family] (4.620000000000002,-6) -- (4.920000000000002,-6);
+\node [below,font=\footnotesize] at (4.920000000000002,-6) {Pasteurellaceae};
+\draw[root] (4.200000000000002,-6) -- (4.560000000000002,-6);
+\draw[root] (2.0400000000000023,-6) -- (2.400000000000002,-6);
+\draw[species] (1.5599999999999992,-6) -- (2.039999999999999,-6);
+\node [below,font=\footnotesize] at (2.039999999999999,-6) {Acinetobacter baumannii};
+\draw[root] (1.1400000000000012,-6) -- (1.4400000000000013,-6);
+\draw[species] (17.022556390977446,-7) -- (17.383458646616543,-7);
+\node [below,font=\footnotesize] at (17.383458646616543,-7) {Streptomyces scabiei};
+\draw[root] (12.992481203007518,-7) -- (13.293233082706767,-7);
+\draw[species] (7.939849624060152,-7) -- (8.360902255639099,-7);
+\node [below,font=\footnotesize] at (8.360902255639099,-7) {Bactrocera latifrons};
+\draw[root] (5.533834586466166,-7) -- (5.894736842105264,-7);
+\draw[root] (2.466165413533836,-7) -- (2.8270676691729335,-7);
+\draw[species] (1.2631578947368438,-7) -- (1.6842105263157912,-7);
+\node [below,font=\footnotesize] at (1.6842105263157912,-7) {Branchiostoma floridae};
+\end{tikzpicture}
+
+\begin{tikzpicture}
+[protein/.style={violet, line width = 6pt, line cap = round},
+root/.style={teal!20, line width = 4pt, line cap = round},
+genus/.style={teal, line width = 4pt, line cap = round},
+subspecies/.style={teal!90!black, line width = 4pt, line cap = round},
+species/.style={teal!70!black, line width = 4pt, line cap = round},
+species group/.style={teal!80!black, line width = 4pt, line cap = round},
+family/.style={teal!80, line width = 4pt, line cap = round},
+order/.style={teal!70, line width = 4pt, line cap = round},
+class/.style={teal!60, line width = 4pt, line cap = round},
+phylum/.style={teal!50, line width = 4pt, line cap = round},
+kingdom/.style={teal!40, line width = 4pt, line cap = round},
+superkingdom/.style={teal!30, line width = 4pt, line cap = round}]
+\draw node[anchor=north] {True sequence} (0,0) -- (24,0) ;
+\draw (0,-2) -- (24,-2) node[anchor=south] {$+1$};
+\draw (0,-3) -- (24,-3) node[anchor=south] {$+2$};
+\draw (0,-4) -- (24,-4) node[anchor=south] {$+3$};
+\draw (0,-5) -- (24,-5) node[anchor=south] {$-1$};
+\draw (0,-6) -- (24,-6) node[anchor=south] {$-2$};
+\draw (0,-7) -- (24,-7) node[anchor=south] {$-3$};
+\draw[protein] (8.28,0) -- (23.22,0);
+\draw[root] (0.8999999999999999,-2) -- (1.2599999999999998,-2);
+\draw[root] (2.58,-2) -- (2.94,-2);
+\draw[superkingdom] (4.14,-2) -- (4.5,-2);
+\draw[root] (9.299999999999999,-2) -- (9.659999999999998,-2);
+\draw[root] (9.9,-2) -- (10.26,-2);
+\draw[species group] (10.32,-2) -- (11.16,-2);
+\draw[species] (11.4,-2) -- (13.440000000000001,-2);
+\draw[root] (13.559999999999999,-2) -- (14.219999999999999,-2);
+\draw[species group] (14.219999999999999,-2) -- (14.999999999999998,-2);
+\draw[root] (15.059999999999999,-2) -- (15.36,-2);
+\draw[root] (15.6,-2) -- (17.34,-2);
+\draw[root] (17.34,-2) -- (17.64,-2);
+\draw[root] (17.64,-2) -- (18.3,-2);
+\draw[species group] (18.3,-2) -- (19.740000000000002,-2);
+\draw[species] (20.16,-2) -- (21.36,-2);
+\draw[species] (21.36,-2) -- (22.8,-2);
+\draw[root] (22.8,-2) -- (23.220000000000002,-2);
+\draw[root] (0.6,-3) -- (0.8999999999999999,-3);
+\draw[root] (4.74,-3) -- (5.1000000000000005,-3);
+\draw[root] (9.54,-3) -- (9.84,-3);
+\draw[root] (12.54,-3) -- (12.84,-3);
+\draw[root] (13.979999999999999,-3) -- (14.399999999999999,-3);
+\draw[superkingdom] (19.74,-3) -- (20.16,-3);
+\draw[root] (22.5,-3) -- (22.86,-3);
+\draw[root] (22.86,-3) -- (23.16,-3);
+\draw[root] (23.46,-3) -- (23.82,-3);
+\draw[root] (2.4661654135338344,-4) -- (2.827067669172932,-4);
+\draw[root] (14.19548872180451,-4) -- (14.556390977443609,-4);
+\draw[root] (14.616541353383457,-4) -- (14.977443609022554,-4);
+\draw[root] (15.278195488721803,-4) -- (15.578947368421051,-4);
+\draw[root] (19.00751879699248,-4) -- (19.308270676691727,-4);
+\draw[root] (19.308270676691727,-4) -- (19.729323308270676,-4);
+\draw[root] (20.210526315789473,-4) -- (20.51127819548872,-4);
+\draw[root] (20.81203007518797,-4) -- (21.112781954887218,-4);
+\draw[root] (21.954887218045112,-4) -- (22.31578947368421,-4);
+\draw[root] (22.31578947368421,-4) -- (22.616541353383457,-4);
+\draw[root] (22.616541353383457,-4) -- (22.917293233082706,-4);
+\draw[root] (23.518796992481203,-4) -- (23.8796992481203,-4);
+\draw[protein] (2.46,0) -- (6.18,0);
+\draw[root] (11.4,-5) -- (11.700000000000001,-5);
+\draw[root] (8.34,-5) -- (8.64,-5);
+\draw[root] (7.920000000000001,-5) -- (8.22,-5);
+\draw[root] (7.500000000000001,-5) -- (7.800000000000001,-5);
+\draw[root] (6.060000000000001,-5) -- (6.420000000000002,-5);
+\draw[species group] (5.400000000000002,-5) -- (6.060000000000002,-5);
+\draw[root] (4.920000000000003,-5) -- (5.220000000000002,-5);
+\draw[species group] (4.320000000000002,-5) -- (4.920000000000002,-5);
+\draw[species group] (3.7800000000000002,-5) -- (4.32,-5);
+\draw[superkingdom] (3.300000000000001,-5) -- (3.780000000000001,-5);
+\draw[species group] (2.4600000000000013,-5) -- (2.9400000000000013,-5);
+\draw[root] (19.32,-6) -- (19.62,-6);
+\draw[root] (19.02,-6) -- (19.32,-6);
+\draw[root] (13.02,-6) -- (13.32,-6);
+\draw[root] (12.18,-6) -- (12.48,-6);
+\draw[subspecies] (10.44,-6) -- (10.74,-6);
+\draw[root] (8.879999999999999,-6) -- (9.18,-6);
+\draw[root] (8.520000000000001,-6) -- (8.88,-6);
+\draw[root] (7.320000000000001,-6) -- (7.620000000000001,-6);
+\draw[family] (6.9,-6) -- (7.32,-6);
+\draw[root] (5.400000000000001,-6) -- (5.760000000000002,-6);
+\draw[family] (4.620000000000002,-6) -- (4.920000000000002,-6);
+\draw[root] (4.200000000000002,-6) -- (4.560000000000002,-6);
+\draw[root] (2.0400000000000023,-6) -- (2.400000000000002,-6);
+\draw[species] (1.5599999999999992,-6) -- (2.039999999999999,-6);
+\draw[root] (1.1400000000000012,-6) -- (1.4400000000000013,-6);
+\draw[species] (17.022556390977446,-7) -- (17.383458646616543,-7);
+\draw[root] (12.992481203007518,-7) -- (13.293233082706767,-7);
+\draw[species] (7.939849624060152,-7) -- (8.360902255639099,-7);
+\draw[root] (5.533834586466166,-7) -- (5.894736842105264,-7);
+\draw[root] (2.466165413533836,-7) -- (2.8270676691729335,-7);
+\draw[species] (1.2631578947368438,-7) -- (1.6842105263157912,-7);
 \end{tikzpicture}
 
 
