@@ -12,5 +12,18 @@ Lineage ophalen
 Gegeven de juiste lineage
 Haal voor elke lijn in found_lcas.txt de lineage op en voeg toe aan die lijn (of apart bestand)
 efetch -db taxonomy -id 470 -format xml | xtract -pattern Taxon -element Lineage
+https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=taxonomy&id=470&format=xml
 
 In java indien substring OK, niets doen, indien substring niet OK, tel afstand
+
+cut -d "," -f 3 found_lcas.txt | sed '1d' | while read line; do 
+if [["$line" == 1]]; then
+	echo "root"
+else 
+	efetch -db taxonomy -id "$line" -format xml | xtract -pattern Taxon -element Lineage
+fi
+done 
+> lineages
+cut -d "," -f 3 found_lcas_double.txt | sed '1d' | while read line; do 
+	efetch -db taxonomy -id "$line" -format xml | xtract -pattern Taxon -element Lineage
+done > lineages
