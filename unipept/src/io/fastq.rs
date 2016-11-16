@@ -23,7 +23,7 @@ impl<R: Read> Reader<R> {
         // reading the header
         let mut header = match self.lines.next() {
             None         => return Ok(None),
-            Some(header) => header?
+            Some(header) => try!(header)
         };
         if !header.starts_with('@') {
             return Err(errors::Error::Io(io::Error::new(
@@ -40,7 +40,7 @@ impl<R: Read> Reader<R> {
                   .and_then(|line| line.as_ref().ok())
                   .map(|line| !line.starts_with('+'))
                   .unwrap_or(false) {
-            sequence.push_str(&self.lines.next().unwrap()?);
+            sequence.push_str(&try!(self.lines.next().unwrap()));
             lines += 1;
         }
 
@@ -59,7 +59,7 @@ impl<R: Read> Reader<R> {
         let mut quality = String::with_capacity(sequence.len());
         for _ in 0..lines {
             if let Some(line) = self.lines.next() {
-                quality.push_str(&line?)
+                quality.push_str(&try!(line))
             } else {
                 return Err(errors::Error::Io(io::Error::new(
                     io::ErrorKind::Other,

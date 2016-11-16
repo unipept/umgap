@@ -27,7 +27,7 @@ impl agg::Aggregator for MixCalculator {
     fn aggregate(&self, taxons: &Vec<TaxonId>) -> Result<TaxonId, agg::Error> {
         if taxons.len() == 0 { return Err(agg::Error::EmptyInput); }
         let counts  = agg::count(taxons);
-        let subtree = SubTree::new(self.root, &self.parents, counts)?
+        let subtree = try!(SubTree::new(self.root, &self.parents, counts))
             .collapse(&Add::add)
             .aggregate(&Add::add);
 

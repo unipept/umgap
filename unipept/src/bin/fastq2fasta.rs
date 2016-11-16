@@ -36,11 +36,11 @@ impl<E, I: Iterator<Item=E>> Iterator for Zip<E, I> {
 }
 
 fn open_writer(argument: Option<&str>) -> Result<fasta::Writer<Box<io::Write>>> {
-    let output_arg = argument.ok_or("Please provide a valid output argument.")?;
+    let output_arg = try!(argument.ok_or("Please provide a valid output argument."));
     let output: Box<io::Write> = if output_arg == "-" {
         Box::new(io::stdout())
     } else {
-        Box::new(fs::File::create(output_arg)?)
+        Box::new(try!(fs::File::create(output_arg)))
     };
     Ok(fasta::Writer::new(output))
 }
@@ -49,7 +49,7 @@ fn open_reader(argument: &str) -> Result<fastq::Records<Box<io::Read>>> {
     let input: Box<io::Read> = if argument == "-" {
         Box::new(io::stdin())
     } else {
-        Box::new(fs::File::open(argument)?)
+        Box::new(try!(fs::File::open(argument)))
     };
     Ok(fastq::Reader::new(input).records())
 }

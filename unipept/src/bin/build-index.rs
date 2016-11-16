@@ -9,20 +9,20 @@ use unipept::errors::Result;
 
 
 fn build(csv_filename: &String, fst_filename: &String) -> Result<()> {
-    let csv_file = File::open(csv_filename)?;
+    let csv_file = try!(File::open(csv_filename));
     let mut reader = csv::Reader::from_reader(io::BufReader::new(csv_file))
         .has_headers(false)
         .delimiter(b'\t');
 
-    let writer = io::BufWriter::new(File::create(fst_filename)?);
-    let mut map = fst::MapBuilder::new(writer)?;
+    let writer = io::BufWriter::new(try!(File::create(fst_filename)));
+    let mut map = try!(fst::MapBuilder::new(writer));
 
     for record in reader.decode() {
-        let (_id, kmer, lca): (String, String, u64) = record?;
-        map.insert(kmer, lca)?;
+        let (_id, kmer, lca): (String, String, u64) = try!(record);
+        try!(map.insert(kmer, lca));
     }
 
-    map.finish()?;
+    try!(map.finish());
 
     Ok(())
 }
