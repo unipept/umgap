@@ -13,11 +13,11 @@ use unipept::io::fasta;
 
 
 fn query(fst_filename: &String, k: usize, query_filename: &String) -> Result<()> {
-    let map = try!(fst::Map::from_path(fst_filename));
-    let reader = try!(get_reader(query_filename));
+    let map = fst::Map::from_path(fst_filename)?;
+    let reader = get_reader(query_filename)?;
 
     for prot in reader.records() {
-        let prot = try!(prot);
+        let prot = prot?;
 
         if prot.sequence.len() < k {
             continue
@@ -47,7 +47,7 @@ fn query(fst_filename: &String, k: usize, query_filename: &String) -> Result<()>
 fn get_reader(query_filename: &String) -> Result<fasta::Reader<Box<io::Read>>> {
     let reader: Box<io::Read> = match query_filename.as_ref() {
         "-" => Box::new(io::stdin()),
-        _   => Box::new(try!(fs::File::open(query_filename)))
+        _   => Box::new(fs::File::open(query_filename)?)
     };
     Ok(fasta::Reader::new(reader))
 }

@@ -32,8 +32,8 @@ impl LCACalculator {
     }
 
     pub fn lca(&self, left: TaxonId, right: TaxonId) -> Result<TaxonId, agg::Error> {
-        let left_index  = try!(self.first_occurence(left));
-        let right_index = try!(self.first_occurence(right));
+        let left_index  = self.first_occurence(left)?;
+        let right_index = self.first_occurence(right)?;
         let rmq_index   = self.rmq_info.query(left_index, right_index);
         Ok(self.euler_tour[rmq_index])
     }
@@ -51,10 +51,10 @@ impl agg::Aggregator for LCACalculator {
         if taxons.len() == 0 { return Err(agg::Error::EmptyInput); }
         let unique         = agg::count(taxons);
         let mut indices    = unique.keys().map(|t| self.first_occurence(*t));
-        let mut consensus  = try!(indices.next().unwrap());
+        let mut consensus  = indices.next().unwrap()?;
         let mut join_level = None::<usize>;
         for next_result in indices {
-            let next = try!(next_result);
+            let next = next_result?;
             if consensus == next { continue; }
             let rmq = self.rmq_info.query(consensus, next);
             let (mut lca, level) = match (rmq == consensus, rmq == next) {

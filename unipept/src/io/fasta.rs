@@ -26,7 +26,7 @@ impl<R: Read> Reader<R> {
     pub fn read_record(&mut self) -> Result<Option<Record>> {
         let mut header = match self.lines.next() {
             None         => return Ok(None),
-            Some(header) => try!(header),
+            Some(header) => header?,
         };
 
         if !header.starts_with('>') {
@@ -38,7 +38,7 @@ impl<R: Read> Reader<R> {
 
         let sequence = match self.lines.next() {
             None => return Err(errors::Error::Io(io::Error::new(io::ErrorKind::Other, "Encountered empty sequence at end of file."))),
-            Some(sequence) => try!(sequence),
+            Some(sequence) => sequence?,
         };
 
         if sequence.starts_with('>') {
@@ -94,10 +94,10 @@ impl<W: Write> Writer<W> {
     }
 
     pub fn write_record_ref(&mut self, record: &Record) -> Result<()> {
-        try!(write!(self.buffer, ">{}\n", record.header));
+        write!(self.buffer, ">{}\n", record.header)?;
         for subseq in record.sequence.as_bytes().chunks(FASTA_WIDTH) {
-            try!(self.buffer.write_all(subseq));
-            try!(self.buffer.write_all(&[b'\n']));
+            self.buffer.write_all(subseq)?;
+            self.buffer.write_all(&[b'\n'])?;
         }
         Ok(())
     }

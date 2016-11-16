@@ -23,7 +23,7 @@ impl agg::Aggregator for LCACalculator {
     fn aggregate(&self, taxons: &Vec<TaxonId>) -> Result<TaxonId, agg::Error> {
         if taxons.len() == 0 { return Err(agg::Error::EmptyInput); }
         let counts  = agg::count(taxons);
-        let subtree = try!(SubTree::new(self.root, &self.parents, counts)).collapse(&Add::add);
+        let subtree = SubTree::new(self.root, &self.parents, counts)?.collapse(&Add::add);
         Ok(subtree.root)
     }
 }
