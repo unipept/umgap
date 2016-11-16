@@ -1,5 +1,6 @@
 Proteine maken en lca’s bepalen
 ———————————————————————————————
+136500-137050
 $ echo ">AIL77187.1 membrane protein [Acinetobacter baumannii]" > single_protein.fasta 
 $ cat acinetobacter_baumannii.fasta | sed '/^>/d' | tr -d '\n' | cut -c 97450-98250 >> single_protein.fasta 
 $ mvn exec:java -Dexec.mainClass="com.mycompany.sixframetransl.translate" -Dexec.args="single_protein.fasta 11 False" > output
@@ -24,6 +25,6 @@ else
 fi
 done 
 > lineages
-cut -d "," -f 3 found_lcas_double.txt | sed '1d' | while read line; do 
+cut -d "," -f 3 found_lcas_empty.1.txt | sed '1d' | while read line; do 
 	efetch -db taxonomy -id "$line" -format xml | xtract -pattern Taxon -element Lineage
-done > lineages
+done > empty.1.lineage
