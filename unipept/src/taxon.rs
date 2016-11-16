@@ -141,12 +141,12 @@ impl FromStr for Taxon {
 }
 
 pub fn read_taxa_file(filename: &str) -> Result<Vec<Taxon>, &'static str> {
-    let file   = try!(File::open(filename).map_err(|_| "Failed opening taxon file."));
+    let file   = File::open(filename).map_err(|_| "Failed opening taxon file.")?;
     let reader = io::BufReader::new(file);
     let mut taxa = Vec::new();
     for mline in reader.lines() {
-        let line = try!(mline.map_err(|_| "Failed to read all lines."));
-        taxa.push(try!(line.parse::<Taxon>()));
+        let line = mline.map_err(|_| "Failed to read all lines.")?;
+        taxa.push(line.parse::<Taxon>()?);
     }
     Ok(taxa)
 }
