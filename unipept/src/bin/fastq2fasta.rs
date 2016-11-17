@@ -42,7 +42,7 @@ fn open_writer(argument: Option<&str>) -> Result<fasta::Writer<Box<io::Write>>> 
     } else {
         Box::new(try!(fs::File::create(output_arg)))
     };
-    Ok(fasta::Writer::new(output))
+    Ok(fasta::Writer::new(output, false))
 }
 
 fn open_reader(argument: &str) -> Result<fastq::Records<Box<io::Read>>> {

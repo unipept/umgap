@@ -49,7 +49,7 @@ fn get_reader(query_filename: &String) -> Result<fasta::Reader<Box<io::Read>>> {
         "-" => Box::new(io::stdin()),
         _   => Box::new(try!(fs::File::open(query_filename)))
     };
-    Ok(fasta::Reader::new(reader))
+    Ok(fasta::Reader::new(reader, false))
 }
 
 fn main() {

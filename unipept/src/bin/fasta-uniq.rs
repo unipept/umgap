@@ -30,11 +30,16 @@ fn main() {
                                .short("s")
                                .long("separator")
                                .takes_value(true))
+                      .arg(Arg::with_name("keep")
+                               .help("Keep newlines in the sequence.")
+                               .short("k")
+                               .long("keep"))
                       .get_matches();
-    let separator = matches.value_of("separator").unwrap_or("\n");
-    let mut last = None::<fasta::Record>;
-    let mut writer = fasta::Writer::new(io::stdout());
-    for record in fasta::Reader::new(io::stdin()).records() {
+    let separator  = matches.value_of("separator").unwrap_or("\n");
+    let keep       = matches.is_present("keep");
+    let mut last   = None::<fasta::Record>;
+    let mut writer = fasta::Writer::new(io::stdout(), keep);
+    for record in fasta::Reader::new(io::stdin(), keep).records() {
         let record = record.unwrap_or_else(|err| {
             println!("Something went wrong during the reading: {}", err);
             process::exit(1);
