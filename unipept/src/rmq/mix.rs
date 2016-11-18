@@ -1,3 +1,4 @@
+//! Hybrid operation between MRL and LCA.
 
 use std::collections::HashMap;
 use std::collections::VecDeque;
@@ -12,6 +13,9 @@ use rmq::lca::LCACalculator;
 use taxon::{TaxonId, TaxonTree};
 use agg;
 
+/// Struct capable of aggregating of a list of nodes in a TaxonTree, using a
+/// hybrid approach between MRL and LCA. It can either prefer MRL or LCA more,
+/// depending on a given ratio.
 pub struct MixCalculator {
     lca_calculator: LCACalculator,
     factor: Ratio<usize>
@@ -30,6 +34,13 @@ impl Weights {
 }
 
 impl MixCalculator {
+    /// Constructs a new MixCalculator
+    ///
+    /// # Arguments:
+    /// * `taxonomy` - the TaxonTree containing all known taxons.
+    /// * `factor`   - A ratio (i.e. a number in [0.0, 1.0] which decides the
+    ///                ratio that MRL or LCA will be chosen as aggregation.
+    ///                If factor is 1, LCA will always be chosen; If factor is 0, MRL.
     pub fn new(taxonomy: TaxonTree, factor: Ratio<usize>) -> Self {
         MixCalculator {
             lca_calculator: LCACalculator::new(taxonomy),

@@ -1,3 +1,4 @@
+//! Defines aggregation operations over a taxon tree.
 
 use std::collections::HashMap;
 use std::fmt;
@@ -5,10 +6,13 @@ use std::error;
 
 use taxon::TaxonId;
 
+/// Allows to aggregate over a taxon tree.
 pub trait Aggregator {
+    /// Aggregates a list of taxons into a resulting taxon id.
     fn aggregate(&self, taxons: &Vec<TaxonId>) -> Result<TaxonId, Error>;
 }
 
+/// Returns how many times each taxon occurs in a vector of taxons.
 pub fn count(taxons: &Vec<TaxonId>) -> HashMap<TaxonId, usize> {
     let mut counts = HashMap::new();
     for taxon in taxons {
@@ -17,9 +21,12 @@ pub fn count(taxons: &Vec<TaxonId>) -> HashMap<TaxonId, usize> {
     counts
 }
 
+/// Defines an error which occurred during an aggregation operation
 #[derive(Debug, PartialEq)]
 pub enum Error {
+    /// Returned if the collection to be aggregated is empty
     EmptyInput,
+    /// Returned if the collection contains an unknown TaxonId
     UnknownTaxon(TaxonId),
 }
 

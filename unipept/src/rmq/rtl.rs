@@ -1,13 +1,24 @@
+//! Operations calculating the Maximal root-to-Leaf (MRL), i.e. the leaf that has most of
+//! the given taxons on its path to root.
 
 use taxon::{TaxonId, Taxon};
 use agg;
 
+/// Struct capable of calculating the MRL of a list of nodes in a TaxonTree
 pub struct RTLCalculator {
+    /// The root node.
     pub root: TaxonId,
+    /// Contains the parent for each node (to easily get from a node to the root).
+    /// Nodes are indexed by their id.
     pub ancestors: Vec<Option<TaxonId>>,
 }
 
 impl RTLCalculator {
+    /// Constructs an RTLCalculator.
+    ///
+    /// # Arguments:
+    /// * `root`   - the root of the taxon tree
+    /// * `taxons` - all taxons in the taxon tree, *indexed by their id*.
     pub fn new(root: TaxonId, taxons: &Vec<Option<Taxon>>) -> Self {
         let mut ancestors: Vec<Option<TaxonId>> = taxons
             .iter()
@@ -23,6 +34,7 @@ impl RTLCalculator {
 }
 
 impl agg::Aggregator for RTLCalculator {
+    /// Returns the taxon with the MRL for a given list of taxons.
     fn aggregate(&self, taxons: &Vec<TaxonId>) -> Result<TaxonId, agg::Error> {
         let counts         = agg::count(taxons);
         let mut rtl_counts = counts.clone();

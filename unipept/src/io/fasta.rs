@@ -1,3 +1,6 @@
+//! Allows operations over the [FASTA format](https://en.wikipedia.org/wiki/FASTA_format).
+
+
 use std::io;
 use std::io::BufRead;
 use std::io::BufReader;
@@ -12,7 +15,7 @@ use errors::Result;
 
 const FASTA_WIDTH: usize = 70;
 
-/// Reads a source (e.g. a file) in [FASTA format](https://en.wikipedia.org/wiki/FASTA_format).
+/// Reads a FASTA-formatted source (e.g. a file).
 pub struct Reader<R: Read> {
     lines: Peekable<Lines<BufReader<R>>>,
     keep_lines: bool,
@@ -71,12 +74,10 @@ pub struct Record {
     pub sequence: String,
 }
 
-
 /// Convenience struct which allows for iteration (e.g. using for..in).
 pub struct Records<R: Read> {
     reader: Reader<R>,
 }
-
 
 impl<R: Read> Iterator for Records<R> {
     type Item = Result<Record>;
@@ -90,7 +91,6 @@ impl<R: Read> Iterator for Records<R> {
     }
 }
 
-
 /// Writes to a file in the [FASTA format](https://en.wikipedia.org/wiki/FASTA_format).
 pub struct Writer<W: Write> {
     buffer: io::BufWriter<W>,
@@ -98,9 +98,11 @@ pub struct Writer<W: Write> {
 }
 
 impl<W: Write> Writer<W> {
-    pub fn new(writer: W, wrap: bool) -> Self {
+    /// Constructs a writer from the specified Write
+    /// wrap will enable wrapping the output sequence on 70 characters
+    pub fn new(write: W, wrap: bool) -> Self {
         Writer {
-            buffer: io::BufWriter::new(writer),
+            buffer: io::BufWriter::new(write),
             wrap: wrap,
         }
     }

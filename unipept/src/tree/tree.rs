@@ -1,3 +1,4 @@
+//! Defines aggregation operations using only the tree structure.
 
 use std::collections::HashMap;
 use std::collections::HashSet;

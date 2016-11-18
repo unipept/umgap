@@ -1,11 +1,18 @@
+//! Defines the actual RMQ struct and operations.
 
 use std::fmt::Display;
 
+/// Represents a Range Minimum Query (RMQ), which can efficiently return the minimal value in a
+/// given range of an array.
 pub struct RMQ<T: Ord + Display> {
-    pub array: Vec<T>, // The original array
-    pub block_min: Vec<usize>, // The position (index in array) of the minimum for each block
-    pub sparse: Vec<Vec<usize>>, // RMQ of sequences of blocks. sparse[i][j] is the position of the minimum in block[i] to block[i + 2**{j+1} - 1]
-    pub labels: Vec<usize> // The j'th bit of labels[i] is 1 iff j is the first position (in the block) left of i where array[j] < array[i]
+    /// The full array.
+    pub array: Vec<T>,
+    /// The absolute position (i.e. the index in array) of the minimum for each block.
+    pub block_min: Vec<usize>,
+    /// `sparse[i][j]` is the position of the minimum in block[i] to block[i + 2^(j+1) - 1].
+    pub sparse: Vec<Vec<usize>>,
+    /// The j'th bit of labels[i] is 1 iff j is the first position (in the block) left of i where array[j] < array[i].
+    pub labels: Vec<usize>
 }
 
 /* clear the least significant x - 1 bits */
@@ -16,6 +23,21 @@ fn intlog2(n: usize) -> usize {
 }
 
 impl<T: Ord + Display> RMQ<T> {
+
+    /// Constructs an RMQ for the given array.
+    pub fn new(array: Vec<T>) -> RMQ<T> {
+        let block_min = RMQ::<T>::block_min(&array);
+        let sparse    = RMQ::<T>::sparse(&array, &block_min);
+        let labels    = RMQ::<T>::labels(&array);
+        RMQ {
+            array:     array,
+            block_min: block_min,
+            sparse:    sparse,
+            labels:    labels
+        }
+    }
+
+    /// Calculates the position of each block's minimum.
     pub fn block_min(array: &Vec<T>) -> Vec<usize> {
         array.chunks(32)
              .enumerate()
@@ -32,6 +54,7 @@ impl<T: Ord + Display> RMQ<T> {
         ).collect()
     }
 
+    /// Calculate the values of the sparse field.
     pub fn sparse(array: &Vec<T>, block_min: &Vec<usize>) -> Vec<Vec<usize>> {
         let length = intlog2(block_min.len());
         let mut sparse = Vec::with_capacity(length);
@@ -43,6 +66,7 @@ impl<T: Ord + Display> RMQ<T> {
         sparse
     }
 
+    /// Calculate the values of the label field.
     pub fn labels(array: &Vec<T>) -> Vec<usize> {
         let mut gstack = Vec::with_capacity(32);
         let mut labels = Vec::with_capacity(array.len());
@@ -63,19 +87,7 @@ impl<T: Ord + Display> RMQ<T> {
         labels
     }
 
-    pub fn new(array: Vec<T>) -> RMQ<T> {
-        let block_min = RMQ::<T>::block_min(&array);
-        let sparse    = RMQ::<T>::sparse(&array, &block_min);
-        let labels    = RMQ::<T>::labels(&array);
-        RMQ {
-            array:     array,
-            block_min: block_min,
-            sparse:    sparse,
-            labels:    labels
-        }
-    }
-
-
+    /// Returns the position of the minimal value in a given block
     fn min_in_block(labels: &Vec<usize>, left: usize, right: usize) -> usize {
         let v = clearbits(labels[right], left % 32);
         if v == 0 {
@@ -85,6 +97,7 @@ impl<T: Ord + Display> RMQ<T> {
         }
     }
 
+    /// Returns the position of the minimal value in a given sublist.
     pub fn query(&self, start: usize, end: usize) -> usize {
         if start == end { return start; }
         let (left, right)  = if start < end { (start, end) } else { (end, start) };
