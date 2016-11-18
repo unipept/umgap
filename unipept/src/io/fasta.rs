@@ -48,11 +48,7 @@ impl<R: Read> Reader<R> {
             if self.keep_lines { sequence.push('\n'); }
         }
 
-        if sequence.is_empty() {
-            Err(errors::Error::Io(io::Error::new(io::ErrorKind::Other, "Encountered empty sequence.")))
-        } else {
-            Ok(Some(Record { header: header, sequence: sequence }))
-        }
+        Ok(Some(Record { header: header, sequence: sequence }))
     }
 
     pub fn records(self) -> Records<R> {
