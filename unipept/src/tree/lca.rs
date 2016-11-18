@@ -1,3 +1,4 @@
+//! Allows calculating the Lowest Common Ancestor (LCA).
 
 use std::ops::Add;
 
@@ -5,12 +6,20 @@ use agg;
 use taxon::{Taxon, TaxonId};
 use tree::tree::SubTree;
 
+/// Struct capable of calculating the LCA of 2 nodes in a TaxonTree.
 pub struct LCACalculator {
+    /// The root of the taxon tree.
     pub root: TaxonId,
+    /// Contains the ancestor for each node. Nodes are indexed by their id.
     pub parents: Vec<Option<TaxonId>>,
 }
 
 impl LCACalculator {
+    /// Constructs an LCACalculator for a given taxon tree.
+    ///
+    /// # Arguments:
+    /// * `root`     - the root of the taxon tree.
+    /// * `taxonomy` - the taxons, indexed by their id.
     pub fn new(root: TaxonId, taxonomy: &Vec<Option<Taxon>>) -> Self {
         LCACalculator {
             root:    root,

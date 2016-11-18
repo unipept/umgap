@@ -1,3 +1,4 @@
+//! Hybrid operation between MRL and LCA.
 
 use std::ops::Add;
 
@@ -10,6 +11,9 @@ use tree::tree::SubTree;
 use tree::lca::LCACalculator;
 
 
+/// Struct capable of aggregating of a list of nodes in a TaxonTree, using a
+/// hybrid approach between MRL and LCA. It can either prefer MRL or LCA more,
+/// depending on a given ratio.
 pub struct MixCalculator {
     root: TaxonId,
     parents: Vec<Option<TaxonId>>,
@@ -17,6 +21,14 @@ pub struct MixCalculator {
 }
 
 impl MixCalculator {
+    /// Constructs a MixCalculator for a given taxon tree.
+    ///
+    /// # Arguments:
+    /// * `root`     - the root of the taxon tree.
+    /// * `taxonomy` - the taxons, indexed by their id.
+    /// * `factor`   - A ratio (i.e. a number in [0.0, 1.0] which decides the
+    ///                ratio that MRL or LCA will be chosen as aggregation.
+    ///                If factor is 1, LCA will always be chosen; If factor is 0, MRL.
     pub fn new(root: TaxonId, taxonomy: &Vec<Option<Taxon>>, factor: Ratio<usize>) -> Self {
         let LCACalculator { root: r, parents: p } = LCACalculator::new(root, taxonomy);
         MixCalculator { factor: factor, root: r, parents: p }

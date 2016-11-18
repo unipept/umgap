@@ -1,3 +1,4 @@
+//! Allows operations over the [FASTQ format](https://en.wikipedia.org/wiki/FASTQ_format).
 
 use std::io;
 use std::io::Read;
@@ -8,7 +9,7 @@ use std::fmt;
 use errors;
 use errors::Result;
 
-/// Reads a source (e.g. a file) in [FASTQ format](https://en.wikipedia.org/wiki/FASTQ_format).
+/// Reads a FASTQ-formatted source (e.g. a file).
 pub struct Reader<R: Read> {
     lines: Peekable<io::Lines<io::BufReader<R>>>,
 }

@@ -1,3 +1,4 @@
+//! Defines the possible errors in Unipept.
 
 use std::error;
 use std::fmt;
@@ -8,9 +9,11 @@ extern crate csv;
 
 extern crate fst;
 
-
+/// Represents a result with a possible Error.
 pub type Result<T> = result::Result<T, Error>;
 
+/// Represents an error in Unipept.
+#[allow(missing_docs)]
 #[derive(Debug)]
 pub enum Error {
     Csv(csv::Error),

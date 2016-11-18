@@ -1,3 +1,5 @@
+//! Defines operations and data structures over taxons.
+
 use std::fmt;
 use std::io;
 use std::io::BufRead;
@@ -7,7 +9,8 @@ use std::collections::HashSet;
 
 use std::str::FromStr;
 
-/// Represents the rank of a [Taxon](struct.Taxon.html), i.e. the depth in a [TaxonTree](struct.Taxon.html).
+/// Represents the rank of a [Taxon](struct.Taxon.html)
+#[allow(missing_docs)]
 #[derive(PartialEq, Eq, Debug, Clone, Copy)]
 pub enum Rank {
     NoRank, Superkingdom, Kingdom, Subkingdom, Superphylum, Phylum, Subphylum, Superclass, Class,
@@ -17,6 +20,7 @@ pub enum Rank {
 }
 
 impl Rank {
+    /// Converts a rank to a usize.
     pub fn index(&self) -> usize {
         *self as usize
     }
@@ -97,23 +101,31 @@ impl fmt::Display for Rank {
     }
 }
 
+/// A unique identifier for a [Taxon](struct.Taxon.html).
 pub type TaxonId = usize;
 
 /// Represents a group of organisms with similar qualities.
 #[derive(Clone, PartialEq, Debug)]
 pub struct Taxon {
+    /// The taxon's unique id
     pub id: TaxonId,
+    /// The taxon's name
     pub name: String,
+    /// The rank of the taxon
     pub rank: Rank,
+    /// The taxon's parent
     pub parent: TaxonId,
+    /// Whether the taxon is [valid](https://en.wikipedia.org/wiki/Valid_name_(zoology))
     pub valid: bool
 }
 
 impl Taxon {
+    /// Creates a taxon from the given arguments.
     pub fn new(id: TaxonId, name: String, rank: Rank, parent: TaxonId, valid: bool) -> Taxon {
         Taxon { id: id, name: name, rank: rank, parent: parent, valid: valid }
     }
 
+    /// Creates a taxon from the given arguments (using a &str instead of a String).
     pub fn from_static(id: TaxonId, name: &str, rank: Rank, parent: TaxonId, valid: bool) -> Taxon {
         Taxon::new(id, name.to_string(), rank, parent, valid)
     }
@@ -193,12 +205,15 @@ pub fn taxa_vector_by_id(taxons: Vec<Taxon>) -> Vec<Option<Taxon>> {
 /// Represents a taxonomy tree. Each node is a [Taxon](struct.Taxon.html) represented by its
 /// TaxonId.
 pub struct TaxonTree {
+    /// The root taxon
     pub root: TaxonId,
+    /// A map that maps each taxon to its children
     pub children: HashMap<TaxonId, Vec<TaxonId>>,
     max: TaxonId
 }
 
 impl TaxonTree {
+    /// Creates a taxon tree from the given taxons.
     pub fn new(taxons: &Vec<Taxon>) -> TaxonTree {
         let mut map = HashMap::with_capacity(taxons.len());
         let mut max = taxons[0].id;
@@ -261,6 +276,7 @@ impl TaxonTree {
     }
 }
 
+/// The depth in the tree
 pub type Depth = usize;
 
 /// An iterator that takes a [Euler tour](https://en.wikipedia.org/wiki/Euler_tour_technique)

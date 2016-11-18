@@ -1,4 +1,9 @@
-#![warn(missing_docs)]
+//! Contains the implementation of several programs used by the
+//! [Unipept pipeline](http://unipept.ugent.be/).
+
+#![doc(html_logo_url = "http://unipept.ugent.be/logo.png",
+       html_favicon_url = "http://unipept.ugent.be/favicon.ico")]
+#![deny(missing_docs)]
 
 pub mod taxon;
 pub mod agg;

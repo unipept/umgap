@@ -1,3 +1,4 @@
+//! Allows calculating the Lowest Common Ancestor (LCA) using RMQ.
 
 use std::collections::HashMap;
 
@@ -6,13 +7,19 @@ use taxon;
 use taxon::TaxonId;
 use agg;
 
+/// Struct capable of calculating the LCA of 2 nodes in a TaxonTree, using RMQ.
 pub struct LCACalculator {
+    /// Keeps track in which step of the euler tour a given taxon is encountered
+    /// for the first time.
     pub first_occurences: HashMap<TaxonId, usize>,
+    /// Contains the taxons in the order of an Eulerian tour.
     pub euler_tour: Vec<TaxonId>,
+    /// The RMQ to which the LCA corresponds.
     pub rmq_info: RMQ<usize>,
 }
 
 impl LCACalculator {
+    /// Creates an LCACalculator for the given TaxonTree.
     pub fn new(taxonomy: taxon::TaxonTree) -> Self {
         let mut euler_tour       = Vec::new();
         let mut depths           = Vec::new();
@@ -31,6 +38,7 @@ impl LCACalculator {
         }
     }
 
+    /// Calculates the lowest common ancestor of 2 taxons.
     pub fn lca(&self, left: TaxonId, right: TaxonId) -> Result<TaxonId, agg::Error> {
         let left_index  = try!(self.first_occurence(left));
         let right_index = try!(self.first_occurence(right));
