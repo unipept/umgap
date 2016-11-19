@@ -32,8 +32,8 @@ public class DrawSixFrame {
     private static final double pagewidth = (double) 24;
     private static final HashMap<String,String> proteinSeq = new HashMap<>();
     private static final String title = "Acinetobacter Baumannii";
-    private static final String subtitle = "Translation table: 11";
-    private static final String folder = "acinetobacter/";
+    private static String subtitle;
+    private static final String folder = "./acinetobacter/";
     
     
     public static void organismUnknownPrint(String lcaFile, String sixframeFile){
@@ -129,11 +129,14 @@ public class DrawSixFrame {
         CSVReader reader1;
         CSVReader reader2;
         try{
-            reader1 = new CSVReader(new FileReader(lineageFile),';');
+            File lineageF = new File(lineageFile);
+            reader1 = new CSVReader(new FileReader(lineageF),';');
             List<String[]> lineages = reader1.readAll();
             Iterator<String[]> linIt = lineages.iterator();
-            reader2 = new CSVReader(new FileReader(lcaFile));
-            BufferedReader sixframe = new BufferedReader(new FileReader(sixFrameFile));
+            File lcaF = new File(lcaFile);
+            reader2 = new CSVReader(new FileReader(lcaF));
+            File sixFrameF = new File(sixFrameFile);
+            BufferedReader sixframe = new BufferedReader(new FileReader(sixFrameF));
             List<String[]> lcas = reader2.readAll();
             Iterator<String[]> it = lcas.iterator();
             it.next();
@@ -209,7 +212,7 @@ public class DrawSixFrame {
         while(agreement< lineage.length && agreement< trueLin.length &&lineage[agreement].trim().equals(trueLin[agreement])){
             agreement +=1;
         }
-        disagreement[0] = lineage.length + trueLin.length - 2*agreement;
+        disagreement[0] = lineage.length + 1 + trueLin.length - 2*agreement;
         disagreement[1] = 100-disagreement[0]*2;
         System.out.println("\\draw[red!"+disagreement[1]+", line width = 4pt, line cap = round] ("+start+",-"+framenr+") -- ("+end+",-"+framenr+");");
         System.out.println("\\node[below] at ("+end+",-"+framenr+") {"+disagreement[0]+"};");
@@ -219,19 +222,21 @@ public class DrawSixFrame {
      */
     public static void main(String[] args){
         boolean organismKnown = false;
-        String foundLCAS = folder + args[0];
-        String sixframe = folder + args[1];
-        String lineage = folder;
-        if(args.length > 2){
-            organismKnown = true;
-            lineage = args[2];
+        subtitle = "Translation table: " + args[0];
+        String foundLCAS =  args[1];
+        String sixframe =  args[2];
+        String[] proteinFiles = new String[0];
+        if(!args[3].equals("none")){
+            proteinFiles= args[3].split(",");
         }
-        ArrayList<String> proteinFiles = new ArrayList<>();
-        proteinFiles.add("AIL77108.1.fasta");
-        proteinFiles.add("AIL77107.1.fasta");
-        for(int i=0;i<proteinFiles.size();i++){
+        String lineage = "";
+        if(args.length > 4){
+            organismKnown = true;
+            lineage = args[4];
+        }
+        for(int i=0;i<proteinFiles.length;i++){
             try {
-                Scanner sc = new Scanner(new File(proteinFiles.get(i)));
+                Scanner sc = new Scanner(new File(proteinFiles[i]));
                 String header = sc.nextLine();
                 String description = header.split(" ")[0];
                 String sequence = "";
