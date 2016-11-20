@@ -27,13 +27,12 @@ import java.util.logging.Logger;
  * @author Aranka
  */
 public class DrawSixFrame {
-    private static final String correctTaxonomy = "cellular organisms; Bacteria; Proteobacteria; Gammaproteobacteria; Pseudomonadales; Moraxellaceae; Acinetobacter; Acinetobacter calcoaceticus/baumannii complex; Acinetobacter baumannii";
+    private static final String correctTaxonomy = "cellular organisms; Eukaryota; Opisthokonta; Fungi; Mucoromycota; Mortierellomycotina; Mortierellales; Mortierellaceae; Mortierella; Mortierella verticillata";
     private static final TreeSet<String> taxonomy = new TreeSet<>();
     private static final double pagewidth = (double) 24;
     private static final HashMap<String,String> proteinSeq = new HashMap<>();
-    private static final String title = "Acinetobacter Baumannii";
+    private static final String title = "Mortierella verticillata mitochondrion";
     private static String subtitle;
-    private static final String folder = "./acinetobacter/";
     
     
     public static void organismUnknownPrint(String lcaFile, String sixframeFile){
@@ -271,7 +270,7 @@ public class DrawSixFrame {
                             proteinstart = proteinstop - (double) seq.length()*unit;
                         }
                     System.out.println("\\draw[protein] ("+proteinstart+",0) -- ("+proteinstop+",0);");
-                        System.out.println("\\node[below] at ("+proteinstop+",0)  {"+proteinSeq.get(seq)+"};");
+                        System.out.println("\\node[below] at ("+proteinstop+",0)  {$"+proteinSeq.get(seq)+"$};");
                     }
                 }
     }
