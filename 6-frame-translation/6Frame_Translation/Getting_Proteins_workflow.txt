@@ -1,3 +1,6 @@
+Fasta file van organisme opvragen:
+efetch -db nuccore -id NC_028129.1 -format fasta | sed -e '1,$s/,/;/'
+
 Proteine maken en lca’s bepalen
 ———————————————————————————————
 136500-137050
