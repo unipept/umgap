@@ -27,11 +27,12 @@ import java.util.logging.Logger;
  * @author Aranka
  */
 public class DrawSixFrame {
-    private static final String correctTaxonomy = "cellular organisms; Eukaryota; Opisthokonta; Fungi; Mucoromycota; Mortierellomycotina; Mortierellales; Mortierellaceae; Mortierella; Mortierella verticillata";
+    private static String correctTaxonomy;
     private static final TreeSet<String> taxonomy = new TreeSet<>();
     private static final double pagewidth = (double) 24;
     private static final HashMap<String,String> proteinSeq = new HashMap<>();
-    private static final String title = "Mortierella verticillata mitochondrion";
+    private static String[] proteinPos = new String[0];
+    private static String title; 
     private static String subtitle;
     
     
@@ -52,7 +53,13 @@ public class DrawSixFrame {
                 framenr+=1;
                 frame = sixframe.readLine();
                 unit = pagewidth/(double)frame.length();
-                printProteins(frame,unit,framenr);
+                if(!proteinSeq.isEmpty()){
+                    printProteins(frame,unit,framenr);
+                }else{
+                    if(proteinPos.length != 0 && framenr == 2){
+                        printProteins(unit);
+                    }
+                }
                 boolean sameHeader = nextline[0].equals(header);
                 while(it.hasNext() && sameHeader){
                     if(framenr>=2 && framenr <5){
@@ -99,7 +106,8 @@ public class DrawSixFrame {
         "[protein/.style={violet, line width = 6pt, line cap = round},\n" +
         "root/.style={teal!20, line width = 4pt, line cap = round},\n" +
         "genus/.style={teal, line width = 4pt, line cap = round},\n" +
-        "subspecies/.style={teal!90!black, line width = 4pt, line cap = round},\n" +
+        "varietas/.style={teal!50!black, line width = 4pt, line cap = round},\n" +
+        "subspecies/.style={teal!60!black, line width = 4pt, line cap = round},\n" +
         "species/.style={teal!70!black, line width = 4pt, line cap = round},\n" +
         "species group/.style={teal!80!black, line width = 4pt, line cap = round},\n" +
         "family/.style={teal!80, line width = 4pt, line cap = round},\n" +
@@ -148,7 +156,13 @@ public class DrawSixFrame {
                 framenr+=1;
                 frame = sixframe.readLine();
                 unit = pagewidth/(double)frame.length();
-                printProteins(frame,unit,framenr);
+                if(!proteinSeq.isEmpty()){
+                    printProteins(frame,unit,framenr);
+                }else{
+                    if(proteinPos.length != 0 && framenr == 2){
+                        printProteins(unit);
+                    }
+                }
                 boolean sameHeader = nextline[0].equals(header);
                 while(it.hasNext() && sameHeader){
                     if(framenr>=2 && framenr <5){
@@ -221,31 +235,38 @@ public class DrawSixFrame {
      */
     public static void main(String[] args){
         boolean organismKnown = false;
-        subtitle = "Translation table: " + args[0];
-        String foundLCAS =  args[1];
-        String sixframe =  args[2];
+        taxonomyFromFile(args[1],args[0]);
+        subtitle = "Translation table: " + args[2];
+        String foundLCAS =  args[3];
+        String sixframe =  args[4];
         String[] proteinFiles = new String[0];
-        if(!args[3].equals("none")){
-            proteinFiles= args[3].split(",");
+        if(!args[5].equals("none")){
+            if (args[5].startsWith("file:")){
+                proteinFiles= args[5].split(":")[1].split(",");
+                for(int i=0;i<proteinFiles.length;i++){
+                    try {
+                        Scanner sc = new Scanner(new File(proteinFiles[i]));
+                        String header = sc.nextLine();
+                        String description = header.split(" ")[0];
+                        String sequence = "";
+                        while(sc.hasNextLine()){
+                            sequence = sequence + sc.nextLine();
+                        }
+                    proteinSeq.put(sequence,description);
+                    } catch (FileNotFoundException ex) {
+                        Logger.getLogger(DrawSixFrame.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }else{
+                if (args[5].startsWith("position:")){
+                    proteinPos = args[5].substring(9).split(":");
+                }
+            }
         }
         String lineage = "";
-        if(args.length > 4){
+        if(args.length > 6){
             organismKnown = true;
-            lineage = args[4];
-        }
-        for(int i=0;i<proteinFiles.length;i++){
-            try {
-                Scanner sc = new Scanner(new File(proteinFiles[i]));
-                String header = sc.nextLine();
-                String description = header.split(" ")[0];
-                String sequence = "";
-                while(sc.hasNextLine()){
-                    sequence = sequence + sc.nextLine();
-                }
-                proteinSeq.put(sequence,description);
-            } catch (FileNotFoundException ex) {
-                Logger.getLogger(DrawSixFrame.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            lineage = args[6];
         }
         taxonomy.addAll(Arrays.asList(correctTaxonomy.split("; ")));
         printHeader();
@@ -273,6 +294,24 @@ public class DrawSixFrame {
                         System.out.println("\\node[below] at ("+proteinstop+",0)  {$"+proteinSeq.get(seq)+"$};");
                     }
                 }
+    }
+    
+    public static void taxonomyFromFile(String filename, String organism){
+        title = organism;
+        try {
+            Scanner sc = new Scanner(new File(filename));
+            correctTaxonomy = sc.nextLine() + "; "+ organism;
+        } catch (FileNotFoundException ex) {
+            System.out.println("File " + filename + "not found");
+        }
+    }
+
+    private static void printProteins(double unit) {
+        for (int i = 0; i < proteinPos.length-1;i+=2){
+            double proteinstart = Double.parseDouble(proteinPos[i])*unit/ (double) 3;
+            double proteinstop = Double.parseDouble(proteinPos[i+1])*unit/ (double) 3;
+            System.out.println("\\draw[protein] ("+proteinstart+",0) -- ("+proteinstop+",0);");
+        }
     }
     
 }
