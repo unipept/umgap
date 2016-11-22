@@ -34,11 +34,16 @@ fn main() {
                                .help("Keep newlines in the sequence.")
                                .short("k")
                                .long("keep"))
+                      .arg(Arg::with_name("wrap")
+                               .help("Wrap the output sequences.")
+                               .short("w")
+                               .long("wrap"))
                       .get_matches();
     let separator  = matches.value_of("separator").unwrap_or("\n");
     let keep       = matches.is_present("keep");
+    let wrap       = matches.is_present("wrap");
     let mut last   = None::<fasta::Record>;
-    let mut writer = fasta::Writer::new(io::stdout(), keep);
+    let mut writer = fasta::Writer::new(io::stdout(), wrap);
     for record in fasta::Reader::new(io::stdin(), keep).records() {
         let record = record.unwrap_or_else(|err| {
             println!("Something went wrong during the reading: {}", err);

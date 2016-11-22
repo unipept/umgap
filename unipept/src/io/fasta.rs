@@ -48,7 +48,7 @@ impl<R: Read> Reader<R> {
             if self.keep_lines { sequence.push('\n'); }
         }
 
-        Ok(Some(Record { header: header, sequence: sequence }))
+        Ok(Some(Record { header: header, sequence: sequence.trim_right().to_string() }))
     }
 
     pub fn records(self) -> Records<R> {
@@ -56,7 +56,7 @@ impl<R: Read> Reader<R> {
     }
 }
 
-
+#[derive(Debug)]
 pub struct Record {
     pub header: String,
     pub sequence: String,
@@ -83,14 +83,14 @@ impl<R: Read> Iterator for Records<R> {
 
 pub struct Writer<W: Write> {
     buffer: io::BufWriter<W>,
-    keep_lines: bool,
+    wrap: bool,
 }
 
 impl<W: Write> Writer<W> {
-    pub fn new(writer: W, keep_lines: bool) -> Self {
+    pub fn new(writer: W, wrap: bool) -> Self {
         Writer {
             buffer: io::BufWriter::new(writer),
-            keep_lines: keep_lines,
+            wrap: wrap,
         }
     }
 
@@ -100,8 +100,9 @@ impl<W: Write> Writer<W> {
 
     pub fn write_record_ref(&mut self, record: &Record) -> Result<()> {
         try!(write!(self.buffer, ">{}\n", record.header));
-        if self.keep_lines {
+        if !self.wrap {
             try!(self.buffer.write(record.sequence.as_bytes()));
+            try!(self.buffer.write_all(&[b'\n']));
         } else {
             for subseq in record.sequence.as_bytes().chunks(FASTA_WIDTH) {
                 try!(self.buffer.write_all(subseq));
