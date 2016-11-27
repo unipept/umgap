@@ -1,9 +1,12 @@
 Fasta file van organisme opvragen:
+——————————————————————————————————
 efetch -db nuccore -id NC_028129.1 -format fasta | sed -e '1,$s/,/;/'
 
 Proteine maken en lca’s bepalen
 ———————————————————————————————
 136500-137050
+3586300-3593700 (mus) 974:1113:1616:1852:3516:3626
+6040100-6040600 9:110:363:461
 $ echo ">AIL77187.1 membrane protein [Acinetobacter baumannii]" > single_protein.fasta 
 $ cat acinetobacter_baumannii.fasta | sed '/^>/d' | tr -d '\n' | cut -c 97450-98250 >> single_protein.fasta 
 $ mvn exec:java -Dexec.mainClass="com.mycompany.sixframetransl.translate" -Dexec.args="single_protein.fasta 11 False" > output

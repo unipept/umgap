@@ -111,9 +111,13 @@ public class DrawSixFrame {
         "species/.style={teal!70!black, line width = 4pt, line cap = round},\n" +
         "species group/.style={teal!80!black, line width = 4pt, line cap = round},\n" +
         "family/.style={teal!80, line width = 4pt, line cap = round},\n" +
+        "suborder/.style={teal!75, line width = 4pt, line cap = round},\n" +
         "order/.style={teal!70, line width = 4pt, line cap = round},\n" +
+        "superorder/.style={teal!65, line width = 4pt, line cap = round},\n" +
         "class/.style={teal!60, line width = 4pt, line cap = round},\n" +
+        "subphylum/.style={teal!55, line width = 4pt, line cap = round},\n" +
         "phylum/.style={teal!50, line width = 4pt, line cap = round},\n" +
+        "subkingdom/.style={teal!45, line width = 4pt, line cap = round},\n" +
         "kingdom/.style={teal!40, line width = 4pt, line cap = round},\n" +
         "superkingdom/.style={teal!30, line width = 4pt, line cap = round}]\n" +
         "\\node[font=\\bfseries\\LARGE,align=center,above] at (12,2) {"+title+"} ;\n" +
