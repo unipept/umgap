@@ -42,16 +42,18 @@ public class ScoreReads {
             BufferedReader sixframe = new BufferedReader(new FileReader(sixFrame));
             Scanner lca = new Scanner(new File("found_lcas_Pseudogymnoascus.4.txt"));
             String test = lca.nextLine();
+            String unipeptInfo = lca.nextLine();
             int framecount = 8;
             String header;
             while((header=sixframe.readLine())!=null){
                 String frame = sixframe.readLine();
                 ArrayList<Peptide> peptides = new ArrayList<>();
-                String unipeptInfo = lca.nextLine();
-                int i = 1;
                 while(lca.hasNextLine() && unipeptInfo.contains(header)){
                     peptides.add(new Peptide(unipeptInfo,taxonomy_score));
                     unipeptInfo = lca.nextLine();
+                }
+                if(framecount==13){
+                    peptides.add(new Peptide(unipeptInfo,taxonomy_score));
                 }
                 drawScoredFrame(frame,framecount,peptides,(framecount<11));
                 framecount+=1;
@@ -67,34 +69,30 @@ public class ScoreReads {
     public static void drawScoredFrame(String frame, int framenr, List<Peptide> peptides, boolean forward){
         double unit = (double) 24/(double)frame.length();
         for(Peptide pept:peptides){
+            double start;
+            double end;
             if(forward){
-                double start = (double) frame.indexOf(pept.aminoSeq)*unit;
-                double end = start + (double) pept.length*unit;
-                String taxonName = pept.taxonName;
-                if(taxonName.equalsIgnoreCase("root")){
-                    System.out.println("\\draw[root] ("+start+",-"+framenr+") -- ("+end+",-"+framenr+");");
-                    double score = pept.getScore();
-                    System.out.println("\\node [below,font=\\tiny] at ("+end+",-"+framenr+") {"+score+"};");
-                }else{
-                    System.out.println("\\draw["+pept.taxonRank+"] ("+start+",-"+framenr+") -- ("+end+",-"+framenr+");");
-                    double score = pept.getScore();
-                    System.out.println("\\node [below,font=\\tiny] at ("+end+",-"+framenr+") {"+score+"};");
-                }
+                start = (double) frame.indexOf(pept.aminoSeq)*unit;
+                end = start + (double) pept.length*unit;
             }else{
-                double end = (double)frame.length()*unit-(double)frame.indexOf(pept.aminoSeq)*unit;
-                double start = end - (double) pept.length*unit;
-                String taxonName = pept.taxonName;
-                if(taxonName.equalsIgnoreCase("root")){
-                    System.out.println("\\draw[root] ("+start+",-"+framenr+") -- ("+end+",-"+framenr+");");
-                    double score = pept.getScore();
-                    System.out.println("\\node [below,font=\\tiny] at ("+end+",-"+framenr+") {"+score+"};");
-                }else{
-                    System.out.println("\\draw["+pept.taxonRank+"] ("+start+",-"+framenr+") -- ("+end+",-"+framenr+");");
-                    double score = pept.getScore();
-                    System.out.println("\\node [below,font=\\tiny] at ("+end+",-"+framenr+") {"+score+"};");
-                }
+                end = (double)frame.length()*unit-(double)frame.indexOf(pept.aminoSeq)*unit;
+                start = end - (double) pept.length*unit;    
+            }
+            String taxonName = pept.taxonName;
+            if(taxonName.equalsIgnoreCase("root")){
+                System.out.println("\\draw[root] ("+start+",-"+framenr+") -- ("+end+",-"+framenr+");");
+                double score = pept.getScore();
+                System.out.println("\\node [below,font=\\tiny] at ("+(start+end)/(double) 2+",-"+framenr+") {"+score+"};");
+            }else{
+                System.out.println("\\draw["+pept.taxonRank+"] ("+start+",-"+framenr+") -- ("+end+",-"+framenr+");");
+                double score = pept.getScore();
+                System.out.println("\\node [below,font=\\tiny] at ("+(start+end)/(double) 2+",-"+framenr+") {"+score+"};");
             }
         }
+    }
+    
+    public static void drawSplitPoints(String frame, int framenr, boolean forward){
+        
     }
     
     private static void fillTaxScore(String file) throws FileNotFoundException{
