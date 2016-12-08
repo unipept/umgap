@@ -1,7 +1,7 @@
 
 use std::process;
 use std::io;
-use std::io::BufRead;
+use std::io::Write;
 
 extern crate clap;
 use clap::{Arg, App};
@@ -15,16 +15,58 @@ use unipept::taxon::TaxonId;
 use unipept::agg::Aggregator;
 use unipept::rmq;
 use unipept::tree;
+use unipept::io::fasta;
 
 const ABOUT: &'static str = "
 Aggregates taxa to a single taxon.
 ";
+
+fn main_result(taxons: &str, method: &str, aggregation: &str, ranked_only: bool, factor: &str, scored: bool) -> Result<(), String> {
+    // Parsing the Taxa file
+    let taxons = try!(taxon::read_taxa_file(taxons).map_err(|err| err.to_string()));
+
+    // Parsing the aggregation method
+    let factor = try!(factor.parse::<Ratio<usize>>().map_err(|err| err.to_string()));
+
+    // Parsing the taxons
+    let tree     = taxon::TaxonTree::new(&taxons);
+    let by_id    = taxon::taxa_vector_by_id(taxons);
+    let snapping = tree.snapping(&by_id, ranked_only);
+
+    let aggregator: Result<Box<Aggregator>, String> = match (method, aggregation) {
+        ("RMQ",  "MTRL") => Ok(Box::new(rmq::rtl::RTLCalculator::new(tree.root, &by_id))),
+        ("RMQ",  "LCA*") => Ok(Box::new(rmq::lca::LCACalculator::new(tree))),
+        ("RMQ",  "both") => Ok(Box::new(rmq::mix::MixCalculator::new(tree, factor))),
+        ("tree", "LCA*") => Ok(Box::new(tree::lca::LCACalculator::new(tree.root, &by_id))),
+        ("tree", "both") => Ok(Box::new(tree::mix::MixCalculator::new(tree.root, &by_id, factor))),
+        _                => Err(format!("Invalid method/aggregation combination: {} and {}", method, aggregation))
+    };
+    let aggregator = try!(aggregator);
+
+    for record in fasta::Reader::new(io::stdin(), false).records() {
+        let record = try!(record.map_err(|err| err.to_string()));
+        let taxons = record.sequence.trim_right()
+                                    .split(' ')
+                                    .map(|tid| tid.parse::<TaxonId>())
+                                    .collect::<Result<Vec<TaxonId>,_>>();
+        let taxons = try!(taxons.map_err(|err| format!("{:?}", record)));
+        let aggregate = try!(aggregator.aggregate(&taxons).map_err(|err| err.to_string()));
+        let taxon = by_id[snapping[aggregate].unwrap()].as_ref().unwrap();
+        println!(">{}", record.header);
+        println!("{},{},{}", taxon.id, taxon.name, taxon.rank);
+    }
+    Ok(())
+}
 
 fn main() {
     let matches = App::new(PKG_NAME.to_string() + " taxa2lca")
                       .version(PKG_VERSION)
                       .author(PKG_AUTHORS.split(':').next().unwrap_or("unknown"))
                       .about(ABOUT)
+                      .arg(Arg::with_name("scored")
+                               .help("Each taxon is followed by a score between 0 and 1")
+                               .short("s")
+                               .long("scored"))
                       .arg(Arg::with_name("ranked")
                                .help("Restrict to taxa with a taxonomic rank")
                                .short("r")
@@ -51,68 +93,16 @@ fn main() {
                                .index(1)
                                .required(true))
                       .get_matches();
-
-    // Parsing the Taxa file
-    let filename = matches.value_of("taxon-file").unwrap(); // required argument
-    let taxons = taxon::read_taxa_file(filename).unwrap_or_else(|err| {
-        println!("Error: {}", err);
+    main_result(
+        matches.value_of("taxon-file").unwrap(), // required argument, so safe
+        matches.value_of("method").unwrap_or("RMQ"),
+        matches.value_of("aggregate").unwrap_or("LCA*"),
+        matches.is_present("ranked"),
+        matches.value_of("factor").unwrap_or("0"),
+        matches.is_present("scored")
+    ).unwrap_or_else(|err| {
+        writeln!(&mut io::stderr(), "{}", err).unwrap();
         process::exit(1);
     });
-
-    // Parsing the aggregation method
-    let method      = matches.value_of("method").unwrap_or("RMQ");
-    let aggregation = matches.value_of("aggregate").unwrap_or("LCA*");
-    let ranked_only = matches.is_present("ranked");
-    let factor      = matches.value_of("factor").unwrap_or("0")
-                             .parse::<Ratio<usize>>().unwrap_or_else(|err| {
-                                 println!("Error: failed to parse the factor.");
-                                 println!("Example of a valid factor: 3/4.");
-                                 println!("{}", err);
-                                 process::exit(2);
-                             });
-
-    // Parsing the taxons
-    let tree     = taxon::TaxonTree::new(&taxons);
-    let by_id    = taxon::taxa_vector_by_id(taxons);
-    let snapping = tree.snapping(&by_id, ranked_only);
-
-    let aggregator: Box<Aggregator> = match (method, aggregation) {
-        ("RMQ",  "MTRL") => Box::new(rmq::rtl::RTLCalculator::new(tree.root, &by_id)),
-        ("RMQ",  "LCA*") => Box::new(rmq::lca::LCACalculator::new(tree)),
-        ("RMQ",  "both") => Box::new(rmq::mix::MixCalculator::new(tree, factor)),
-        ("tree", "LCA*") => Box::new(tree::lca::LCACalculator::new(tree.root, &by_id)),
-        ("tree", "both") => Box::new(tree::mix::MixCalculator::new(tree.root, &by_id, factor)),
-        _                => {
-            println!("Invalid method/aggregation combination: {} and {}", method, aggregation);
-            process::exit(3);
-        }
-    };
-
-    let input = io::BufReader::new(io::stdin());
-    for line in input.lines() {
-        let line = line.unwrap_or_else(|err| {
-            println!("Error: failed to read an input line.");
-            println!("{}", err);
-            process::exit(4);
-        });
-
-        // Copy FASTA headers
-        if line.chars().nth(0) == Some('>') {
-            println!("{}", line);
-            continue
-        }
-
-        let taxons = line.trim_right()
-                         .split(' ')
-                         .map(|tid| tid.parse::<TaxonId>().unwrap())
-                         .collect();
-
-        let aggregate = aggregator.aggregate(&taxons).unwrap_or_else(|err| {
-            println!("Error: failed to aggregate some line: {}", err);
-            process::exit(5)
-        });
-        let taxon = by_id[snapping[aggregate].unwrap()].as_ref().unwrap();
-        println!("{},{},{}", taxon.id, taxon.name, taxon.rank);
-    }
 }
 
