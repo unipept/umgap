@@ -37,26 +37,43 @@ public class ScoreReads {
         } catch (FileNotFoundException ex) {
             Logger.getLogger(ScoreReads.class.getName()).log(Level.SEVERE, null, ex);
         }
-        File sixFrame = new File("Pseudogymnoascus.4.sixframe");
+        File sixFrame = new File("single_protein.sixframe");
         try {
             BufferedReader sixframe = new BufferedReader(new FileReader(sixFrame));
-            Scanner lca = new Scanner(new File("found_lcas_Pseudogymnoascus.4.txt"));
-            String test = lca.nextLine();
-            String unipeptInfo = lca.nextLine();
-            int framecount = 8;
+            Scanner lca = new Scanner(new File("lca_file.temp"));
+            String lcaHeader = lca.nextLine();
+//            String unipeptInfo = lca.nextLine();
+//            int framecount = 2;
+            int diepte = 2;
+            int forward = 1;
             String header;
+            int k=9;
             while((header=sixframe.readLine())!=null){
                 String frame = sixframe.readLine();
-                ArrayList<Peptide> peptides = new ArrayList<>();
-                while(lca.hasNextLine() && unipeptInfo.contains(header)){
-                    peptides.add(new Peptide(unipeptInfo,taxonomy_score));
-                    unipeptInfo = lca.nextLine();
+//    Specifiek voor Triptische Peptiden            
+//                ArrayList<Peptide> peptides = new ArrayList<>();
+//                while(lca.hasNextLine() && unipeptInfo.contains(header)){
+//                    peptides.add(new Peptide(unipeptInfo,taxonomy_score));
+//                    unipeptInfo = lca.nextLine();
+//                }
+//                if(framecount==13){
+//                    peptides.add(new Peptide(unipeptInfo,taxonomy_score));
+//                }
+//                drawScoredFrame(frame,framecount,peptides,(framecount<11));
+//                drawSplitPoints(frame,framecount,(framecount<11));
+//                framecount+=1;
+//      Specifiek voor K-meren
+                ArrayList<Kmer> kmers = new ArrayList<>();
+                while(lca.hasNextLine() && lcaHeader.equals(header)){
+                    String nextLCA = lca.nextLine();
+                    if(nextLCA.startsWith(">")){
+                        lcaHeader = nextLCA;
+                    }else{
+                        kmers.add(new Kmer(nextLCA,k,taxonomy_score));
+                    }
                 }
-                if(framecount==13){
-                    peptides.add(new Peptide(unipeptInfo,taxonomy_score));
-                }
-                drawScoredFrame(frame,framecount,peptides,(framecount<11));
-                framecount+=1;
+                diepte += drawKmerFrame(frame, diepte, forward ,kmers,k);
+                forward ++;
             }
         } catch (FileNotFoundException ex) {
             Logger.getLogger(ScoreReads.class.getName()).log(Level.SEVERE, null, ex);
@@ -91,8 +108,92 @@ public class ScoreReads {
         }
     }
     
-    public static void drawSplitPoints(String frame, int framenr, boolean forward){
+    public static int drawKmerFrame(String frame, int diepte, int forward, List<Kmer> kmers, int k){
+        int depth = 0;
+        double unit = (double) 24/(double)frame.length();
+        int pos=0;
+        int[] prevEnd = new int[k+1];
+        int tekendiepte;
+        for(Kmer kmer: kmers){
+            tekendiepte = 0;
+            double start;
+            double end;
+            start = frame.indexOf(kmer.aminoSeq, pos);
+            pos = (int) start+1;
+            while(tekendiepte < k && start<=prevEnd[tekendiepte]){
+                tekendiepte ++;
+            }
+            prevEnd[tekendiepte] = (int) start + k -1;
+            start = (double) start*unit;
+            end = start + (double) (k-1)*unit;
+            if(! (forward < 4)){
+                end = (double)frame.length()*unit - start;
+                start = end - (double) (k-1)*unit;    
+            }
+            String taxonName = kmer.taxonName;
+            double framenr = (double) (diepte + tekendiepte)/4;
+            if(taxonName.equalsIgnoreCase("root")){
+                System.out.println("\\draw[root] ("+start+",-"+framenr+") -- ("+end+",-"+framenr+");");
+            }else{
+                System.out.println("\\draw["+kmer.taxonRank+"] ("+start+",-"+framenr+") -- ("+end+",-"+framenr+");");
+            }
+        }
+        while(depth < k && prevEnd[depth]!=0){
+            depth ++;
+        }
         
+        System.out.println("\\draw[frame] (24.1,-" + (double) diepte/4 + ") -- (24.1,-" + (double) (diepte + depth)/4 + ");");
+        int framenr;
+        if((forward < 4)){  
+            framenr = forward;
+        }else{
+            framenr = 3-forward;
+        }
+        System.out.println("\\node[below] at (24.2,-" + (double) diepte/4 + ") {" + framenr + "};");
+        return depth;
+    }
+    
+    public static void drawSplitPoints(String frame, int framenr, boolean forward){
+        double unit = (double) 24/(double)frame.length();
+        double above = framenr + 0.2;
+        double below = framenr - 0.2;
+        int n = frame.length();
+        int previous = 0;
+        if(forward){
+            for(int i = 1; i<=n;i++){
+               char ch = frame.charAt(i-1);
+               boolean tryptic = (ch=='R'||ch=='K') && frame.charAt(i)!='P';
+               if(ch == '*'||tryptic){
+                    int length = i-previous;
+                    if(length>4){
+                        System.out.println("\\node [above,font=\\scriptsize] at ("+(double)(i+previous)*unit/(double) 2 + ",-"+framenr+") {"+length+"};");
+                    }
+                    previous = i;
+                    System.out.println("\\draw [red] ("+i*unit+",-"+above+") -- ("+i*unit+",-"+below+");");
+               }
+            }
+            int length = n-previous;
+            if(length>4){
+                System.out.println("\\node [above,font=\\scriptsize] at ("+(double)(n+previous)*unit/(double) 2 + ",-"+framenr+") {"+length+"};");
+            }
+        }else{
+            for(int i = 1;i<=n;i++){
+                char ch = frame.charAt(i-1);
+                boolean tryptic = (ch=='R'||ch=='K') && frame.charAt(i)!='P';
+                if(ch == '*'||tryptic){
+                    int length = i-previous;
+                    if(length>4){
+                        System.out.println("\\node [above,font=\\scriptsize] at ("+(n*unit - (double)(i+previous)*unit/(double) 2 )+ ",-"+framenr+") {"+length+"};");
+                    }
+                    previous = i;
+                    System.out.println("\\draw [red] ("+(n-i)*unit+",-"+above+") -- ("+(n-i)*unit+",-"+below+");");
+                }
+            }
+            int length = n-previous;
+            if(length>4){
+                System.out.println("\\node [above,font=\\scriptsize] at ("+(n*unit - (double)(n+previous)*unit/(double) 2 )+ ",-"+framenr+") {"+length+"};");
+            }
+        }
     }
     
     private static void fillTaxScore(String file) throws FileNotFoundException{
