@@ -142,14 +142,18 @@ public class ScoreReads {
             depth ++;
         }
         
-        System.out.println("\\draw[frame] (24.1,-" + (double) diepte/4 + ") -- (24.1,-" + (double) (diepte + depth)/4 + ");");
+        System.out.println("\\draw[frame] (24.2,-" + (double) (diepte-0.5)/4 + ") -- (24.2,-" + (double) (diepte + depth + 0.5)/4 + ");");
+        System.out.println("\\draw[frame] (24,-" + (double) (diepte-0.5)/4 + ") -- (24.2,-" + (double) (diepte-0.5)/4+ ");");
+        if(forward == 6){
+            System.out.println("\\draw[frame] (24,-" + (double) (diepte + depth + 0.5)/4 + ") -- (24.2,-" + (double) (diepte + depth+0.5)/4 + ");");
+        }
         int framenr;
         if((forward < 4)){  
             framenr = forward;
         }else{
             framenr = 3-forward;
         }
-        System.out.println("\\node[below] at (24.2,-" + (double) diepte/4 + ") {" + framenr + "};");
+        System.out.println("\\node[draw=none] at (24.5,-" + (double) diepte/4 + ") {" + framenr + "};");
         return depth;
     }
     
