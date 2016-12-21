@@ -1,0 +1,16 @@
+#!/bin/bash
+
+rm lca_file.temp
+lca_file="$1"
+while read line
+do 
+	if [ ! ${line:0:1} = ">" ]
+	then 
+		tax_id=$(echo $line | cut -d , -f 2) 
+		tax_info=$(unipept taxonomy $tax_id | sed -n "2p" |sed 's/^[0-9]*,//')
+		echo "$line,$tax_info" >> lca_file.temp
+	else
+		echo "$line" >> lca_file.temp
+	fi 
+done < $lca_file
+		 

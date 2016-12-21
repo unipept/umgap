@@ -17,3 +17,5 @@ nbproject/
 build/
 *temp*/
 target/
+.*mer
+.*mer.lca
