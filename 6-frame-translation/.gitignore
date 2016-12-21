@@ -17,5 +17,9 @@ nbproject/
 build/
 *temp*/
 target/
-.*mer
-.*mer.lca
+*.*mer
+*.*mer.lca
+Kmeren/kmer_tekening.tex
+Kmeren/lca_file.temp
+Kmeren/lca_test
+SixFrameTransl/results/
