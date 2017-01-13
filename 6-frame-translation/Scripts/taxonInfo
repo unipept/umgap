@@ -1,4 +1,5 @@
 #!/bin/bash
+# vraagt taxon naam en taxon rang op wanneer enkel taxon id is gegeven, was nodig toen enkel taxon id als output werd gegeven, zal nu niet meer nodig zijn
 
 rm lca_file.temp
 lca_file="$1"
