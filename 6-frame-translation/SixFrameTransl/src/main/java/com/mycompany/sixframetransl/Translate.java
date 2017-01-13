@@ -25,23 +25,26 @@ import org.biojava.nbio.core.util.*;
 public class Translate {
     /**
      * 
-     * @param args array of Strings 1. name of FastA file 2. code translation table 3. change all initiation codons to Met? 
+     * @param args array of Strings 1. name of FastA file 2. code translation table number 3. change all initiation codons to Met? 
      */
     public static void main(String[] args){
+        // The Fasta file we want to translate
         File f = new File(args[0]);
         if ( ! f.exists()) {
             System.err.println("File does not exist " + args[0]);
             return;
         }
+        // Which translation table to use
         int table = Integer.parseInt(args[1]);
+        // Should all initiation codons be changed to M?
         boolean initM = Boolean.parseBoolean(args[2]);
+        
+        // The translation process (workflow taken from the biojava manual)
         try {
             InputStreamProvider isp = new InputStreamProvider();
-
             InputStream stream = isp.getInputStream(f);
 
-
-            // define the Ambiguity Compound Sets
+            // Define the Ambiguity Compound Sets
             AmbiguityDNACompoundSet ambiguityDNACompoundSet = AmbiguityDNACompoundSet.getDNACompoundSet();
             CompoundSet<NucleotideCompound>  nucleotideCompoundSet;
             nucleotideCompoundSet = AmbiguityRNACompoundSet.getRNACompoundSet();
@@ -52,13 +55,14 @@ public class Translate {
                             new GenericFastaHeaderParser<DNASequence, NucleotideCompound>(),
                             new DNASequenceCreator(ambiguityDNACompoundSet));
 
-            // has only one entry in this example, but could be easily extended to parse a FASTA file with multiple sequences
+            // Has only one entry in this example, but could be easily extended to parse a FASTA file with multiple sequences
             LinkedHashMap<String, DNASequence> dnaSequences = proxy.process();
 
             // Initialize the Transcription Engine
             TranscriptionEngine engine = new
                     TranscriptionEngine.Builder().dnaCompounds(ambiguityDNACompoundSet).table(table).initMet(initM).trimStop(true).translateNCodons(true).rnaCompounds(nucleotideCompoundSet).build();
 
+            // Write all the information to stdOut
             Frame[] sixFrames = Frame.getAllFrames();
             Iterator<String> it = dnaSequences.keySet().iterator(); 
             while(it.hasNext()) {
@@ -71,7 +75,8 @@ public class Translate {
                 }
             }
         } catch (Exception e){
-            e.printStackTrace();
+            System.out.println("Something went wrong");
+            System.out.println(e.toString());
         }
     }
 }
