@@ -72,6 +72,9 @@ public class ScoreReads {
                         kmers.add(new Kmer(nextLCA,k,taxonomy_score));
                     }
                 }
+                int[] frameDepths = getCoverageDepth(frame,kmers,k);
+                plotCoverageDepths(forward,diepte,frameDepths,k);
+                diepte +=1;
                 diepte += drawKmerFrame(frame, diepte, forward ,kmers,k);
                 forward ++;
             }
@@ -217,9 +220,40 @@ public class ScoreReads {
             }
         }
     }
+    
+    
+    private static int[] getCoverageDepth(String frame, List<Kmer> kmers, int k){
+        int[] depths = new int[frame.length()];
+        int cur_pos = 0;
+        for(Kmer kmer:kmers){
+            int start = frame.indexOf(kmer.aminoSeq, cur_pos);
+            cur_pos = start;
+            for(int i=start;i<start+k;i++){
+                depths[i] = depths[i] + 1;
+            }
+        }
+        return depths;
+    }
+    
+    public static void plotCoverageDepths(int frame, int diepte, int[] depths, int k){
+        double unit = (double) 24 / (double) depths.length;
+        int n = depths.length;
+        for(int i=0;i<depths.length;i++){
+            int fact = depths[i]*100/k;
+            double above = ((double)diepte + 0.2)/4;
+            double below = ((double)diepte - 0.2)/4;
+            if(frame<4){
+                System.out.println("\\draw [red!"+fact+",line width=2pt] ("+(i)*unit+",-"+above+") -- ("+(i)*unit+",-"+below+");");
+            }else{
+                System.out.println("\\draw [red!"+fact+",line width=2pt] ("+(n-i)*unit+",-"+above+") -- ("+(n-i)*unit+",-"+below+");");
+            }
+        }
+    }
+    
     public static void printHeader(){
         System.out.println("\\begin{tikzpicture}\n" +
         "[protein/.style={violet, line width = 6pt, line cap = round},\n" +
+        "frame/.style={orange, line width = 2pt, line cap = round},\n" +
         "root/.style={teal!20, line width = 4pt, line cap = round},\n" +
         "genus/.style={teal, line width = 4pt, line cap = round},\n" +
         "varietas/.style={teal!50!black, line width = 4pt, line cap = round},\n" +
@@ -227,7 +261,8 @@ public class ScoreReads {
         "species/.style={teal!70!black, line width = 4pt, line cap = round},\n" +
         "species group/.style={teal!80!black, line width = 4pt, line cap = round},\n" +
         "family/.style={teal!80, line width = 4pt, line cap = round},\n" +
-        "suborder/.style={teal!75, line width = 4pt, line cap = round},\n" +
+        "superfamily/.style={teal!78, line width = 4pt, line cap = round},\n" +
+        "suborder/.style={teal!73, line width = 4pt, line cap = round},\n" +
         "order/.style={teal!70, line width = 4pt, line cap = round},\n" +
         "superorder/.style={teal!65, line width = 4pt, line cap = round},\n" +
         "class/.style={teal!60, line width = 4pt, line cap = round},\n" +
@@ -238,7 +273,11 @@ public class ScoreReads {
         "superkingdom/.style={teal!30, line width = 4pt, line cap = round}]\n" +
         "\\node[font=\\bfseries\\LARGE,align=center,above] at (12,2) {"+title+"} ;\n" +
         "\\node[font=\\bfseries,align=center,above] at (12,1) {"+subtitle+"} ;\n" +
-        "\\draw (0,0) -- (24,0) ;\n" +
+        "\\draw (0,0) -- (24,0) ;");
+    }
+    
+    public static void printEmptyLines(){
+        System.out.println(
         "\\draw (0,-2) -- (24,-2) node[anchor=south] {$+1$};\n" +
         "\\draw (0,-3) -- (24,-3) node[anchor=south] {$+2$};\n" +
         "\\draw (0,-4) -- (24,-4) node[anchor=south] {$+3$};\n" +
