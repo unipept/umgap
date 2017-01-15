@@ -30,3 +30,4 @@ found_peptides.txt
 nbproject/
 six_frame_single
 target/
+*classes*

@@ -35,14 +35,23 @@ public class DrawSixFrame {
     private static String subtitle;
     
     
+    /**
+     * Prints out the tikz-code for a drawing of a six-frame translation and its found lca's based on taxon rank,
+     * as if the true organism of the sample was unknown
+     * @param lcaFile a file as output by the unipept-cli 
+     * @param sixframeFile a file (in FASTA-format) with the 6 different translation frames
+     */
     public static void organismUnknownPrint(String lcaFile, String sixframeFile){
         CSVReader reader;
         try {
+            // initialise the input-readers, the lca-file is a CSV file and the sixframe-file is a normal file
             reader = new CSVReader(new FileReader(lcaFile));
             BufferedReader sixframe = new BufferedReader(new FileReader(sixframeFile));
+            // save the information from the lca-file in a list of arrays and initialise an iterator over that list
             List<String[]> lcas = reader.readAll();
             Iterator<String[]> it = lcas.iterator();
-            it.next();
+            it.next(); // skip header of the file
+            // initialise some variables
             String header;
             int framenr = 1;
             String[] nextline = it.next();
