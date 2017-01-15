@@ -29,61 +29,82 @@ public class ScoreReads {
 
     /**
      * @param args the command line arguments
+     *              0: =0 for tryptic peptides
+     *                 =k for k-mers (k is an integer)
+     *              1: Title for the plot
+     *              2: name of / path to the file with six frame translation
+     *              3: name of / path to the file with the lca's
      */
     public static void main(String[] args) {
-        printHeader();
-        try {
-            fillTaxScore("taxonomy_score.txt");
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(ScoreReads.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        File sixFrame = new File("single_protein.sixframe");
-        try {
-            BufferedReader sixframe = new BufferedReader(new FileReader(sixFrame));
-            Scanner lca = new Scanner(new File("lca_file.temp"));
-            String lcaHeader = lca.nextLine();
-//            String unipeptInfo = lca.nextLine();
-//            int framecount = 2;
-            int diepte = 2;
-            int forward = 1;
-            String header;
-            int k=9;
-            while((header=sixframe.readLine())!=null){
-                String frame = sixframe.readLine();
-//    Specifiek voor Triptische Peptiden            
-//                ArrayList<Peptide> peptides = new ArrayList<>();
-//                while(lca.hasNextLine() && unipeptInfo.contains(header)){
-//                    peptides.add(new Peptide(unipeptInfo,taxonomy_score));
-//                    unipeptInfo = lca.nextLine();
-//                }
-//                if(framecount==13){
-//                    peptides.add(new Peptide(unipeptInfo,taxonomy_score));
-//                }
-//                drawScoredFrame(frame,framecount,peptides,(framecount<11));
-//                drawSplitPoints(frame,framecount,(framecount<11));
-//                framecount+=1;
-//      Specifiek voor K-meren
-                ArrayList<Kmer> kmers = new ArrayList<>();
-                while(lca.hasNextLine() && lcaHeader.equals(header)){
-                    String nextLCA = lca.nextLine();
-                    if(nextLCA.startsWith(">")){
-                        lcaHeader = nextLCA;
+        if (args.length !=4){
+            System.out.println("Arguments: tp/kmer-indicator    plot-title  sixframe-file   lca-file");
+        }else{
+            boolean tp;
+            int k = 0;
+            if (Integer.parseInt(args[0]) == 0 ){
+                tp = true;
+            }else{
+                tp = false;
+                k = Integer.parseInt(args[0]);
+            }
+            title = args[1];
+            printHeader();
+            try {
+                fillTaxScore("taxonomy_score.txt"); // zorg gewoon dat de gewenste score in een bestand met deze naam zit
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(ScoreReads.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            File sixFrame = new File(args[2]);
+            try {
+                BufferedReader sixframe = new BufferedReader(new FileReader(sixFrame));
+                Scanner lca = new Scanner(new File(args[3]));
+                if(tp){
+                    lca.nextLine();
+                }
+                String lcaHeader = lca.nextLine();
+                int diepte = 2;
+                int forward = 1;
+                String header;
+                while((header=sixframe.readLine())!=null){
+                    String frame = sixframe.readLine();
+    //      Specifiek voor Triptische Peptiden  
+                    if (tp){
+                        ArrayList<Peptide> peptides = new ArrayList<>();
+                        while(lca.hasNextLine() && lcaHeader.contains(header)){
+                            peptides.add(new Peptide(lcaHeader,taxonomy_score));
+                            lcaHeader = lca.nextLine();
+                        }
+                        if(diepte==7){
+                            peptides.add(new Peptide(lcaHeader,taxonomy_score));
+                        }
+                        drawScoredFrame(frame,diepte,peptides,(diepte<5));
+                        drawSplitPoints(frame,diepte,(diepte<5));
+                        diepte+=1;
                     }else{
-                        kmers.add(new Kmer(nextLCA,k,taxonomy_score));
+    //      Specifiek voor K-meren
+                        ArrayList<Kmer> kmers = new ArrayList<>();
+                        while(lca.hasNextLine() && lcaHeader.equals(header)){
+                            String nextLCA = lca.nextLine();
+                            if(nextLCA.startsWith(">")){
+                                lcaHeader = nextLCA;
+                            }else{
+                                kmers.add(new Kmer(nextLCA,k,taxonomy_score));
+                            }
+                        }
+                        int[] frameDepths = getCoverageDepth(frame,kmers,k);
+                        plotCoverageDepths(forward,diepte,frameDepths,k);
+                        diepte +=1;
+                        diepte += drawKmerFrame(frame, diepte, forward ,kmers,k);
+                        forward ++;
                     }
                 }
-                int[] frameDepths = getCoverageDepth(frame,kmers,k);
-                plotCoverageDepths(forward,diepte,frameDepths,k);
-                diepte +=1;
-                diepte += drawKmerFrame(frame, diepte, forward ,kmers,k);
-                forward ++;
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(ScoreReads.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(ScoreReads.class.getName()).log(Level.SEVERE, null, ex);
             }
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(ScoreReads.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(ScoreReads.class.getName()).log(Level.SEVERE, null, ex);
+            printFooter();
         }
-        printFooter();
     }
     
     public static void drawScoredFrame(String frame, int framenr, List<Peptide> peptides, boolean forward){
@@ -167,7 +188,7 @@ public class ScoreReads {
         int n = frame.length();
         int previous = 0;
         if(forward){
-            for(int i = 1; i<=n;i++){
+            for(int i = 1; i<n;i++){
                char ch = frame.charAt(i-1);
                boolean tryptic = (ch=='R'||ch=='K') && frame.charAt(i)!='P';
                if(ch == '*'||tryptic){
@@ -184,7 +205,7 @@ public class ScoreReads {
                 System.out.println("\\node [above,font=\\scriptsize] at ("+(double)(n+previous)*unit/(double) 2 + ",-"+framenr+") {"+length+"};");
             }
         }else{
-            for(int i = 1;i<=n;i++){
+            for(int i = 1;i<n;i++){
                 char ch = frame.charAt(i-1);
                 boolean tryptic = (ch=='R'||ch=='K') && frame.charAt(i)!='P';
                 if(ch == '*'||tryptic){
