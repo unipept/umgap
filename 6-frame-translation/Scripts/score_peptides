@@ -1,0 +1,28 @@
+#!/bin/bash
+
+usage(){echo "Syntax: $(basename $0) [-t taxscoreFile] lcaFile"; exit 1;}
+while getopts ":t:" opt; do
+        case $opt in
+                t) taxScore=$OPTARG     ;;
+                :) usage ;;
+                \?) usage
+  esac
+done
+shift $((OPTIND - 1))
+
+
+if [ $# -ne 1 ]
+then 
+	usage
+fi
+
+lcaFile=$1
+taxScore=${taxScore:="../ScoreReads"}
+
+if [ ! -r $taxScore ]
+then 
+	echo "File with taxon-rank scores $taxScore not found" 1>&2
+	exit 2
+fi
+
+

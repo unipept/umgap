@@ -37,12 +37,13 @@ public class ScoreReads {
      *              1: Title for the plot
      *              2: name of / path to the file with six frame translation
      *              3: name of / path to the file with the lca's
-     *              4(optional): name of / path to a file with lineages belonging to the lca's
-     *              5(optional): String with the lineage of the organism to which the DNA belongs
+     *              4: the positions of present proteins
+     *              5(optional): name of / path to a file with lineages belonging to the lca's
+     *              6(optional): String with the lineage of the organism to which the DNA belongs
      */
     public static void main(String[] args) {
-        if (args.length < 4 || args.length > 6){
-            System.out.println("Arguments: tp/kmer-indicator    plot-title  sixframe-file   lca-file");
+        if (args.length < 5 || args.length > 7){
+            System.out.println("Arguments: tp/kmer-indicator    plot-title  sixframe-file   lca-file    proteinpositions");
         }else{
             boolean tp;
             int k = 0;
@@ -60,20 +61,24 @@ public class ScoreReads {
                 Logger.getLogger(ScoreReads.class.getName()).log(Level.SEVERE, null, ex);
             }
             File sixFrame = new File(args[2]);
+            String[] proteins = new String[0];
+            if (! args[4].isEmpty()){
+                proteins = args[4].split(":");
+            }
             try {
                 BufferedReader sixframe = new BufferedReader(new FileReader(sixFrame));
                 Scanner lca = new Scanner(new File(args[3]));
                 CSVReader lineageR = new CSVReader(new StringReader(""));
                 String[] trueLineage = new String[0];
-                if(args.length > 4){
-                    File lineageF = new File(args[4]);
+                if(args.length > 5){
+                    File lineageF = new File(args[5]);
                     lineageR = new CSVReader(new FileReader(lineageF),';');
-                    trueLineage = args[5].split(";");
+                    trueLineage = args[6].split(";");
                 }
                 if(tp){
                     lca.nextLine();
                     printEmptyLines(2);
-                    if (args.length > 4){
+                    if (args.length > 5){
                         printEmptyLines(8);
                     }
                 }
@@ -87,7 +92,7 @@ public class ScoreReads {
                     if (tp){
                         ArrayList<Peptide> peptides = new ArrayList<>();
                         while(lca.hasNextLine() && lcaHeader.contains(header)){
-                            if(args.length > 4){
+                            if(args.length > 5){
                                 if(lcaHeader.contains("root")){
                                     String[] root = new String[1];
                                     root[0] = "root";
@@ -102,7 +107,7 @@ public class ScoreReads {
                             lcaHeader = lca.nextLine();
                         }
                         if(diepte==7){
-                            if(args.length > 4){
+                            if(args.length > 5){
                                 if(lcaHeader.contains("root")){
                                     String[] root = new String[1];
                                     root[0] = "root";
@@ -114,8 +119,9 @@ public class ScoreReads {
                             }else{
                                 peptides.add(new Peptide(lcaHeader,taxonomy_score));
                             }
+                            printProteins((double)24/(double)frame.length(),proteins);
                         }
-                        if(args.length > 4){
+                        if(args.length > 5){
                             drawScoredFrame(frame,diepte+6,peptides,(diepte<5),trueLineage);
                         }
                         drawScoredFrame(frame,diepte,peptides,(diepte<5));
@@ -404,5 +410,15 @@ public class ScoreReads {
         disagreement[1] = 100-disagreement[0]*2;
         System.out.println("\\draw[red!"+disagreement[1]+", line width = 4pt, line cap = round] ("+start+",-"+framenr+") -- ("+end+",-"+framenr+");");
         System.out.println("\\node[below, font=\\small] at ("+(start+end)/(double)2+",-"+framenr+") {"+disagreement[0]+"};");
+    }
+    
+    private static void printProteins(double unit, String[] proteinPos) {
+        if(proteinPos.length!=0){
+            for (int i = 0; i < proteinPos.length-1;i+=2){
+                double proteinstart = Double.parseDouble(proteinPos[i])*unit / (double) 3;
+                double proteinstop = Double.parseDouble(proteinPos[i+1])*unit / (double) 3;
+                System.out.println("\\draw[protein] ("+proteinstart+",0) -- ("+proteinstop+",0);");
+            }
+        }
     }
 }
