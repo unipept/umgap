@@ -56,19 +56,25 @@ do
 		do 
 			efetch -db taxonomy -id "$line" -format xml | xtract -pattern Taxon -element Lineage
 		done > $outputLocation/$name/$lineage
-		organism.lineage="$(esearch -db taxonomy -query "$organism" | efetch -format xml | xtract -pattern Taxon -element Lineage); $organism"
+		organism_lineage="$(esearch -db taxonomy -query "$organism" | efetch -format xml | xtract -pattern Taxon -element Lineage); $organism"
 	fi	
 done
 
 cd ~/Documents/Unief/Thesis/Thesis/ScoreReads
+rm -r classes
 mkdir classes
-javac -d classes -cp classes:~/Documents/Unief/Thesis/Thesis/opencsv-3.8.jar:taxonomy_score.txt $(find src -name *.java)
+javac -d classes -cp classes:../opencsv-3.8.jar:taxonomy_score.txt $(find src -name *.java)
 
 for i in "$translationTables"
 do
 	sixframe=$outputLocation/$name/$name.$i.sixframe
 	lca=$outputLocation/$name/found_lcas_$name.$i.txt
-	java -cp .:classes:~/Documents/Unief/Thesis/Thesis/opencsv-3.8.jar:taxonomy_score.txt scorereads.ScoreReads ${k:-0} "$title" $sixframe $lca > $outputLocation/$name/$name.$i.unknown.tex 
+	if [ "$organism" ]
+	then
+		java -cp .:classes:../opencsv-3.8.jar:taxonomy_score.txt scorereads.ScoreReads ${k:-0} "$title" $sixframe $lca $outputLocation/$name/$lineage "${organism_lineage}" > $outputLocation/$name/$name.$i.known.tex
+	else
+		java -cp .:classes:../opencsv-3.8.jar:taxonomy_score.txt scorereads.ScoreReads ${k:-0} "$title" $sixframe $lca > $outputLocation/$name/$name.$i.unknown.tex 
+	fi
 done
 
 exit 0
