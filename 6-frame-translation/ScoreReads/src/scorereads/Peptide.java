@@ -25,6 +25,7 @@ public class Peptide {
     public int length;
     private double score;
     private Map<String,Double> taxonomy_score = new TreeMap<>();
+    public String[] lineage;
     
     public Peptide(String aminoSeq, String taxonName, int taxonID, String taxonRank){
         this.aminoSeq = aminoSeq;
@@ -49,6 +50,18 @@ public class Peptide {
         this.length = aminoSeq.length();
         this.taxonomy_score = taxScore;
         calculateScore();
+    }
+    public Peptide(String UnipeptOut, Map<String,Double> taxScore, String[] lineage){
+        String[] info = UnipeptOut.split(",");
+        int n = info.length;
+        this.taxonRank = info[n-1];
+        this.taxonName = info[n-2];
+        this.taxonID = Integer.parseInt(info[n-3]);
+        this.aminoSeq = info[n-4];
+        this.length = aminoSeq.length();
+        this.taxonomy_score = taxScore;
+        calculateScore();
+        this.lineage = lineage;
     }
     private void calculateScore(){
         double length_score = 0.1;

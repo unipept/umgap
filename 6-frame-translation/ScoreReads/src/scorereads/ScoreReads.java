@@ -5,12 +5,15 @@
  */
 package scorereads;
 
+import com.opencsv.CSVReader;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -34,9 +37,11 @@ public class ScoreReads {
      *              1: Title for the plot
      *              2: name of / path to the file with six frame translation
      *              3: name of / path to the file with the lca's
+     *              4(optional): name of / path to a file with lineages belonging to the lca's
+     *              5(optional): String with the lineage of the organism to which the DNA belongs
      */
     public static void main(String[] args) {
-        if (args.length !=4){
+        if (args.length < 4 || args.length > 6){
             System.out.println("Arguments: tp/kmer-indicator    plot-title  sixframe-file   lca-file");
         }else{
             boolean tp;
@@ -58,8 +63,19 @@ public class ScoreReads {
             try {
                 BufferedReader sixframe = new BufferedReader(new FileReader(sixFrame));
                 Scanner lca = new Scanner(new File(args[3]));
+                CSVReader lineageR = new CSVReader(new StringReader(""));
+                String[] trueLineage = new String[0];
+                if(args.length > 4){
+                    File lineageF = new File(args[4]);
+                    lineageR = new CSVReader(new FileReader(lineageF),';');
+                    trueLineage = args[5].split(";");
+                }
                 if(tp){
                     lca.nextLine();
+                    printEmptyLines(2);
+                    if (args.length > 4){
+                        printEmptyLines(8);
+                    }
                 }
                 String lcaHeader = lca.nextLine();
                 int diepte = 2;
@@ -71,11 +87,36 @@ public class ScoreReads {
                     if (tp){
                         ArrayList<Peptide> peptides = new ArrayList<>();
                         while(lca.hasNextLine() && lcaHeader.contains(header)){
-                            peptides.add(new Peptide(lcaHeader,taxonomy_score));
+                            if(args.length > 4){
+                                if(lcaHeader.contains("root")){
+                                    String[] root = new String[1];
+                                    root[0] = "root";
+                                    peptides.add(new Peptide(lcaHeader, taxonomy_score, root));
+                                }else{
+                                    String[] lineage = lineageR.readNext();
+                                    peptides.add(new Peptide(lcaHeader, taxonomy_score, lineage));
+                                }
+                            }else{
+                                peptides.add(new Peptide(lcaHeader,taxonomy_score));
+                            }
                             lcaHeader = lca.nextLine();
                         }
                         if(diepte==7){
-                            peptides.add(new Peptide(lcaHeader,taxonomy_score));
+                            if(args.length > 4){
+                                if(lcaHeader.contains("root")){
+                                    String[] root = new String[1];
+                                    root[0] = "root";
+                                    peptides.add(new Peptide(lcaHeader, taxonomy_score, root));
+                                }else{
+                                    String[] lineage = lineageR.readNext();
+                                    peptides.add(new Peptide(lcaHeader, taxonomy_score, lineage));
+                                }
+                            }else{
+                                peptides.add(new Peptide(lcaHeader,taxonomy_score));
+                            }
+                        }
+                        if(args.length > 4){
+                            drawScoredFrame(frame,diepte+6,peptides,(diepte<5),trueLineage);
                         }
                         drawScoredFrame(frame,diepte,peptides,(diepte<5));
                         drawSplitPoints(frame,diepte,(diepte<5));
@@ -128,6 +169,36 @@ public class ScoreReads {
                 System.out.println("\\draw["+pept.taxonRank+"] ("+start+",-"+framenr+") -- ("+end+",-"+framenr+");");
                 double score = pept.getScore();
                 System.out.println("\\node [below,font=\\tiny] at ("+(start+end)/(double) 2+",-"+framenr+") {"+score+"};");
+            }
+        }
+    }
+    
+    public static void drawScoredFrame(String frame, int framenr, List<Peptide> peptides, boolean forward, String[] trueLineage){
+        double unit = (double) 24/(double)frame.length();
+        String lineageString="";
+        for(int i=0; i<trueLineage.length;i++){
+            lineageString=lineageString + trueLineage[i];
+        }
+        for (Peptide pept:peptides){
+            double start;
+            double end;
+            if(forward){
+                start = (double) frame.indexOf(pept.aminoSeq)*unit;
+                end = start + (double) pept.length*unit;
+            }else{
+                end = (double)frame.length()*unit-(double)frame.indexOf(pept.aminoSeq)*unit;
+                start = end - (double) pept.length*unit;    
+            }
+            String taxonName = pept.taxonName;
+            if(taxonName.equalsIgnoreCase("root")){
+                System.out.println("\\draw[root] ("+start+",-"+framenr+") -- ("+end+",-"+framenr+");");
+            }else{
+                if(lineageString.contains(taxonName)){
+                    System.out.println("\\draw["+pept.taxonRank+"] ("+start+",-"+framenr+") -- ("+end+",-"+framenr+");");
+                }else{
+                    String[] lineage = pept.lineage;
+                    printDisagreement(lineage,trueLineage,start,end,framenr);
+                }
             }
         }
     }
@@ -273,41 +344,65 @@ public class ScoreReads {
     
     public static void printHeader(){
         System.out.println("\\begin{tikzpicture}\n" +
-        "[protein/.style={violet, line width = 6pt, line cap = round},\n" +
-        "frame/.style={orange, line width = 2pt, line cap = round},\n" +
-        "root/.style={teal!20, line width = 4pt, line cap = round},\n" +
-        "genus/.style={teal, line width = 4pt, line cap = round},\n" +
-        "varietas/.style={teal!50!black, line width = 4pt, line cap = round},\n" +
-        "subspecies/.style={teal!60!black, line width = 4pt, line cap = round},\n" +
-        "species/.style={teal!70!black, line width = 4pt, line cap = round},\n" +
-        "species group/.style={teal!80!black, line width = 4pt, line cap = round},\n" +
-        "family/.style={teal!80, line width = 4pt, line cap = round},\n" +
-        "superfamily/.style={teal!78, line width = 4pt, line cap = round},\n" +
-        "suborder/.style={teal!73, line width = 4pt, line cap = round},\n" +
-        "order/.style={teal!70, line width = 4pt, line cap = round},\n" +
-        "superorder/.style={teal!65, line width = 4pt, line cap = round},\n" +
-        "class/.style={teal!60, line width = 4pt, line cap = round},\n" +
-        "subphylum/.style={teal!55, line width = 4pt, line cap = round},\n" +
-        "phylum/.style={teal!50, line width = 4pt, line cap = round},\n" +
-        "subkingdom/.style={teal!45, line width = 4pt, line cap = round},\n" +
-        "kingdom/.style={teal!40, line width = 4pt, line cap = round},\n" +
-        "superkingdom/.style={teal!30, line width = 4pt, line cap = round}]\n" +
-        "\\node[font=\\bfseries\\LARGE,align=center,above] at (12,2) {"+title+"} ;\n" +
-        "\\node[font=\\bfseries,align=center,above] at (12,1) {"+subtitle+"} ;\n" +
-        "\\draw (0,0) -- (24,0) ;");
+            "[protein/.style={violet, line width = 6pt, line cap = round},\n" +
+            "frame/.style={orange, line width = 2pt, line cap = round},\n" +
+            "root/.style={teal!10, line width = 4pt, line cap = round},\n" +
+            "superkingdom/.style={teal!15, line width = 4pt, line cap = round},\n" +
+            "kingdom/.style={teal!20, line width = 4pt, line cap = round},\n" +
+            "subkingdom/.style={teal!25, line width = 4pt, line cap = round},\n" +
+            "superphylum/.style={teal!30, line width = 4pt, line cap = round},\n" +
+            "phylum/.style={teal!35, line width = 4pt, line cap = round},\n" +
+            "subphylum/.style={teal!40, line width = 4pt, line cap = round},\n" +
+            "superclass/.style={teal!45, line width = 4pt, line cap = round},\n" +
+            "class/.style={teal!50, line width = 4pt, line cap = round},\n" +
+            "subclass/.style={teal!55, line width = 4pt, line cap = round},\n" +
+            "infraclass/.style={teal!60, line width = 4pt, line cap = round},\n" +
+            "superorder/.style={teal!65, line width = 4pt, line cap = round},\n" +
+            "order/.style={teal!70, line width = 4pt, line cap = round},\n" +
+            "suborder/.style={teal!75, line width = 4pt, line cap = round},\n" +
+            "infraorder/.style={teal!80, line width = 4pt, line cap = round},\n" +
+            "parvorder/.style={teal!85, line width = 4pt, line cap = round},\n" +
+            "superfamily/.style={teal!90, line width = 4pt, line cap = round},\n" +
+            "family/.style={teal!95, line width = 4pt, line cap = round},\n" +
+            "subfamily/.style={teal, line width = 4pt, line cap = round},\n" +
+            "tribe/.style={teal!95!black, line width = 4pt, line cap = round},\n" +
+            "subtribe/.style={teal!90!black, line width = 4pt, line cap = round},\n" +
+            "genus/.style={teal!85!black, line width = 4pt, line cap = round},\n" +
+            "subgenus/.style={teal!80!black, line width = 4pt, line cap = round},\n" +
+            "species group/.style={teal!75!black, line width = 4pt, line cap = round},\n" +
+            "species subgroup/.style={teal!70!black, line width = 4pt, line cap = round},\n" +
+            "species/.style={teal!65!black, line width = 4pt, line cap = round},\n" +
+            "subspecies/.style={teal!60!black, line width = 4pt, line cap = round},\n" +
+            "varietas/.style={teal!55!black, line width = 4pt, line cap = round},\n" +
+            "forma/.style={teal!50!black, line width = 4pt, line cap = round}]\n" +
+            "\\node[font=\\bfseries\\LARGE,align=center,above] at (12,2) {"+title+"} ;\n" +
+            "\\node[font=\\bfseries,align=center,above] at (12,1) {"+subtitle+"} ;\n" +
+            "\\draw (0,0) -- (24,0) ;");
     }
     
-    public static void printEmptyLines(){
+    public static void printEmptyLines(int startindex){
         System.out.println(
-        "\\draw (0,-2) -- (24,-2) node[anchor=south] {$+1$};\n" +
-        "\\draw (0,-3) -- (24,-3) node[anchor=south] {$+2$};\n" +
-        "\\draw (0,-4) -- (24,-4) node[anchor=south] {$+3$};\n" +
-        "\\draw (0,-5) -- (24,-5) node[anchor=south] {$-1$};\n" +
-        "\\draw (0,-6) -- (24,-6) node[anchor=south] {$-2$};\n" +
-        "\\draw (0,-7) -- (24,-7) node[anchor=south] {$-3$};");
+        "\\draw (0,-"+startindex+") -- (24,-"+startindex+") node[anchor=south] {$+1$};\n" +
+        "\\draw (0,-"+(startindex+1)+") -- (24,-"+(startindex+1)+") node[anchor=south] {$+2$};\n" +
+        "\\draw (0,-"+(startindex+2)+") -- (24,-"+(startindex+2)+") node[anchor=south] {$+3$};\n" +
+        "\\draw (0,-"+(startindex+3)+") -- (24,-"+(startindex+3)+") node[anchor=south] {$-1$};\n" +
+        "\\draw (0,-"+(startindex+4)+") -- (24,-"+(startindex+4)+") node[anchor=south] {$-2$};\n" +
+        "\\draw (0,-"+(startindex+5)+") -- (24,-"+(startindex+5)+") node[anchor=south] {$-3$};");
     }
     
     public static void printFooter(){
         System.out.println("\\end{tikzpicture}");
+    }
+    
+    public static void printDisagreement(String[] lineage, String[] trueLin, double start, double end, int framenr){
+        int[] disagreement = new int[2];
+        int agreement = 0;
+        while(agreement< lineage.length && agreement< trueLin.length &&lineage[agreement].trim().equals(trueLin[agreement])){
+            agreement +=1;
+        }
+        disagreement[0] = lineage.length + 1 + trueLin.length - 2*agreement;
+        disagreement[1] = 100-disagreement[0]*2;
+        System.out.println("\\draw[red!"+disagreement[1]+", line width = 4pt, line cap = round] ("+start+",-"+framenr+") -- ("+end+",-"+framenr+");");
+        System.out.println("\\node[below, font=\\small] at ("+(start+end)/(double)2+",-"+framenr+") {"+disagreement[0]+"};");
     }
 }
