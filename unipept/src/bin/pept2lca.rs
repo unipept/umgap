@@ -30,6 +30,10 @@ fn main() {
             .short("t")
             .long("taxa")
             .takes_value(true))
+        .arg(Arg::with_name("with-input")
+            .help("Print the identified peptide along with the output")
+            .short("i")
+            .long("with-input"))
         .arg(Arg::with_name("FST index")
             .help("An FST to query")
             .required(true))
@@ -37,13 +41,14 @@ fn main() {
     main_result(
         matches.value_of("FST index").unwrap(), // required so safe
         matches.value_of("taxon-file"),
+        matches.is_present("with-input"),
     ).unwrap_or_else(|err| {
         writeln!(&mut io::stderr(), "{}", err).unwrap();
         process::exit(1);
     });
 }
 
-fn main_result(fst: &str, taxons: Option<&str>) -> Result<()> {
+fn main_result(fst: &str, taxons: Option<&str>, with_input: bool) -> Result<()> {
     let fst = try!(Map::from_path(fst));
     let by_id = taxons.map(|taxons| taxon::read_taxa_file(taxons).map_err(|err| err.to_string()).unwrap())
                       .map(|taxons| taxon::taxa_vector_by_id(taxons));
@@ -52,7 +57,10 @@ fn main_result(fst: &str, taxons: Option<&str>) -> Result<()> {
         let line = try!(line);
         if line.starts_with('>') {
             println!("{}", line);
-        } else if let Some(lca) = fst.get(line) {
+        } else if let Some(lca) = fst.get(&line) {
+            if with_input {
+                print!("{},", line);
+            }
             if let Some(ref by_id) = by_id {
                 let taxon = by_id[lca as usize].as_ref().unwrap();
                 println!("{},{},{}", taxon.id, taxon.name, taxon.rank);
