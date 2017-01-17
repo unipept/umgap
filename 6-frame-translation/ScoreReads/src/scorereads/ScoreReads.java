@@ -62,7 +62,7 @@ public class ScoreReads {
             }
             File sixFrame = new File(args[2]);
             String[] proteins = new String[0];
-            if (! args[4].isEmpty()){
+            if (! args[4].equals(":")){
                 proteins = args[4].split(":");
             }
             try {
@@ -243,8 +243,8 @@ public class ScoreReads {
             depth ++;
         }
         
-        System.out.println("\\draw[frame] (24.2,-" + (double) (diepte-0.5)/4 + ") -- (24.2,-" + (double) (diepte + depth + 0.5)/4 + ");");
-        System.out.println("\\draw[frame] (24,-" + (double) (diepte-0.5)/4 + ") -- (24.2,-" + (double) (diepte-0.5)/4+ ");");
+        System.out.println("\\draw[frame] (24.2,-" + (double) (diepte-1.5)/4 + ") -- (24.2,-" + (double) (diepte + depth + 0.5)/4 + ");");
+        System.out.println("\\draw[frame] (24,-" + (double) (diepte-1.5)/4 + ") -- (24.2,-" + (double) (diepte-1.5)/4+ ");");
         if(forward == 6){
             System.out.println("\\draw[frame] (24,-" + (double) (diepte + depth + 0.5)/4 + ") -- (24.2,-" + (double) (diepte + depth+0.5)/4 + ");");
         }
@@ -254,7 +254,7 @@ public class ScoreReads {
         }else{
             framenr = 3-forward;
         }
-        System.out.println("\\node[draw=none] at (24.5,-" + (double) diepte/4 + ") {" + framenr + "};");
+        System.out.println("\\node[draw=none] at (24.5,-" + (double) (diepte-1)/4 + ") {" + framenr + "};");
         return depth;
     }
     
