@@ -1,6 +1,6 @@
 #!/bin/bash
 
-usage(){ echo "Syntax: $(basename $0) [-k k(Integer)] [-t tt1-tt2-...] [-o organismName] outputLocation  name  inputLocation  title  [proteinPositions]" 1>&2; exit 1;}
+usage(){ echo "Syntax: $(basename $0) [-k k(Integer)] [-t tt1-tt2-...] [-l organismName] outputLocation  name  inputLocation  title  [proteinPositions]" 1>&2; exit 1;}
 
 translationTables="1 2 3 4 5 6 9 10 11"
 while getopts ":t:k:l:" opt; do
@@ -46,6 +46,14 @@ else
 	inputLocation=$(cd $3 ;pwd)
 fi
 
+echo "\documentclass[10pt,a4paper,landscape]{report}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tikz}
+\usepackage[left=2cm,right=2cm,top=3cm,bottom=3cm]{geometry}
+\begin{document}" 
+
 for i in $translationTables
 do
 	sixframe=$name.$i.sixframe
@@ -55,18 +63,28 @@ do
 	else
 		lca=found_lcas_$name.$i.txt
 	fi
-	cp $inputLocation/$sixframe $outputLocation/$name
-	cp $inputLocation/$lca $outputLocation/$name
-	#### TODO: take layout of lca-output for k-mers into account
 	if [ "$organism" ]
 	then
-		lineage=$name.$i.lineage
+		if [ "$k" ]
+		then
+			lineage=$inputLocation/$name.$i.kmer.lineage
+		else
+			lineage=$inputLocation/$name.$i.pept.lineage
+		fi
 		if [ ! -f "$lineage" ]
 		then
-			cut -d "," -f 4 $inputLocation/$lca | sed '1d' | while read line
-			do 
-				efetch -db taxonomy -id "$line" -format xml | xtract -pattern Taxon -element Lineage
-			done > $outputLocation/$name/$lineage
+			if [ "$k" ]
+			then
+				egrep -v '^>' $inputLocation/$lca | cut -d ',' -f2 | while read line
+	                        do
+                                efetch -db taxonomy -id "$line" -format xml | xtract -pattern Taxon -element Lineage
+        	                done > "$lineage"
+			else
+				cut -d "," -f 3 $inputLocation/$lca | sed '1d' | while read line
+				do 
+					efetch -db taxonomy -id "$line" -format xml | xtract -pattern Taxon -element Lineage
+				done > "$lineage"
+			fi
 		fi
 		organism_lineage="$(esearch -db taxonomy -query "$organism" | efetch -format xml | xtract -pattern Taxon -element Lineage); $organism"
 	fi	
@@ -79,20 +97,31 @@ javac -d classes -cp classes:../opencsv-3.8.jar:taxonomy_score.txt $(find src -n
 
 for i in $translationTables
 do
-	sixframe=$outputLocation/$name/$name.$i.sixframe
+	sixframe=$inputLocation/$name.$i.sixframe
 	if [ "$k" ]
         then
-                lca=$outputLocation/$name/$name.$i.${k}mer.lca
+                lca=$inputLocation/$name.$i.${k}mer.lca
+		tex=$name.$i.${k}mer
         else
-                lca=$outputLocation/$name/found_lcas_$name.$i.txt
-        fi
+                lca=$inputLocation/found_lcas_$name.$i.txt
+        	tex=$name.$i.pept
+	fi
 	if [ "$organism" ]
 	then
-		lineage=$name.$i.lineage
-		java -cp .:classes:../opencsv-3.8.jar:taxonomy_score.txt scorereads.ScoreReads ${k:-0} "$title, translation table $i" $sixframe $lca ${proteinPos:-:} $outputLocation/$name/$lineage "${organism_lineage}" > $outputLocation/$name/$name.$i.known.tex
+		if [ "$k" ]
+                then
+                        lineage=$inputLocation/$name.$i.kmer.lineage
+                else
+                        lineage=$inputLocation/$name.$i.pept.lineage
+                fi
+		java -cp .:classes:../opencsv-3.8.jar:taxonomy_score.txt scorereads.ScoreReads ${k:-0} "$title, translation table $i" $sixframe $lca ${proteinPos:-:} $lineage "${organism_lineage}" > $outputLocation/$name/$tex.known.tex
+		echo "\input{$tex.known.tex}" 
+		echo
 	else
-		java -cp .:classes:../opencsv-3.8.jar:taxonomy_score.txt scorereads.ScoreReads ${k:-0} "$title, translation table $i" $sixframe $lca ${proteinPos:-:} > $outputLocation/$name/$name.$i.unknown.tex 
-	fi
+		java -cp .:classes:../opencsv-3.8.jar:taxonomy_score.txt scorereads.ScoreReads ${k:-0} "$title, translation table $i" $sixframe $lca ${proteinPos:-:} > $outputLocation/$name/$tex.unknown.tex 
+		echo "\input{$tex.unknown.tex}" 
+		echo	
+fi
 done
-
+echo "\end{document}"
 exit 0
