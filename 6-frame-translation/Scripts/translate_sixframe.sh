@@ -2,15 +2,19 @@
 # A shell script to use the java script to generate a sixframe translation of a given fasta file with a nucleotide sequence
 # This script assumes the java script is located in a directory called SixFrameTransl with the same parent directory as the folder where this script is located
 
-usage(){ echo "Syntax: $(basename $0) [-t tt1-tt2-...] FASTAfile outputPrefix outputLocation" 1>&2; exit 1; }
+usage(){ echo "Syntax: $(basename $0) [-t tt1-tt2-...] [-k k:kmer-index] [-p] FASTAfile outputPrefix outputLocation" 1>&2; exit 1; }
 
 translationTables="1 2 3 4 5 6 9 10 11"
-while getopts ":t:" opt; do
+while getopts ":t:k:p" opt; do
 	case $opt in
     		t) translationTables=$(echo "$OPTARG" | tr '-' ' ') 	;;
+		k) kmer=true
+		   k=$(echo "$OPTARG"|cut -d':' -f1) 
+		   kmer_index=$(echo "$OPTARG"| cut -d':' -f2)	;;
+		p) tripept=true ;;
 		:) usage ;;
     		\?) usage
-  esac
+  	esac
 done
 shift $((OPTIND - 1))
 
@@ -36,19 +40,30 @@ then
 fi
 
 
-if [[ "$outputLocation" = "." ]]
-then 
-	outputLocation="$(pwd)"
-fi
+outputLocation="$(cd $outputLocation |pwd)"
 
 
 cd "$(dirname $0)/../SixFrameTransl"
 
 for i in "$translationTables"
 do
-	mvn exec:java -Dexec.mainClass="com.mycompany.sixframetransl.translate" -Dexec.args="$FASTAfile $i False" | egrep -v '(INFO|WARNING)'  > $outputPrefix.$i.sixframe
-	cat $outputPrefix.$i.sixframe | prot2pept | peptfilter |unipept pept2lca > found_lcas_$outputPrefix.$i.txt
-	mv $outputPrefix.$i.sixframe $outputLocation
-	mv found_lcas_$outputPrefix.$i.txt $outputLocation
+	mvn exec:java -Dexec.mainClass="com.mycompany.sixframetransl.translate" -Dexec.args="$FASTAfile $i False" | egrep -v '(INFO|WARNING)'  > "$outputLocation/$outputPrefix.$i.sixframe"
+	if [ "$tripept" ]
+	then
+		cat "$outputLocation/$outputPrefix.$i.sixframe" | prot2pept | peptfilter |unipept pept2lca > "$outputLocation/found_lcas_$outputPrefix.$i.txt"
+	fi
+	if [ "$kmer" ]
+	then 
+		if [[ -z "$(which prot2kmer)" ]]; then
+			echo 'prot2kmer is not in your PATH' >&2
+        		exit 2
+		fi
+
+		if [[ -z "$(which pept2lca)" ]]; then
+			echo 'pept2lca is not in your PATH' >&2
+			exit 2
+		fi
+		cat "$outputLocation/$outputPrefix.$i.sixframe" | prot2kmer -k $k | fasta-uniq -kw | pept2lca -i "$kmer_index"  > "$outputLocation/$outputPrefix.$i.${k}mer.lca"
+	fi
 done
 
