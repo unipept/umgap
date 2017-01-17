@@ -25,6 +25,7 @@ public class Kmer {
     public int k;
     private double score;
     private Map<String,Double> taxonomy_score = new TreeMap<>();
+    public String[] lineage;
     
     public Kmer(String seq, String taxonName, int taxonID, String taxonRank, int k, Map<String,Double> taxScore){
         this.aminoSeq = seq;
@@ -45,6 +46,18 @@ public class Kmer {
         this.k = k;
         this.taxonomy_score = taxScore;
         calculateScore();
+    }
+    
+    public Kmer(String Unipeptinfo, int k, Map<String,Double> taxScore, String[] lineage){
+        String[] info = Unipeptinfo.split(",");
+        this.aminoSeq = info[0];
+        this.taxonID = Integer.parseInt(info[1]);
+        this.taxonName = info[2];
+        this.taxonRank = info[3];
+        this.k = k;
+        this.taxonomy_score = taxScore;
+        calculateScore();
+        this.lineage=lineage;
     }
     
     private void calculateScore(){
