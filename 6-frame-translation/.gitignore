@@ -16,6 +16,7 @@
 *.sixframe
 *.synctex.gz
 *.test
+*.tsv
 *.xml
 *temp*/
 Kmeren/kmer_tekening.tex
