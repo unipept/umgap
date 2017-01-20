@@ -490,7 +490,7 @@ public class ScoreReads {
             agreement +=1;
         }
         disagreement[0] = lineage.length + 1 + trueLin.length - 2*agreement;
-        disagreement[1] = 100-disagreement[0]*2;
+        disagreement[1] = 100-disagreement[0];
         System.out.println("\\draw[red!"+disagreement[1]+", line width = 4pt, line cap = round] ("+start+",-"+framenr+") -- ("+end+",-"+framenr+");");
         System.out.println("\\node[below, font=\\small] at ("+(start+end)/(double)2+",-"+framenr+") {"+disagreement[0]+"};");
     }
@@ -502,7 +502,7 @@ public class ScoreReads {
             agreement +=1;
         }
         disagreement[0] = lineage.length + 1 + trueLin.length - 2*agreement;
-        disagreement[1] = 100-disagreement[0]*2;
+        disagreement[1] = 100-disagreement[0];
         double above = ((double)framenr + 0.2)/2;
         double below = ((double)framenr - 0.2)/2;
         System.out.println("\\draw[red!"+disagreement[1]+", line width = 2pt, line cap = butt] ("+start+",-"+above+") -- ("+start+",-"+below+");");
