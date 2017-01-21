@@ -26,4 +26,16 @@ public class Kmer {
         this.start = start;
         this.k = k;
     }
+    public Kmer(String Unipeptinfo, int k){
+        String[] info = Unipeptinfo.split(",");
+        this.aminoSeq = info[0];
+        this.taxonID = Integer.parseInt(info[1]);
+        this.taxonName = info[2];
+        this.taxonRank = info[3];
+        this.k = k;
+    }
+    
+    public void setStart(int start){
+        this.start = start;
+    }
 }
