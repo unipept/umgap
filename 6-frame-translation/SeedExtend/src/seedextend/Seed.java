@@ -22,6 +22,7 @@ public class Seed implements Comparable<Seed>{
     public int frame;
     public int taxon;
     public String rank;
+    public String taxonName;
     public ArrayList<String> rankOrder;
     public static final String[] ranks = new String[]{"no rank", "superkingdom", "kingdom", "subkingdom", "superphylum", "phylum", "subphylum","superclass", "class", "subclass", "infraclass", "superorder", "order", "suborder", "infraorder", "parvorder", "superfamily", "family", "subfamily", "tribe", "subtribe", "genus", "subgenus", "species_group", "species_subgroup", "species", "subspecies", "varietas", "forma"};
     
@@ -30,7 +31,8 @@ public class Seed implements Comparable<Seed>{
         this.taxon = kmers.peekFirst().taxonID;
         this.rank = kmers.peekFirst().taxonRank;
         this.start = kmers.peekFirst().start;
-        this.end = kmers.peekLast().start + kmers.peekLast().k - 1;
+        this.taxonName = kmers.peekFirst().taxonName;
+        this.end = kmers.peekLast().start;
         this.rankOrder = new ArrayList<>(Arrays.asList(ranks));
     }
     
@@ -61,11 +63,17 @@ public class Seed implements Comparable<Seed>{
         if (equals(o)){
             return 0;
         }else{
-            if(o.kmers.size() == this.kmers.size()){
-                return (rankOrder.indexOf(this.rank) < rankOrder.indexOf(o.rank) ? -1 :
-                        (rankOrder.indexOf(this.rank) == rankOrder.indexOf(o.rank)? 0 : 1));
+//            if(o.kmers.size() == this.kmers.size()){
+//                return (rankOrder.indexOf(this.rank) < rankOrder.indexOf(o.rank) ? -1 :
+//                        (rankOrder.indexOf(this.rank) == rankOrder.indexOf(o.rank)? 0 : 1));
+//            }else{
+//                return (this.kmers.size() < o.kmers.size() ? -1: 1);
+//            }
+            if(rankOrder.indexOf(this.rank) == rankOrder.indexOf(o.rank)){
+                return(this.kmers.size() < o.kmers.size() ? -1 :
+                        (this.kmers.size() == o.kmers.size() ?  0 : 1));
             }else{
-                return (this.kmers.size() < o.kmers.size() ? -1: 1);
+                return (rankOrder.indexOf(this.rank) < rankOrder.indexOf(o.rank) ? -1: 1);
             }
         }
     }
