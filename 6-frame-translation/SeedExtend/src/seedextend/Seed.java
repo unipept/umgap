@@ -20,12 +20,14 @@ public class Seed implements Comparable<Seed>{
     public int start;
     public int end;
     public int frame;
+    public int taxon;
     public String rank;
     public ArrayList<String> rankOrder;
     public static final String[] ranks = new String[]{"no rank", "superkingdom", "kingdom", "subkingdom", "superphylum", "phylum", "subphylum","superclass", "class", "subclass", "infraclass", "superorder", "order", "suborder", "infraorder", "parvorder", "superfamily", "family", "subfamily", "tribe", "subtribe", "genus", "subgenus", "species_group", "species_subgroup", "species", "subspecies", "varietas", "forma"};
     
     public Seed(Deque<Kmer> kmers){
         this.kmers = new ArrayDeque<>(kmers);
+        this.taxon = kmers.peekFirst().taxonID;
         this.rank = kmers.peekFirst().taxonRank;
         this.start = kmers.peekFirst().start;
         this.end = kmers.peekLast().start + kmers.peekLast().k - 1;

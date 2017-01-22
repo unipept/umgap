@@ -10,7 +10,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -18,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -26,7 +32,7 @@ import java.util.TreeMap;
 public class SeedExtend {
     private static final int minSeedSize = 3;
     private static int k;
-    private static Map<Integer,List<Seed>> seedsPerFrame;
+    private static List<Frame> seedsPerFrame;
 
     /**
      * @param args the command line arguments
@@ -35,7 +41,7 @@ public class SeedExtend {
      * 2: lca-file
      *              
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         BufferedReader sixframe = null;
         try {
             k = Integer.parseInt(args[0]);
@@ -44,6 +50,7 @@ public class SeedExtend {
             Scanner lcaF = new Scanner(new File(args[2]));
             String lcaHeader = lcaF.nextLine();
             int frameN = 1;
+            seedsPerFrame = new ArrayList<>();
             while(frameN <= 6){
                 Frame f = new Frame(frameN);
                 String header;
@@ -86,12 +93,14 @@ public class SeedExtend {
                 }
                 f.fillKmers(frameKmers);
                 f.fillSeeds(frameSeeds);
+                seedsPerFrame.add(f);
                 frameN ++;
             }
         } catch (NumberFormatException | IOException ex) {
             System.out.println("One of both files could not be read");
         }
-        
+        System.out.println("Done");
     }
-
+    
+    
 }
