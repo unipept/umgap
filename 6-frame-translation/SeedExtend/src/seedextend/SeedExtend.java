@@ -52,7 +52,7 @@ public class SeedExtend {
             int frameN = 1;
             seedsPerFrame = new ArrayList<>();
             while(frameN <= 6){
-                Frame f = new Frame(frameN);
+                Frame f = new Frame(frameN,k);
                 String header;
                 // Initialiseer lijst met seeds, index en deque van kmeren en lees de eerste regels van beide files
                 TreeMap<Integer,Seed> frameSeeds = new TreeMap<>();
@@ -66,6 +66,10 @@ public class SeedExtend {
                     String nextLCA = lcaF.nextLine();
                     if(nextLCA.startsWith(">")){
                         lcaHeader = nextLCA;
+                        if(deq.size() >= 3){
+                            Seed newSeed = new Seed(deq);
+                            frameSeeds.put(newSeed.start,newSeed);
+                        }
                     }else{
                         // maak de nieuwe kmer
                         Kmer kmer = new Kmer(nextLCA,k);
@@ -94,6 +98,14 @@ public class SeedExtend {
                 f.fillKmers(frameKmers);
                 f.fillSeeds(frameSeeds);
                 seedsPerFrame.add(f);
+                f.extendSeeds();
+                ArrayList<ExtendedSeed> frameResult = f.getExtendedSeeds();
+                if(! frameResult.isEmpty()){
+                    System.out.println(header);
+                    for(ExtendedSeed es:frameResult){
+                        System.out.println(es.start + "," + es.end + ": " + es.taxonID);
+                    }
+                }
                 frameN ++;
             }
         } catch (NumberFormatException | IOException ex) {
