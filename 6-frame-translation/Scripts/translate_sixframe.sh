@@ -25,7 +25,7 @@ fi
 
 FASTAfile="$1"
 outputPrefix="$2"
-outputLocation="$3"
+outputLocation=$3
 
 if [ ! -r "$FASTAfile" -o ! -f "$FASTAfile" ]
 then
@@ -40,7 +40,7 @@ then
 fi
 
 
-outputLocation="$(cd $outputLocation |pwd)"
+# outputLocation=$(cd $outputLocation | pwd)
 
 
 cd "$(dirname $0)/../SixFrameTransl"

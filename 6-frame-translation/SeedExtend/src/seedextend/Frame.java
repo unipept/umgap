@@ -14,8 +14,6 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -183,10 +181,8 @@ public class Frame {
             in.close();
         } catch (MalformedURLException ex) {
             System.out.println(ex.toString());
-            ex.printStackTrace();
         } catch (IOException ex) {
             System.out.println(ex.toString());
-            ex.printStackTrace();
         }
         return lineage+"; "+TaxonName;
     }
