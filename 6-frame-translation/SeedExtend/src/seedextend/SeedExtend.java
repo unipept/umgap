@@ -111,7 +111,7 @@ public class SeedExtend {
                 longest = extendedSeedsPerFrame.get(i);
             }
         }
-        System.out.println(header + "Frame" + longest.frameN);
+        System.out.println(header + "|Frame " + longest.frameN);
         System.out.println(longest.start + "," + longest.end + ": " + longest.taxonID);
     }
 }
