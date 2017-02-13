@@ -19,6 +19,8 @@
 *.tsv
 *.xml
 *temp*/
+Adler/
+FastaFiles/
 Kmeren/kmer_tekening.tex
 Kmeren/lca_file.temp
 Kmeren/lca_test
@@ -32,3 +34,4 @@ nbproject/
 six_frame_single
 target/
 *classes*
+
