@@ -69,7 +69,7 @@ public class Frame {
         while(! tempSeedList.isEmpty()){
             int start = getTopSeedposition(tempSeedList);
             Seed startSeed = tempSeedList.get(start);
-            ExtendedSeed extension = new ExtendedSeed(startSeed,getLineage(startSeed.taxon,startSeed.taxonName),startSeed.taxon);
+            ExtendedSeed extension = new ExtendedSeed(startSeed,getLineage(startSeed.taxon,startSeed.taxonName),startSeed.taxon, framenr);
             tempSeedList.remove(start);
             for(Kmer km: startSeed.getKmer()){
                 tempKmerList.remove(km.start);
