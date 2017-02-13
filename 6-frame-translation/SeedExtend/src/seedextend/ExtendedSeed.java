@@ -19,8 +19,9 @@ public class ExtendedSeed {
     public int end;
     private String lineage;
     public int taxonID;
+    public int frameN;
     
-    public ExtendedSeed(List<Seed> seeds, String lineage, int taxonID){
+    public ExtendedSeed(List<Seed> seeds, String lineage, int taxonID, int frameN){
         kmers = new ArrayDeque<>();
         for (Seed s: seeds){
             kmers.addAll(s.getKmer());
@@ -29,15 +30,17 @@ public class ExtendedSeed {
         this.end = kmers.peekLast().start;
         this.lineage = lineage;
         this.taxonID = taxonID;
+        this.frameN = frameN;
     }
     
-    public ExtendedSeed(Seed s, String lineage, int taxonID){
+    public ExtendedSeed(Seed s, String lineage, int taxonID, int frameN){
         kmers = new ArrayDeque<>();
         kmers.addAll(s.getKmer());
         this.start = s.start;
         this.end = s.end;
         this.lineage = lineage;
         this.taxonID = taxonID;
+        this.frameN = frameN;
     }
     
     public String getLineage(){
@@ -69,5 +72,10 @@ public class ExtendedSeed {
     public void addRight(Kmer k){
         kmers.addLast(k);
         this.end = kmers.peekLast().start;
+    }
+    
+    public int getLength(){
+        int l = end - start;
+        return l;
     }
 }

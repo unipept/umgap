@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
 import java.util.TreeMap;
@@ -23,7 +24,7 @@ import java.util.TreeMap;
 public class SeedExtend {
     private static final int minSeedSize = 3;
     private static int k;
-    private static List<Frame> seedsPerFrame;
+    private static List<ExtendedSeed> extendedSeedsPerFrame;
 
     /**
      * @param args the command line arguments
@@ -40,8 +41,9 @@ public class SeedExtend {
             sixframe = new BufferedReader(new FileReader(sixframeF));
             Scanner lcaF = new Scanner(new File(args[2]));
             String lcaHeader = lcaF.nextLine();
+            String printHeader = lcaHeader.substring(0,lcaHeader.indexOf("|"));
             int frameN = 1;
-            seedsPerFrame = new ArrayList<>();
+            extendedSeedsPerFrame = new ArrayList<>();
             while(frameN <= 6){
                 Frame f = new Frame(frameN,k);
                 String header;
@@ -88,22 +90,28 @@ public class SeedExtend {
                 }
                 f.fillKmers(frameKmers);
                 f.fillSeeds(frameSeeds);
-                seedsPerFrame.add(f);
                 f.extendSeeds();
                 ArrayList<ExtendedSeed> frameResult = f.getExtendedSeeds();
-                if(! frameResult.isEmpty()){
-                    System.out.println(header);
-                    for(ExtendedSeed es:frameResult){
-                        System.out.println(es.start + "," + es.end + ": " + es.taxonID);
-                    }
-                }
+                extendedSeedsPerFrame.addAll(frameResult);
                 frameN ++;
+            }
+            if(! extendedSeedsPerFrame.isEmpty()){
+                printBestSeed(printHeader);
             }
         } catch (NumberFormatException | IOException ex) {
             System.out.println("One of both files could not be read");
         }
-        System.out.println("Done");
+        //System.out.println("Done");
     }
     
-    
+    private static void printBestSeed(String header){
+        ExtendedSeed longest = extendedSeedsPerFrame.get(0);
+        for(int i=1; i< extendedSeedsPerFrame.size();i++){
+            if(extendedSeedsPerFrame.get(i).getLength()>longest.getLength()){
+                longest = extendedSeedsPerFrame.get(i);
+            }
+        }
+        System.out.println(header + "Frame" + longest.frameN);
+        System.out.println(longest.start + "," + longest.end + ": " + longest.taxonID);
+    }
 }
