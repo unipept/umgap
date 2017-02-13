@@ -40,6 +40,7 @@ public class ScoreReads {
      *              4: the positions of present proteins
      *              5(optional): name of / path to a file with lineages belonging to the lca's
      *              6(optional): String with the lineage of the organism to which the DNA belongs
+     *              7(optional): consensusfile
      */
     public static void main(String[] args) {
         if (args.length < 5 || args.length > 7){
