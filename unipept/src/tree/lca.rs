@@ -3,7 +3,7 @@
 use std::ops::Add;
 
 use agg;
-use taxon::{Taxon, TaxonId};
+use taxon::{TaxonId, TaxonList};
 use tree::tree::SubTree;
 
 /// Struct capable of calculating the LCA of 2 nodes in a TaxonTree.
@@ -20,10 +20,10 @@ impl LCACalculator {
     /// # Arguments:
     /// * `root`     - the root of the taxon tree.
     /// * `taxonomy` - the taxons, indexed by their id.
-    pub fn new(root: TaxonId, taxonomy: &Vec<Option<Taxon>>) -> Self {
+    pub fn new(root: TaxonId, taxonomy: &TaxonList) -> Self {
         LCACalculator {
             root:    root,
-            parents: taxonomy.iter().map(|mt| mt.as_ref().map(|t| t.parent)).collect()
+            parents: taxonomy.ancestry(),
         }
     }
 }

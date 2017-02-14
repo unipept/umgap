@@ -51,7 +51,7 @@ fn main_result(fst: &str, taxons: Option<&str>, with_input: bool) -> Result<()> 
     let fst = try!(Map::from_path(fst));
     let by_id = try!(taxons.map(|taxons| taxon::read_taxa_file(taxons))
                            .map(|res| res.map(Some)).unwrap_or(Ok(None)))
-        .map(|taxons| taxon::taxa_vector_by_id(taxons));
+        .map(|taxons| taxon::TaxonList::new(taxons));
     let stdin = io::stdin();
     for line in stdin.lock().lines() {
         let line = try!(line);
@@ -62,9 +62,9 @@ fn main_result(fst: &str, taxons: Option<&str>, with_input: bool) -> Result<()> 
                 print!("{},", line);
             }
             if let Some(ref by_id) = by_id {
-                let taxon = try!(by_id[lca as usize]
-                    .as_ref()
-                    .ok_or("Missing Taxon"));
+
+                let taxon = try!(by_id.get(lca as usize)
+                                      .ok_or("LCA taxon id not in taxon list. Check compatibility with index."));
                 println!("{},{},{}", taxon.id, taxon.name, taxon.rank);
             } else {
                 println!("{}", lca);

@@ -13,6 +13,6 @@ pub fn taxon_list() -> Vec<Taxon> {
     ]
 }
 
-pub fn tree()  -> TaxonTree          { TaxonTree::new(&taxon_list()) }
-pub fn by_id() -> Vec<Option<Taxon>> { taxa_vector_by_id(taxon_list()) }
+pub fn tree()  -> TaxonTree { TaxonTree::new(&taxon_list()) }
+pub fn by_id() -> TaxonList { TaxonList::new(taxon_list()) }
 

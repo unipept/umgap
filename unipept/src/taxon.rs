@@ -189,17 +189,37 @@ pub fn read_taxa_file(filename: &str) -> Result<Vec<Taxon>, &'static str> {
     Ok(taxa)
 }
 
-/// Groups a list of taxons by their TaxonId.
-pub fn taxa_vector_by_id(taxons: Vec<Taxon>) -> Vec<Option<Taxon>> {
-    // new vec, with at least the length of the current one
-    let max_id = taxons.iter().map(|t: &Taxon| t.id).max().unwrap_or(0);
-    let mut by_id = Vec::with_capacity(max_id + 1);
-    by_id.resize(max_id + 1, None);
-    for taxon in taxons {
-        let id = taxon.id;
-        by_id[id] = Some(taxon);
+
+/// A newtype definition for a (pretty dense) list of taxons by ID.
+pub struct TaxonList(Vec<Option<Taxon>>);
+
+impl TaxonList {
+    /// Groups a list of taxons by their TaxonId.
+    pub fn new(taxons: Vec<Taxon>) -> Self {
+        // new vec, with at least the length of the current one
+        let max_id = taxons.iter().map(|t: &Taxon| t.id).max().unwrap_or(0);
+        let mut by_id = Vec::with_capacity(max_id + 1);
+        by_id.resize(max_id + 1, None);
+        for taxon in taxons {
+            let id = taxon.id;
+            by_id[id] = Some(taxon);
+        }
+        TaxonList(by_id)
     }
-    by_id
+
+
+    /// Constructs a vector mapping a TaxonId to the id of its parent, if it has one.
+    pub fn ancestry(&self) -> Vec<Option<TaxonId>> {
+        self.0.iter()
+            .map(|opttaxon| opttaxon.as_ref().map(|taxon| taxon.parent))
+            .collect()
+    }
+
+    /// Retrieve a taxon from the taxon list by id.
+    pub fn get(&self, index: TaxonId) -> Option<&Taxon> {
+        if index < self.0.len() { None }
+        else { self.0[index].as_ref() }
+    }
 }
 
 /// Represents a taxonomy tree. Each node is a [Taxon](struct.Taxon.html) represented by its
@@ -266,10 +286,9 @@ impl TaxonTree {
     /// # Arguments:
     /// * `taxons`: a vector of taxons, indexed by their TaxonId.
     /// * `ranked_only`: whether to include only taxons with a rank.
-    pub fn snapping(&self, taxons: &Vec<Option<Taxon>>, ranked_only: bool) -> Vec<Option<TaxonId>> {
+    pub fn snapping(&self, taxons: &TaxonList, ranked_only: bool) -> Vec<Option<TaxonId>> {
         self.filter_ancestors(|i: TaxonId| {
-            taxons[i]
-                .as_ref()
+            taxons.get(i)
                 .map(|t| t.valid && (!ranked_only || t.rank != Rank::NoRank))
                 .unwrap_or(false)
         })
