@@ -1,7 +1,7 @@
 //! Operations calculating the Maximal root-to-Leaf (MRL), i.e. the leaf that has most of
 //! the given taxons on its path to root.
 
-use taxon::{TaxonId, Taxon};
+use taxon::{TaxonId, TaxonList};
 use agg;
 
 /// Struct capable of calculating the MRL of a list of nodes in a TaxonTree
@@ -19,13 +19,9 @@ impl RTLCalculator {
     /// # Arguments:
     /// * `root`   - the root of the taxon tree
     /// * `taxons` - all taxons in the taxon tree, *indexed by their id*.
-    pub fn new(root: TaxonId, taxons: &Vec<Option<Taxon>>) -> Self {
-        let mut ancestors: Vec<Option<TaxonId>> = taxons
-            .iter()
-            .map(|mtaxon| mtaxon.as_ref().map(|t| t.parent))
-            .collect();
+    pub fn new(root: TaxonId, taxons: &TaxonList) -> Self {
+        let mut ancestors = taxons.ancestry();
         ancestors[root] = None;
-
         RTLCalculator {
             root: root,
             ancestors: ancestors,

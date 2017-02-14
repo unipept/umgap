@@ -63,12 +63,12 @@ mod tests {
     extern crate num_rational;
     use self::num_rational::Ratio;
     use super::*;
-    use taxon::Taxon;
+    use taxon::TaxonList;
     use fixtures;
     use rmq;
     use tree;
 
-    fn aggregators(by_id: &Vec<Option<Taxon>>) -> Vec<Box<Aggregator>> { vec![
+    fn aggregators(by_id: &TaxonList) -> Vec<Box<Aggregator>> { vec![
         Box::new(rmq::lca::LCACalculator::new(fixtures::tree())),
         Box::new(rmq::rtl::RTLCalculator::new(fixtures::ROOT, by_id)),
         Box::new(rmq::mix::MixCalculator::new(fixtures::tree(), Ratio::new(0, 1))),

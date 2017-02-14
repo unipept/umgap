@@ -6,7 +6,7 @@ extern crate num_rational;
 use self::num_rational::Ratio;
 
 use agg;
-use taxon::{Taxon, TaxonId};
+use taxon::{TaxonId, TaxonList};
 use tree::tree::SubTree;
 use tree::lca::LCACalculator;
 
@@ -29,7 +29,7 @@ impl MixCalculator {
     /// * `factor`   - A ratio (i.e. a number in [0.0, 1.0] which decides the
     ///                ratio that MRL or LCA will be chosen as aggregation.
     ///                If factor is 1, LCA will always be chosen; If factor is 0, MRL.
-    pub fn new(root: TaxonId, taxonomy: &Vec<Option<Taxon>>, factor: Ratio<usize>) -> Self {
+    pub fn new(root: TaxonId, taxonomy: &TaxonList, factor: Ratio<usize>) -> Self {
         let LCACalculator { root: r, parents: p } = LCACalculator::new(root, taxonomy);
         MixCalculator { factor: factor, root: r, parents: p }
     }
@@ -45,7 +45,6 @@ impl agg::Aggregator for MixCalculator {
 
         let mut base = &subtree;
         while let Some(max) = base.children.iter().max_by_key(|c| c.value) {
-            println!("{} <? {}", Ratio::new(max.value, base.value), self.factor);
             if Ratio::new(max.value, base.value) < self.factor { break; }
             base = max;
         }

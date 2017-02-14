@@ -30,7 +30,7 @@ fn main_result(taxons: &str, method: &str, aggregation: &str, ranked_only: bool,
 
     // Parsing the taxons
     let tree     = taxon::TaxonTree::new(&taxons);
-    let by_id    = taxon::taxa_vector_by_id(taxons);
+    let by_id    = taxon::TaxonList::new(taxons);
     let snapping = tree.snapping(&by_id, ranked_only);
 
     let aggregator: Result<Box<Aggregator>, String> = match (method, aggregation) {
@@ -51,7 +51,7 @@ fn main_result(taxons: &str, method: &str, aggregation: &str, ranked_only: bool,
                                     .collect::<Result<Vec<TaxonId>,_>>();
         let taxons = try!(taxons.map_err(|err| format!("{:?}", record)));
         let aggregate = try!(aggregator.aggregate(&taxons).map_err(|err| err.to_string()));
-        let taxon = by_id[snapping[aggregate].unwrap()].as_ref().unwrap();
+        let taxon = by_id.get(snapping[aggregate].unwrap()).unwrap();
         println!(">{}", record.header);
         println!("{},{},{}", taxon.id, taxon.name, taxon.rank);
     }
