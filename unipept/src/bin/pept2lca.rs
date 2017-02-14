@@ -38,20 +38,20 @@ fn main() {
             .help("An FST to query")
             .required(true))
         .get_matches();
-    main_result(
-        matches.value_of("FST index").unwrap(), // required so safe
-        matches.value_of("taxon-file"),
-        matches.is_present("with-input"),
-    ).unwrap_or_else(|err| {
-        writeln!(&mut io::stderr(), "{}", err).unwrap();
-        process::exit(1);
-    });
+    main_result(matches.value_of("FST index").unwrap(), // required so safe
+                matches.value_of("taxon-file"),
+                matches.is_present("with-input"))
+        .unwrap_or_else(|err| {
+            writeln!(&mut io::stderr(), "{}", err).unwrap();
+            process::exit(1);
+        });
 }
 
 fn main_result(fst: &str, taxons: Option<&str>, with_input: bool) -> Result<()> {
     let fst = try!(Map::from_path(fst));
-    let by_id = taxons.map(|taxons| taxon::read_taxa_file(taxons).map_err(|err| err.to_string()).unwrap())
-                      .map(|taxons| taxon::taxa_vector_by_id(taxons));
+    let by_id = try!(taxons.map(|taxons| taxon::read_taxa_file(taxons))
+                           .map(|res| res.map(Some)).unwrap_or(Ok(None)))
+        .map(|taxons| taxon::taxa_vector_by_id(taxons));
     let stdin = io::stdin();
     for line in stdin.lock().lines() {
         let line = try!(line);
@@ -62,7 +62,9 @@ fn main_result(fst: &str, taxons: Option<&str>, with_input: bool) -> Result<()> 
                 print!("{},", line);
             }
             if let Some(ref by_id) = by_id {
-                let taxon = by_id[lca as usize].as_ref().unwrap();
+                let taxon = try!(by_id[lca as usize]
+                    .as_ref()
+                    .ok_or("Missing Taxon"));
                 println!("{},{},{}", taxon.id, taxon.name, taxon.rank);
             } else {
                 println!("{}", lca);
