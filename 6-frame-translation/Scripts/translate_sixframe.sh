@@ -45,7 +45,7 @@ fi
 
 cd "$(dirname $0)/../SixFrameTransl"
 
-for i in "$translationTables"
+for i in $translationTables
 do
 	mvn exec:java -Dexec.mainClass="com.mycompany.sixframetransl.translate" -Dexec.args="$FASTAfile $i False" | egrep -v '(INFO|WARNING)'  > "$outputLocation/$outputPrefix.$i.sixframe"
 	if [ "$tripept" ]
