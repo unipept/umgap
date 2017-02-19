@@ -41,7 +41,7 @@ public class SeedExtend {
             sixframe = new BufferedReader(new FileReader(sixframeF));
             Scanner lcaF = new Scanner(new File(args[2]));
             String lcaHeader = lcaF.nextLine();
-            while(! lcaHeader.isEmpty()){
+            while(lcaF.hasNextLine()){
                 String printHeader = lcaHeader.substring(0,lcaHeader.indexOf("|"));
                 int frameN = 1;
                 extendedSeedsPerFrame = new ArrayList<>();
