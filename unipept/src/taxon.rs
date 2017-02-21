@@ -408,4 +408,22 @@ mod tests {
             euler
         );
     }
+
+    #[test]
+    fn test_taxon_list() {
+        let list  = fixtures::taxon_list();
+        let by_id = fixtures::by_id();
+        assert_eq!(Some(&list[0]), by_id.get(1));
+        assert_eq!(Some(&list[1]), by_id.get(2));
+        assert_eq!(None,           by_id.get(3));
+
+        let ancestry = by_id.ancestry();
+        assert_eq!(Some(1),     ancestry[1]);
+        assert_eq!(Some(1),     ancestry[2]);
+        assert_eq!(Some(1),     ancestry[10239]);
+        assert_eq!(Some(1),     ancestry[12884]);
+        assert_eq!(Some(12884), ancestry[185751]);
+        assert_eq!(Some(12884), ancestry[185752]);
+        assert_eq!(None,        ancestry[3]);
+    }
 }
