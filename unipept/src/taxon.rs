@@ -218,7 +218,7 @@ impl TaxonList {
 
     /// Retrieve a taxon from the taxon list by id.
     pub fn get(&self, index: TaxonId) -> Option<&Taxon> {
-        if index < self.0.len() { None }
+        if index >= self.0.len() { None }
         else { self.0[index].as_ref() }
     }
 }
