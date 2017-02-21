@@ -115,7 +115,7 @@ pub struct Taxon {
     pub rank: Rank,
     /// The taxon's parent
     pub parent: TaxonId,
-    /// Whether the taxon is [valid](https://en.wikipedia.org/wiki/Valid_name_(zoology))
+    /// Whether the taxon is valid. `false` taxons are discarded in some calculations
     pub valid: bool
 }
 
@@ -282,7 +282,8 @@ impl TaxonTree {
         self.children.get(&whose).map(|v| v.len()).unwrap_or(0)
     }
 
-    /// Converts a list of taxons into their respective taxon id's for this tree.
+    /// Converts a list of taxons into their respective taxon id's for this tree. Replaces each
+    /// invalid (or unranked) taxon with it's first valid (and ranked) ancestor.
     ///
     /// # Arguments:
     /// * `taxons`: a vector of taxons, indexed by their TaxonId.
