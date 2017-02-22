@@ -15,7 +15,9 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  *
@@ -25,7 +27,7 @@ public class SeedExtend {
     private static final int minSeedSize = 3;
     private static final int gapSize = 2;
     private static int k;
-    private static List<ExtendedSeed> extendedSeedsPerFrame;
+    private static final List<ExtendedSeed> extendedSeeds = new ArrayList<>();
     private static final ArrayList<Frame> frames = new ArrayList<>();
 
     /**
@@ -46,7 +48,6 @@ public class SeedExtend {
             while(lcaF.hasNextLine()){
                 String printHeader = lcaHeader.substring(0,lcaHeader.indexOf("|"));
                 int frameN = 1;
-                extendedSeedsPerFrame = new ArrayList<>();
                 while(frameN <= 6){
                     Frame f = new Frame(frameN,k,gapSize);
                     String header;
@@ -94,26 +95,52 @@ public class SeedExtend {
                     f.fillKmers(frameKmers);
                     f.fillSeeds(frameSeeds);
                     frames.add(f);
-//                    f.extendSeeds();
-                    ArrayList<ExtendedSeed> frameResult = f.getExtendedSeeds();
-                    extendedSeedsPerFrame.addAll(frameResult);
                     frameN ++;
                 }
-                if(! extendedSeedsPerFrame.isEmpty()){
-                    printBestSeed(printHeader);
+                getExtendedSeeds();
+                for(ExtendedSeed e:extendedSeeds){
+                    System.out.println("Frame: " + e.frameN + "," + e.start + "," + (e.end + 9) + ", " + e.taxonID);
                 }
+//              TODO:
+//                Kies de beste extended seed en geef de aanwezige k-meren terug
             }
         } catch (NumberFormatException | IOException ex) {
             System.out.println("One of both files could not be read");
         }
-        //System.out.println("Done");
+        
+    }
+    
+    private static void getExtendedSeeds(){
+//        TODO:
+//          evt. strenger stopcriterium
+        while(! frames.get(0).getSeeds().isEmpty()
+                || ! frames.get(1).getSeeds().isEmpty()
+                || ! frames.get(2).getSeeds().isEmpty()
+                || ! frames.get(3).getSeeds().isEmpty()
+                || ! frames.get(4).getSeeds().isEmpty()
+                || ! frames.get(5).getSeeds().isEmpty()){
+            double bestScore = 0;
+            int[] bestPos = new int[2];
+            for(int i = 0; i < 6; i ++){
+                TreeMap<Integer,Seed> seeds = frames.get(i).getSeeds();
+                for(Integer pos: seeds.keySet()){
+                    Seed test = seeds.get(pos);
+                    if(bestScore < test.calculateScore()){
+                        bestScore = test.calculateScore();
+                        bestPos[0] = i;
+                        bestPos[1] = pos;
+                    }
+                }
+            }
+            extendedSeeds.add(frames.get(bestPos[0]).extendSeed(bestPos[1]));
+        }
     }
     
     private static void printBestSeed(String header){
-        ExtendedSeed longest = extendedSeedsPerFrame.get(0);
-        for(int i=1; i< extendedSeedsPerFrame.size();i++){
-            if(extendedSeedsPerFrame.get(i).getLength()>longest.getLength()){
-                longest = extendedSeedsPerFrame.get(i);
+        ExtendedSeed longest = extendedSeeds.get(0);
+        for(int i=1; i< extendedSeeds.size();i++){
+            if(extendedSeeds.get(i).getLength()>longest.getLength()){
+                longest = extendedSeeds.get(i);
             }
         }
         System.out.println(header + "|Frame " + longest.frameN);
