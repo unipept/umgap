@@ -58,7 +58,7 @@ public class Seed implements Comparable<Seed>{
             return false;
         }
         Seed s = (Seed) o;
-        return (this.kmers.equals(s.getKmer()) && this.start == s.start && this.end == s.end);
+        return (this.kmers.equals(s.getKmer()) && this.start == s.start && this.end == s.end && this.frame == s.frame);
     }
 
     @Override

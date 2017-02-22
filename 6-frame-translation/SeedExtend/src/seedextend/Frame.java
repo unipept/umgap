@@ -51,7 +51,11 @@ public class Frame {
         this.kmers = kmers;
     }
     
-    public void extendSeed(int start){
+    public TreeMap<Integer,Seed> getSeeds (){
+        return seeds;
+    }
+    
+    public ExtendedSeed extendSeed(int start){
         Seed startSeed = seeds.get(start);
         ExtendedSeed extension = new ExtendedSeed(startSeed,startSeed.taxon, framenr);
         seeds.remove(start);
@@ -154,7 +158,7 @@ public class Frame {
                 }
             }
         }
-        extSeeds.add(extension);
+        return extension;
     }
     
 }
