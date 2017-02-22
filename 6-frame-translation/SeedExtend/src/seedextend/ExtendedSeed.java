@@ -17,36 +17,34 @@ public class ExtendedSeed {
     public Deque<Kmer> kmers;
     public int start;
     public int end;
-    private String lineage;
     public int taxonID;
     public int frameN;
+    public int ngaps = 0;
+    public double score;
     
-    public ExtendedSeed(List<Seed> seeds, String lineage, int taxonID, int frameN){
+    public ExtendedSeed(List<Seed> seeds, int taxonID, int frameN){
         kmers = new ArrayDeque<>();
         for (Seed s: seeds){
             kmers.addAll(s.getKmer());
         }
         this.start = kmers.peekFirst().start;
         this.end = kmers.peekLast().start;
-        this.lineage = lineage;
         this.taxonID = taxonID;
         this.frameN = frameN;
     }
     
-    public ExtendedSeed(Seed s, String lineage, int taxonID, int frameN){
+    public ExtendedSeed(Seed s, int taxonID, int frameN){
         kmers = new ArrayDeque<>();
         kmers.addAll(s.getKmer());
         this.start = s.start;
         this.end = s.end;
-        this.lineage = lineage;
         this.taxonID = taxonID;
         this.frameN = frameN;
     }
     
-    public String getLineage(){
-        return lineage;
+    public void extraGaps(int n){
+        ngaps += n;
     }
-    
     
     public void addLeft(Seed s){
         Deque<Kmer> s_kmers = s.getKmer();
