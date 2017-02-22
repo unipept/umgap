@@ -23,8 +23,10 @@ import java.util.TreeMap;
  */
 public class SeedExtend {
     private static final int minSeedSize = 3;
+    private static final int gapSize = 2;
     private static int k;
     private static List<ExtendedSeed> extendedSeedsPerFrame;
+    private static final ArrayList<Frame> frames = new ArrayList<>();
 
     /**
      * @param args the command line arguments
@@ -46,7 +48,7 @@ public class SeedExtend {
                 int frameN = 1;
                 extendedSeedsPerFrame = new ArrayList<>();
                 while(frameN <= 6){
-                    Frame f = new Frame(frameN,k);
+                    Frame f = new Frame(frameN,k,gapSize);
                     String header;
                     // Initialiseer lijst met seeds, index en deque van kmeren en lees de eerste regels van beide files
                     TreeMap<Integer,Seed> frameSeeds = new TreeMap<>();
@@ -61,7 +63,7 @@ public class SeedExtend {
                         if(nextLCA.startsWith(">")){
                             lcaHeader = nextLCA;
                             if(deq.size() >= 3){
-                                Seed newSeed = new Seed(deq);
+                                Seed newSeed = new Seed(deq, frameN);
                                 frameSeeds.put(newSeed.start,newSeed);
                             }
                         }else{
@@ -78,7 +80,7 @@ public class SeedExtend {
                                 }else{
                                     // minimale grootte voor een seed
                                     if(deq.size() >= 3){
-                                        Seed newSeed = new Seed(deq);
+                                        Seed newSeed = new Seed(deq, frameN);
                                         frameSeeds.put(newSeed.start,newSeed);
                                     }
                                     deq.clear();
@@ -91,7 +93,8 @@ public class SeedExtend {
                     }
                     f.fillKmers(frameKmers);
                     f.fillSeeds(frameSeeds);
-                    f.extendSeeds();
+                    frames.add(f);
+//                    f.extendSeeds();
                     ArrayList<ExtendedSeed> frameResult = f.getExtendedSeeds();
                     extendedSeedsPerFrame.addAll(frameResult);
                     frameN ++;
