@@ -17,6 +17,7 @@
 *.synctex.gz
 *.test
 *.tsv
+*.txt
 *.xml
 *temp*/
 Adler/
@@ -31,6 +32,8 @@ build/
 found_lcas*
 found_peptides.txt
 nbproject/
+Kraken_HiSeq_Lineages
+Kraken_HiSeq_presentTaxons
 six_frame_single
 target/
 *classes*
