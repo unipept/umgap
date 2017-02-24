@@ -6,6 +6,8 @@
 package seedextend;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 
@@ -21,6 +23,12 @@ public class ExtendedSeed {
     public int frameN;
     public int ngaps = 0;
     public double score;
+    private double gapPenalty = 0.5;
+    private ArrayList<String> rankOrder;
+    private static final String[] ranks = new String[]{"no rank", "superkingdom", "kingdom", "subkingdom", "superphylum", "phylum", "subphylum","superclass", "class", "subclass", "infraclass",
+                                                        "superorder", "order", "suborder", "infraorder", "parvorder", "superfamily", "family", "subfamily", "tribe", "subtribe", "genus", "subgenus", "species group", "species subgroup", "species", "subspecies", "varietas", "forma"};
+    private final double[] rankScore = new double[]{0.1,0.2,0.2,0.2,0.3,0.3,0.3,0.4,0.4,0.4,0.4,0.5,0.5,0.5,0.5,0.5,0.6,0.6,0.6,0.7,0.7,0.8,0.8,0.9,0.9,1,1,1,1};
+    
     
     public ExtendedSeed(List<Seed> seeds, int taxonID, int frameN){
         kmers = new ArrayDeque<>();
@@ -31,6 +39,7 @@ public class ExtendedSeed {
         this.end = kmers.peekLast().start;
         this.taxonID = taxonID;
         this.frameN = frameN;
+        this.rankOrder = new ArrayList<>(Arrays.asList(ranks));
     }
     
     public ExtendedSeed(Seed s, int taxonID, int frameN){
@@ -40,6 +49,7 @@ public class ExtendedSeed {
         this.end = s.end;
         this.taxonID = taxonID;
         this.frameN = frameN;
+        this.rankOrder = new ArrayList<>(Arrays.asList(ranks));
     }
     
     public void extraGaps(int n){
@@ -75,5 +85,15 @@ public class ExtendedSeed {
     public int getLength(){
         int l = end - start;
         return l;
+    }
+    
+    public void calculateScore(){
+        score = 0;
+        for(Kmer k:kmers){
+            score += rankScore[rankOrder.indexOf(k.taxonRank)];
+        }
+//        int length = kmers.size() + ngaps;
+        score -= ngaps*gapPenalty;
+//        score = score/(double) length;
     }
 }
