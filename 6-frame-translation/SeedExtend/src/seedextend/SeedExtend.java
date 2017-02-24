@@ -98,8 +98,21 @@ public class SeedExtend {
                     frameN ++;
                 }
                 getExtendedSeeds();
+                double maxScore = 0;
+                ExtendedSeed best = null;
                 for(ExtendedSeed e:extendedSeeds){
-                    System.out.println("Frame: " + e.frameN + "," + e.start + "," + (e.end + 9) + ", " + e.taxonID);
+//                    System.out.println("Frame: " + e.frameN + "," + e.start + "," + (e.end + 9) + ", " + e.taxonID);
+                    e.calculateScore();
+                    if(e.score > maxScore){
+                        maxScore = e.score;
+                        best = e;
+                    }
+                }
+                System.out.println(printHeader);
+                if(best != null){
+                    for (Kmer kmer : best.kmers) {
+                        System.out.println(kmer.taxonID);
+                    }
                 }
 //              TODO:
 //                Kies de beste extended seed en geef de aanwezige k-meren terug
