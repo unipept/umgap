@@ -36,14 +36,13 @@ fn main() {
 fn main_result(k: &str) -> Result<()> {
     let k = try!(k.parse::<usize>().map_err(|_| "Couldn't parse kmer length"));
 
-    let mut writer = fasta::Writer::new(io::stdout(), false);
-    for record in fasta::Reader::new(io::stdin(), false).records() {
+    let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
+    for record in fasta::Reader::new(io::stdin(), None, true).records() {
         let record = try!(record);
-        if record.sequence.len() < k { continue }
-        let new = (0..record.sequence.len() - k + 1)
-            .map(|i| record.sequence[i..i + k].to_string())
-            .collect::<Vec<_>>()
-            .join("\n");
+        if record.sequence[0].len() < k { continue }
+        let new = (0..record.sequence[0].len() - k + 1)
+            .map(|i| record.sequence[0][i..i + k].to_string())
+            .collect::<Vec<_>>();
         try!(writer.write_record(fasta::Record {
             header: record.header,
             sequence: new,

@@ -42,7 +42,7 @@ fn open_writer(argument: Option<&str>) -> Result<fasta::Writer<Box<io::Write>>> 
     } else {
         Box::new(try!(fs::File::create(output_arg)))
     };
-    Ok(fasta::Writer::new(output, false))
+    Ok(fasta::Writer::new(output, "", false))
 }
 
 fn open_reader(argument: &str) -> Result<fastq::Records<Box<io::Read>>> {
@@ -91,7 +91,7 @@ fn main() {
             });
             writer.write_record(fasta::Record {
                 header: record.header,
-                sequence: record.sequence,
+                sequence: vec![record.sequence],
             }).unwrap_or_else(|err| {
                 println!("Something went wrong during the writing: {}", err);
                 process::exit(3)

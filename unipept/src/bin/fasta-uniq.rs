@@ -1,9 +1,13 @@
 
 use std::io;
 use std::process;
+use std::io::Write;
 
 extern crate clap;
 use clap::{App, Arg};
+
+extern crate regex;
+use regex::Regex;
 
 extern crate unipept;
 use unipept::{PKG_NAME, PKG_VERSION, PKG_AUTHORS};
@@ -13,25 +17,23 @@ const ABOUT: &'static str = "
 Concatenates the data strings of all consecutive entries with the same header.
 ";
 
-fn write_record(writer: &mut fasta::Writer<io::Stdout>, record: &fasta::Record) {
-    writer.write_record_ref(record).unwrap_or_else(|err| {
-        println!("Error occured while writing records: {}", err);
-        process::exit(2);
-    });
-}
-
 fn main() {
     let matches = App::new(PKG_NAME.to_string() + " fasta-uniq")
                       .version(PKG_VERSION)
                       .author(PKG_AUTHORS.split(':').next().unwrap_or("unknown"))
                       .about(ABOUT)
                       .arg(Arg::with_name("separator")
-                               .help("String to separate joined sequences with (default '\\n')")
+                               .help("Separator between output items (default the empty string)")
                                .short("s")
                                .long("separator")
                                .takes_value(true))
+                      .arg(Arg::with_name("input-separator")
+                               .help("Separator regex between input items (default same as separator)")
+                               .short("i")
+                               .long("input-separator")
+                               .takes_value(true))
                       .arg(Arg::with_name("keep")
-                               .help("Keep newlines in the sequence.")
+                               .help("Keep newlines in the input sequence.")
                                .short("k")
                                .long("keep"))
                       .arg(Arg::with_name("wrap")
@@ -39,22 +41,32 @@ fn main() {
                                .short("w")
                                .long("wrap"))
                       .get_matches();
-    let separator  = matches.value_of("separator").unwrap_or("\n");
-    let keep       = matches.is_present("keep");
-    let wrap       = matches.is_present("wrap");
+    main_result(
+        matches.value_of("separator").unwrap_or(""),
+        matches.value_of("input-separator"),
+        matches.is_present("keep"),
+        matches.is_present("wrap")
+    ).unwrap_or_else(|err| {
+        writeln!(&mut io::stderr(), "{}", err).unwrap();
+        process::exit(1);
+    });
+}
+
+fn main_result(separator: &str, input_separator: Option<&str>, keep: bool, wrap: bool) -> Result<(), String> {
+    // Parsing the input separator regex
+    let input_separator = try!(Regex::new(input_separator.unwrap_or(&regex::escape(separator)))
+                                     .map_err(|err| err.to_string()));
+
     let mut last   = None::<fasta::Record>;
-    let mut writer = fasta::Writer::new(io::stdout(), wrap);
-    for record in fasta::Reader::new(io::stdin(), keep).records() {
-        let record = record.unwrap_or_else(|err| {
-            println!("Something went wrong during the reading: {}", err);
-            process::exit(1);
-        });
+    let mut writer = fasta::Writer::new(io::stdout(), separator, wrap);
+    for record in fasta::Reader::new(io::stdin(), Some(input_separator), !keep).records() {
+        let record = try!(record.map_err(|err| format!("Something went wrong during the reading: {}", err)));
         if let Some(ref mut rec) = last {
             if rec.header == record.header {
-                rec.sequence.extend(separator.chars());
-                rec.sequence.extend(record.sequence.chars());
+                rec.sequence.extend(record.sequence);
             } else {
-                write_record(&mut writer, rec);
+                try!(writer.write_record_ref(rec)
+                           .map_err(|err| format!("Error occured while writing records: {}", err)));
                 *rec = record;
             }
         } else {
@@ -62,7 +74,9 @@ fn main() {
         }
     }
     if let Some(rec) = last {
-        write_record(&mut writer, &rec);
+        try!(writer.write_record(rec)
+                   .map_err(|err| format!("Error while writing last record: {}", err)));
     }
+    Ok(())
 }
 

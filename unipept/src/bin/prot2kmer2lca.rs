@@ -1,13 +1,10 @@
 #[macro_use] extern crate clap;
 extern crate fst;
-extern crate itertools;
 
 use std::io;
-use std::io::Write;
 use std::fs;
 
 extern crate unipept;
-use unipept::errors::Error;
 use unipept::errors::Result;
 use unipept::io::fasta;
 
@@ -21,29 +18,26 @@ use unipept::io::fasta;
 fn query(fst_filename: &String, k: usize, query_filename: &String) -> Result<()> {
     let map = try!(fst::Map::from_path(fst_filename));
     let reader = try!(get_reader(query_filename));
+    let mut writer = fasta::Writer::new(io::stdout(), " ", false);
 
     for prot in reader.records() {
         let prot = try!(prot);
 
-        if prot.sequence.len() < k {
+        if prot.sequence[0].len() < k {
             continue
         }
 
-        let lcas = (0..(prot.sequence.len() - k + 1))
-            .map(|i| &prot.sequence[i..i + k])
+        let lcas = (0..(prot.sequence[0].len() - k + 1))
+            .map(|i| &prot.sequence[0][i..i + k])
             .filter_map(|kmer| map.get(kmer))
             .map(|lca| lca.to_string())
-            .collect::<Vec<_>>()
-            .join(" ");
+            .collect::<Vec<_>>();
 
         if ! lcas.is_empty() {
-            if let Err(e) = writeln!(io::stdout(), "{}\n{}", prot.header, lcas) {
-                if e.kind() == io::ErrorKind::BrokenPipe {
-                    break
-                } else {
-                    return Err(Error::Io(e))
-                }
-            }
+            try!(writer.write_record(fasta::Record {
+                header: prot.header,
+                sequence: lcas
+            }));
         }
     }
 
@@ -59,7 +53,7 @@ fn get_reader(query_filename: &String) -> Result<fasta::Reader<Box<io::Read>>> {
         "-" => Box::new(io::stdin()),
         _   => Box::new(try!(fs::File::open(query_filename)))
     };
-    Ok(fasta::Reader::new(reader, false))
+    Ok(fasta::Reader::new(reader, None, true))
 }
 
 fn main() {
