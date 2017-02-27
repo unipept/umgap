@@ -9,6 +9,8 @@ use std::io::Read;
 use std::io::Write;
 use std::iter::Peekable;
 
+use regex::Regex;
+
 use errors;
 use errors::Result;
 
@@ -18,17 +20,19 @@ const FASTA_WIDTH: usize = 70;
 /// Reads a FASTA-formatted source (e.g. a file).
 pub struct Reader<R: Read> {
     lines: Peekable<Lines<BufReader<R>>>,
-    keep_lines: bool,
+    separator: Option<Regex>,
+    wrapped: bool,
 }
 
 
 impl<R: Read> Reader<R> {
-    /// Creates a Reader from the given Read (e.g. a file)
-    /// keep_lines will perserve newlines in the sequence.
-    pub fn new(reader: R, keep_lines: bool) -> Self {
+    /// Creates a Reader from the given Read (e.g. a file). Passing a separator will split the
+    /// fasta entry on this separator.
+    pub fn new(reader: R, separator: Option<Regex>, wrapped: bool) -> Self {
         Reader {
             lines: BufReader::new(reader).lines().peekable(),
-            keep_lines: keep_lines,
+            separator: separator,
+            wrapped: wrapped,
         }
     }
 
@@ -52,10 +56,17 @@ impl<R: Read> Reader<R> {
                         .map(|line| !line.starts_with('>'))
                         .unwrap_or(false) {
             sequence.push_str(&try!(self.lines.next().unwrap()));
-            if self.keep_lines { sequence.push('\n'); }
+            if !self.wrapped { sequence.push('\n') }
         }
 
-        Ok(Some(Record { header: header, sequence: sequence.trim_right().to_string() }))
+        Ok(Some(Record {
+            header: header,
+            sequence: self.separator.as_ref()
+                                    .map(|re| re.split(sequence.trim_right())
+                                                .map(str::to_string)
+                                                .collect())
+                                    .unwrap_or(vec![sequence]),
+        }))
     }
 
     /// Returns a Records struct with itself as its reader.
@@ -64,14 +75,15 @@ impl<R: Read> Reader<R> {
     }
 }
 
-/// A record as defined by the FASTA format.
+/// A record extending the FASTA format. A single header can be followed by multiple
+/// sequences/items.
 #[derive(Debug)]
 pub struct Record {
     /// The record header (without the preceding '<')
     pub header: String,
 
     /// The actual sequence of nucleotides
-    pub sequence: String,
+    pub sequence: Vec<String>,
 }
 
 /// Convenience struct which allows for iteration (e.g. using for..in).
@@ -92,17 +104,19 @@ impl<R: Read> Iterator for Records<R> {
 }
 
 /// Writes to a file in the [FASTA format](https://en.wikipedia.org/wiki/FASTA_format).
-pub struct Writer<W: Write> {
+pub struct Writer<'a, W: Write> {
     buffer: io::BufWriter<W>,
+    separator: &'a str,
     wrap: bool,
 }
 
-impl<W: Write> Writer<W> {
-    /// Constructs a writer from the specified Write
-    /// wrap will enable wrapping the output sequence on 70 characters
-    pub fn new(write: W, wrap: bool) -> Self {
+impl<'a, W: Write> Writer<'a, W> {
+    /// Constructs a writer from the specified Write. Items are printed
+    /// separated by separator.
+    pub fn new(write: W, separator: &'a str, wrap: bool) -> Self {
         Writer {
             buffer: io::BufWriter::new(write),
+            separator: separator,
             wrap: wrap,
         }
     }
@@ -115,11 +129,12 @@ impl<W: Write> Writer<W> {
     /// Writes a Record to the Write, in FASTA format
     pub fn write_record_ref(&mut self, record: &Record) -> Result<()> {
         try!(write!(self.buffer, ">{}\n", record.header));
+        let sequence = record.sequence.join(self.separator);
         if !self.wrap {
-            try!(self.buffer.write(record.sequence.as_bytes()));
+            try!(self.buffer.write(sequence.as_bytes()));
             try!(self.buffer.write_all(&[b'\n']));
         } else {
-            for subseq in record.sequence.as_bytes().chunks(FASTA_WIDTH) {
+            for subseq in sequence.as_bytes().chunks(FASTA_WIDTH) {
                 try!(self.buffer.write_all(subseq));
                 try!(self.buffer.write_all(&[b'\n']));
             }

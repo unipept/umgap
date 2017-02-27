@@ -5,6 +5,8 @@
        html_favicon_url = "http://unipept.ugent.be/favicon.ico")]
 #![deny(missing_docs)]
 
+extern crate regex;
+
 pub mod taxon;
 pub mod agg;
 pub mod rmq;
