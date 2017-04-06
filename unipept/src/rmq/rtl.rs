@@ -1,6 +1,8 @@
 //! Operations calculating the Maximal root-to-Leaf (MRL), i.e. the leaf that has most of
 //! the given taxons on its path to root.
 
+use std::collections::HashMap;
+
 use taxon::{TaxonId, TaxonList};
 use agg;
 
@@ -31,13 +33,12 @@ impl RTLCalculator {
 
 impl agg::Aggregator for RTLCalculator {
     /// Returns the taxon with the MRL for a given list of taxons.
-    fn aggregate(&self, taxons: &Vec<TaxonId>) -> Result<TaxonId, agg::Error> {
-        let counts         = agg::count(taxons);
-        let mut rtl_counts = counts.clone();
+    fn aggregate(&self, taxons: &HashMap<TaxonId, usize>) -> Result<TaxonId, agg::Error> {
+        let mut rtl_counts = taxons.clone();
         for (taxon, count) in rtl_counts.iter_mut() {
             let mut next = *taxon;
             while let Some(ancestor) = self.ancestors[next] {
-                *count += *counts.get(&ancestor).unwrap_or(&0);
+                *count += *taxons.get(&ancestor).unwrap_or(&0);
                 next = ancestor;
             }
             if next != self.root {
@@ -61,27 +62,27 @@ mod tests {
 
     #[test]
     fn test_all_on_same_path() {
-        let calculator = RTLCalculator::new(fixtures::ROOT, &fixtures::by_id());
-        assert_eq!(Ok(1), calculator.aggregate(&vec![1]));
-        assert_eq!(Ok(12884), calculator.aggregate(&vec![1, 12884]));
-        assert_eq!(Ok(185751), calculator.aggregate(&vec![1, 12884, 185751]));
+        let aggregator = RTLCalculator::new(fixtures::ROOT, &fixtures::by_id());
+        assert_eq!(Ok(1), aggregator.counting_aggregate(&vec![1]));
+        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![1, 12884]));
+        assert_eq!(Ok(185751), aggregator.counting_aggregate(&vec![1, 12884, 185751]));
     }
 
     #[test]
     fn favouring_root() {
-        let calculator = RTLCalculator::new(fixtures::ROOT, &fixtures::by_id());
-        assert_eq!(Ok(185751), calculator.aggregate(&vec![1, 1, 1, 185751, 1, 1]));
+        let aggregator = RTLCalculator::new(fixtures::ROOT, &fixtures::by_id());
+        assert_eq!(Ok(185751), aggregator.counting_aggregate(&vec![1, 1, 1, 185751, 1, 1]));
     }
 
     #[test]
     fn leaning_close() {
-        let calculator = RTLCalculator::new(fixtures::ROOT, &fixtures::by_id());
-        assert_eq!(Ok(185751), calculator.aggregate(&vec![1, 1, 185752, 185751, 185751, 1]));
+        let aggregator = RTLCalculator::new(fixtures::ROOT, &fixtures::by_id());
+        assert_eq!(Ok(185751), aggregator.counting_aggregate(&vec![1, 1, 185752, 185751, 185751, 1]));
     }
 
     #[test]
     fn non_deterministic() {
-        let calculator = RTLCalculator::new(fixtures::ROOT, &fixtures::by_id());
-        assert!(vec![Ok(185751), Ok(185752)].contains(&calculator.aggregate(&vec![1, 1, 185752, 185751, 1])))
+        let aggregator = RTLCalculator::new(fixtures::ROOT, &fixtures::by_id());
+        assert!(vec![Ok(185751), Ok(185752)].contains(&aggregator.counting_aggregate(&vec![1, 1, 185752, 185751, 1])))
     }
 }

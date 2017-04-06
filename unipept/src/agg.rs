@@ -8,8 +8,13 @@ use taxon::TaxonId;
 
 /// Allows to aggregate over a taxon tree.
 pub trait Aggregator {
+    /// Aggregates a set of scored taxons into a resulting taxon id.
+    fn aggregate(&self, taxons: &HashMap<TaxonId, usize>) -> Result<TaxonId, Error>;
+
     /// Aggregates a list of taxons into a resulting taxon id.
-    fn aggregate(&self, taxons: &Vec<TaxonId>) -> Result<TaxonId, Error>;
+    fn counting_aggregate(&self, taxons: &Vec<TaxonId>) -> Result<TaxonId, Error> {
+        self.aggregate(&count(taxons))
+    }
 }
 
 /// Returns how many times each taxon occurs in a vector of taxons.
@@ -85,7 +90,7 @@ mod tests {
         for aggregator in aggregators(&fixtures::by_id()) {
             assert_eq!(
                 Err(Error::EmptyInput),
-                aggregator.aggregate(&Vec::new())
+                aggregator.counting_aggregate(&Vec::new())
             );
         }
     }
@@ -94,7 +99,7 @@ mod tests {
     fn test_singleton_is_singleton() {
         for aggregator in aggregators(&fixtures::by_id()) {
             for taxon in fixtures::taxon_list() {
-                assert_eq!(Ok(taxon.id), aggregator.aggregate(&vec![taxon.id]));
+                assert_eq!(Ok(taxon.id), aggregator.counting_aggregate(&vec![taxon.id]));
             }
         }
     }
@@ -104,11 +109,11 @@ mod tests {
         for aggregator in aggregators(&fixtures::by_id()) {
             assert_eq!(
                 Err(Error::UnknownTaxon(5)),
-                aggregator.aggregate(&vec![5])
+                aggregator.counting_aggregate(&vec![5])
             );
             assert_eq!(
                 Err(Error::UnknownTaxon(5)),
-                aggregator.aggregate(&vec![1, 2, 5, 1])
+                aggregator.counting_aggregate(&vec![1, 2, 5, 1])
             );
         }
     }
