@@ -59,6 +59,13 @@ impl agg::Aggregator for MixCalculator {
         let mut weights: HashMap<TaxonId, Weights> = HashMap::with_capacity(counts.len());
         let mut queue:   VecDeque<TaxonId>         = counts.keys().map(|&t| t).collect();
 
+        // We collect all relevant taxa by starting out with all given taxa and iterate until no
+        // more taxa are added. In each iteration, we add the lca of each pair already in the
+        // collection.
+        //
+        // Each of these taxa is given two weights:
+        // weight.lca is the count of all given taxa descending from this one (including itself).
+        // weight.rtl is the count of all given taxa from which this one descends (including itself).
         while let Some(left) = queue.pop_front() {
             if weights.contains_key(&left) { continue; }
             for (&right, &count) in counts.iter() {
@@ -108,11 +115,10 @@ mod tests {
 
     /* TODO: third example might fail because 12884 and 185751 have the same score. */
     #[test]
-    #[ignore]
     fn test_one_half() {
         let calculator = MixCalculator::new(fixtures::tree(), Ratio::new(1, 2));
-        assert_eq!(Ok(185751), calculator.aggregate(&vec![12884, 185751]));
-        assert_eq!(Ok(185751), calculator.aggregate(&vec![12884, 185751]));
-        assert_eq!(Ok(185751), calculator.aggregate(&vec![1, 12884, 12284, 185751]));
+        assert_eq!(Ok(12884), calculator.aggregate(&vec![12884, 12884, 185751]));
+        assert_eq!(Ok(185751), calculator.aggregate(&vec![12884, 185751, 185751]));
+        assert_eq!(Ok(12884), calculator.aggregate(&vec![1, 12884, 12884, 185751, 185752]));
     }
 }
