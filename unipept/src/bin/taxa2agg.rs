@@ -19,6 +19,7 @@ use unipept::agg::Aggregator;
 use unipept::rmq;
 use unipept::tree;
 use unipept::io::fasta;
+use unipept::agg;
 
 const ABOUT: &'static str = "
 Aggregates taxa to a single taxon.
@@ -106,7 +107,8 @@ fn main_result(taxons: &str, method: &str, aggregation: &str, separator: Option<
                                     .map(|tid| tid.parse::<TaxonId>())
                                     .collect::<Result<Vec<TaxonId>,_>>();
         let taxons = try!(taxons.map_err(|err| format!("Error reading taxons ({:?}): {}", record, err)));
-        let aggregate = try!(aggregator.aggregate(&taxons).map_err(|err| err.to_string()));
+        let counts = agg::count(&taxons);
+        let aggregate = try!(aggregator.aggregate(&counts).map_err(|err| err.to_string()));
         let taxon = by_id.get(snapping[aggregate].unwrap()).unwrap();
         try!(writer.write_record(fasta::Record {
             header: record.header,

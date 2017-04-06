@@ -55,10 +55,9 @@ impl LCACalculator {
 }
 
 impl agg::Aggregator for LCACalculator {
-    fn aggregate(&self, taxons: &Vec<TaxonId>) -> Result<TaxonId, agg::Error> {
+    fn aggregate(&self, taxons: &HashMap<TaxonId, usize>) -> Result<TaxonId, agg::Error> {
         if taxons.len() == 0 { return Err(agg::Error::EmptyInput); }
-        let unique         = agg::count(taxons);
-        let mut indices    = unique.keys().map(|t| self.first_occurence(*t));
+        let mut indices    = taxons.keys().map(|t| self.first_occurence(*t));
         let mut consensus  = try!(indices.next().unwrap());
         let mut join_level = None::<usize>;
         for next_result in indices {
@@ -91,31 +90,31 @@ mod tests {
 
     #[test]
     fn test_two_on_same_path() {
-        let calculator = LCACalculator::new(fixtures::tree());
-        assert_eq!(Ok(185752), calculator.aggregate(&vec![12884, 185752]));
-        assert_eq!(Ok(185752), calculator.aggregate(&vec![185752, 12884]));
-        assert_eq!(Ok(2), calculator.aggregate(&vec![1, 2]));
-        assert_eq!(Ok(2), calculator.aggregate(&vec![2, 1]));
+        let aggregator = LCACalculator::new(fixtures::tree());
+        assert_eq!(Ok(185752), aggregator.counting_aggregate(&vec![12884, 185752]));
+        assert_eq!(Ok(185752), aggregator.counting_aggregate(&vec![185752, 12884]));
+        assert_eq!(Ok(2), aggregator.counting_aggregate(&vec![1, 2]));
+        assert_eq!(Ok(2), aggregator.counting_aggregate(&vec![2, 1]));
     }
 
     #[test]
     fn test_two_on_fork() {
-        let calculator = LCACalculator::new(fixtures::tree());
-        assert_eq!(Ok(1), calculator.aggregate(&vec![2, 10239]));
-        assert_eq!(Ok(1), calculator.aggregate(&vec![10239, 2]));
-        assert_eq!(Ok(12884), calculator.aggregate(&vec![185751, 185752]));
-        assert_eq!(Ok(12884), calculator.aggregate(&vec![185752, 185751]));
+        let aggregator = LCACalculator::new(fixtures::tree());
+        assert_eq!(Ok(1), aggregator.counting_aggregate(&vec![2, 10239]));
+        assert_eq!(Ok(1), aggregator.counting_aggregate(&vec![10239, 2]));
+        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![185751, 185752]));
+        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![185752, 185751]));
     }
 
     #[test]
     fn test_three_on_triangle() {
-        let calculator = LCACalculator::new(fixtures::tree());
-        assert_eq!(Ok(12884), calculator.aggregate(&vec![12884, 185751, 185752]));
-        assert_eq!(Ok(12884), calculator.aggregate(&vec![12884, 185752, 185751]));
-        assert_eq!(Ok(12884), calculator.aggregate(&vec![185751, 12884, 185752]));
-        assert_eq!(Ok(12884), calculator.aggregate(&vec![185752, 12884, 185751]));
-        assert_eq!(Ok(12884), calculator.aggregate(&vec![185751, 185752, 12884]));
-        assert_eq!(Ok(12884), calculator.aggregate(&vec![185752, 185751, 12884]));
+        let aggregator = LCACalculator::new(fixtures::tree());
+        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![12884, 185751, 185752]));
+        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![12884, 185752, 185751]));
+        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![185751, 12884, 185752]));
+        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![185752, 12884, 185751]));
+        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![185751, 185752, 12884]));
+        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![185752, 185751, 12884]));
     }
 
     fn taxon(id: TaxonId, parent: TaxonId) -> Taxon {
@@ -144,12 +143,12 @@ mod tests {
 
     #[test]
     fn test_with_deeper_interns() {
-        let large_calculator = LCACalculator::new(TaxonTree::new(&large_taxon_list()));
-        assert_eq!(Ok(3), large_calculator.aggregate(&vec![9, 7]));
-        assert_eq!(Ok(3), large_calculator.aggregate(&vec![9, 10]));
-        assert_eq!(Ok(3), large_calculator.aggregate(&vec![7, 9]));
-        assert_eq!(Ok(3), large_calculator.aggregate(&vec![14, 8]));
-        assert_eq!(Ok(3), large_calculator.aggregate(&vec![14, 8]));
+        let large_aggregator = LCACalculator::new(TaxonTree::new(&large_taxon_list()));
+        assert_eq!(Ok(3), large_aggregator.counting_aggregate(&vec![9, 7]));
+        assert_eq!(Ok(3), large_aggregator.counting_aggregate(&vec![9, 10]));
+        assert_eq!(Ok(3), large_aggregator.counting_aggregate(&vec![7, 9]));
+        assert_eq!(Ok(3), large_aggregator.counting_aggregate(&vec![14, 8]));
+        assert_eq!(Ok(3), large_aggregator.counting_aggregate(&vec![14, 8]));
     }
 }
 
