@@ -13,15 +13,17 @@ pub trait Aggregator {
 
     /// Aggregates a list of taxons into a resulting taxon id.
     fn counting_aggregate(&self, taxons: &Vec<TaxonId>) -> Result<TaxonId, Error> {
+        let taxons = taxons.iter().map(|&t| (t, 1));
         self.aggregate(&count(taxons))
     }
 }
 
 /// Returns how many times each taxon occurs in a vector of taxons.
-pub fn count(taxons: &Vec<TaxonId>) -> HashMap<TaxonId, usize> {
+pub fn count<T>(taxons: T) -> HashMap<TaxonId, usize>
+        where T: Iterator<Item=(TaxonId, usize)> {
     let mut counts = HashMap::new();
-    for taxon in taxons {
-        *counts.entry(*taxon).or_insert(0) += 1;
+    for (taxon, count) in taxons {
+        *counts.entry(taxon).or_insert(0) += count;
     }
     counts
 }
