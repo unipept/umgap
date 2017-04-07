@@ -20,6 +20,7 @@ use unipept::rmq;
 use unipept::tree;
 use unipept::io::fasta;
 use unipept::agg;
+use unipept::errors;
 
 const ABOUT: &'static str = "
 Aggregates taxa to a single taxon.
@@ -55,6 +56,11 @@ fn main() {
                                .short("f")
                                .long("factor")
                                .takes_value(true))
+                      .arg(Arg::with_name("separator")
+                               .help("Regex to split the taxa (default whitespace)")
+                               .short("d")
+                               .long("separator")
+                               .takes_value(true))
                       .arg(Arg::with_name("taxon-file")
                                .help("The NCBI taxonomy tsv-file")
                                .index(1)
@@ -74,6 +80,17 @@ fn main() {
     });
 }
 
+
+fn with_score(pair: &String) -> errors::Result<(TaxonId, usize)> {
+    let split = pair.split('=').collect::<Vec<_>>();
+    if split.len() != 2 { try!(Err("Taxon without score")); }
+    Ok((try!(split[0].parse::<TaxonId>()), try!(split[1].parse::<usize>())))
+}
+
+fn not_scored(tid: &String) -> errors::Result<(TaxonId, usize)> {
+    Ok((try!(tid.parse::<TaxonId>()), 1))
+}
+
 fn main_result(taxons: &str, method: &str, aggregation: &str, separator: Option<&str>, ranked_only: bool, factor: &str, scored: bool) -> Result<(), String> {
     // Parsing the Taxa file
     let taxons = try!(taxon::read_taxa_file(taxons).map_err(|err| err.to_string()));
@@ -82,8 +99,9 @@ fn main_result(taxons: &str, method: &str, aggregation: &str, separator: Option<
     let factor = try!(factor.parse::<Ratio<usize>>().map_err(|err| err.to_string()));
 
     // Parsing the separator regex
-    let separator = try!(separator.map(Regex::new).map(|res| res.map(Some)).unwrap_or(Ok(None))
-                                  .map_err(|err| err.to_string()));
+    let separator = try!(Regex::new(separator.unwrap_or(r"\s+"))
+                               .map(Some)
+                               .map_err(|err| err.to_string()));
 
     // Parsing the taxons
     let tree     = taxon::TaxonTree::new(&taxons);
@@ -100,14 +118,16 @@ fn main_result(taxons: &str, method: &str, aggregation: &str, separator: Option<
     };
     let aggregator = try!(aggregator);
 
+    let parser = if scored { with_score } else { not_scored };
+
     let mut writer = fasta::Writer::new(io::stdout(), ",", false);
     for record in fasta::Reader::new(io::stdin(), separator, true).records() {
         let record = try!(record.map_err(|err| err.to_string()));
         let taxons = record.sequence.iter()
-                                    .map(|tid| tid.parse::<TaxonId>())
-                                    .collect::<Result<Vec<TaxonId>,_>>();
+                                    .map(parser)
+                                    .collect::<Result<Vec<(TaxonId, usize)>,_>>();
         let taxons = try!(taxons.map_err(|err| format!("Error reading taxons ({:?}): {}", record, err)));
-        let counts = agg::count(&taxons);
+        let counts = agg::count(taxons.into_iter());
         let aggregate = try!(aggregator.aggregate(&counts).map_err(|err| err.to_string()));
         let taxon = by_id.get(snapping[aggregate].unwrap()).unwrap();
         try!(writer.write_record(fasta::Record {

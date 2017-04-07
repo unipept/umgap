@@ -4,6 +4,7 @@ use std::error;
 use std::fmt;
 use std::io;
 use std::result;
+use std::num;
 
 extern crate csv;
 
@@ -20,6 +21,7 @@ pub enum Error {
     Fst(fst::Error),
     Io(io::Error),
     Str(&'static str),
+    Parse(num::ParseIntError)
 }
 
 impl fmt::Display for Error {
@@ -29,6 +31,7 @@ impl fmt::Display for Error {
             Error::Io(ref err) => err.fmt(f),
             Error::Fst(ref err) => err.fmt(f),
             Error::Str(ref err) => write!(f, "{}", err),
+            Error::Parse(ref err) => err.fmt(f),
         }
     }
 }
@@ -40,6 +43,7 @@ impl error::Error for Error {
             Error::Io(ref err) => err.description(),
             Error::Fst(ref err) => err.description(),
             Error::Str(ref err) => err,
+            Error::Parse(ref err) => err.description(),
         }
     }
 }
@@ -65,5 +69,11 @@ impl From<fst::Error> for Error {
 impl From<&'static str> for Error {
     fn from(err: &'static str) -> Error {
         Error::Str(err)
+    }
+}
+
+impl From<num::ParseIntError> for Error {
+    fn from(err: num::ParseIntError) -> Error {
+        Error::Parse(err)
     }
 }
