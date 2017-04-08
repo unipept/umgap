@@ -101,19 +101,9 @@ public class SeedExtend {
                     frameN ++;
                 }
                 getExtendedSeeds();
-                double maxScore = 0;
-                ExtendedSeed best = null;
+                System.out.println(printHeader);
                 for(ExtendedSeed e:extendedSeeds){
-//                    System.out.println("Frame: " + e.frameN + "," + e.start + "," + (e.end + 9) + ", " + e.taxonID);
-                    double escore = e.getScore();
-                    if(escore > maxScore){
-                        maxScore = escore;
-                        best = e;
-                    }
-                }
-                if(best != null){
-                    System.out.println(printHeader);
-                    for (Kmer kmer : best.kmers) {
+                    for (Kmer kmer : e.kmers) {
                         System.out.print(kmer.taxonID + " ");
                     }
                 }
