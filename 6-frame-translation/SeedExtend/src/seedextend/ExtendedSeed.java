@@ -22,7 +22,8 @@ public class ExtendedSeed {
     public int taxonID;
     public int frameN;
     public int ngaps = 0;
-    public double score;
+    private int length;
+    private double score;
     private double gapPenalty = 0.5;
     private ArrayList<String> rankOrder;
     private static final String[] ranks = new String[]{"no rank", "superkingdom", "kingdom", "subkingdom", "superphylum", "phylum", "subphylum","superclass", "class", "subclass", "infraclass",
@@ -31,9 +32,13 @@ public class ExtendedSeed {
     
     
     public ExtendedSeed(List<Seed> seeds, int taxonID, int frameN){
+        this.length = 0;
+        this.score = 0;
         kmers = new ArrayDeque<>();
         for (Seed s: seeds){
             kmers.addAll(s.getKmer());
+            length += s.getKmer().size();
+            score += s.calculateScore();
         }
         this.start = kmers.peekFirst().start;
         this.end = kmers.peekLast().start;
@@ -43,8 +48,12 @@ public class ExtendedSeed {
     }
     
     public ExtendedSeed(Seed s, int taxonID, int frameN){
+        this.length = 0;
+        this.score = 0;
         kmers = new ArrayDeque<>();
         kmers.addAll(s.getKmer());
+        length += s.getKmer().size();
+        score += s.calculateScore();
         this.start = s.start;
         this.end = s.end;
         this.taxonID = taxonID;
@@ -53,7 +62,8 @@ public class ExtendedSeed {
     }
     
     public void extraGaps(int n){
-        ngaps += n;
+        length += n;
+        score -= (double)n*gapPenalty;
     }
     
     public void addLeft(Seed s){
@@ -62,6 +72,8 @@ public class ExtendedSeed {
             kmers.addFirst(s_kmers.pollLast());
         }
         this.start = kmers.peekFirst().start;
+        length+=s.getKmer().size();
+        score += s.calculateScore();
     }
     
     public void addRight(Seed s){
@@ -70,16 +82,22 @@ public class ExtendedSeed {
             kmers.addLast(s_kmers.pollFirst());
         }
         this.end = kmers.peekLast().start;
+        length+=s.getKmer().size();
+        score += s.calculateScore();
     }
     
     public void addLeft(Kmer k){
         kmers.addFirst(k);
         this.start = kmers.peekFirst().start;
+        length += 1;
+        score += rankScore[rankOrder.indexOf(k.taxonRank)];
     }
     
     public void addRight(Kmer k){
         kmers.addLast(k);
         this.end = kmers.peekLast().start;
+        score += rankScore[rankOrder.indexOf(k.taxonRank)];
+        length += 1;
     }
     
     public int getLength(){
@@ -87,13 +105,8 @@ public class ExtendedSeed {
         return l;
     }
     
-    public void calculateScore(){
-        score = 0;
-        for(Kmer k:kmers){
-            score += rankScore[rankOrder.indexOf(k.taxonRank)];
-        }
-//        int length = kmers.size() + ngaps;
-        score -= ngaps*gapPenalty;
-//        score = score/(double) length;
+    public double getScore(){
+        return score;
+//        return score/(double) length;
     }
 }
