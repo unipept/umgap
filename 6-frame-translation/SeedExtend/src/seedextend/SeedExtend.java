@@ -12,20 +12,18 @@ import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 /**
  *
  * @author Aranka
  */
 public class SeedExtend {
-    private static final int minSeedSize = 3;
-    private static final int gapSize = 2;
+    private static int minSeedSize;
+    private static int gapSize;
+    private static int gapPenalty;
     private static int k;
     private static final List<ExtendedSeed> extendedSeeds = new ArrayList<>();
     private static final ArrayList<Frame> frames = new ArrayList<>();
@@ -35,10 +33,15 @@ public class SeedExtend {
      * 0: =0 voor peptiden =k voor k-meren
      * 1: sixframe-file
      * 2: lca-file
-     *              
+     * 3: minimal seed size
+     * 4: gap size
+     * 5: gap penalty
      */
     public static void main(String[] args) throws IOException {
         BufferedReader sixframe = null;
+        minSeedSize = Integer.parseInt(args[3]);
+        gapSize = Integer.parseInt(args[4]);
+        gapPenalty = Integer.parseInt(args[5]);
         try {
             k = Integer.parseInt(args[0]);
             File sixframeF = new File(args[1]);
@@ -49,7 +52,7 @@ public class SeedExtend {
                 String printHeader = lcaHeader.substring(0,lcaHeader.indexOf("|"));
                 int frameN = 1;
                 while(frameN <= 6){
-                    Frame f = new Frame(frameN,k,gapSize);
+                    Frame f = new Frame(frameN,k,gapSize,gapPenalty);
                     String header;
                     // Initialiseer lijst met seeds, index en deque van kmeren en lees de eerste regels van beide files
                     TreeMap<Integer,Seed> frameSeeds = new TreeMap<>();
@@ -63,7 +66,7 @@ public class SeedExtend {
                         String nextLCA = lcaF.nextLine();
                         if(nextLCA.startsWith(">")){
                             lcaHeader = nextLCA;
-                            if(deq.size() >= 3){
+                            if(deq.size() >= minSeedSize){
                                 Seed newSeed = new Seed(deq, frameN);
                                 frameSeeds.put(newSeed.start,newSeed);
                             }
@@ -80,7 +83,7 @@ public class SeedExtend {
                                     deq.add(kmer);
                                 }else{
                                     // minimale grootte voor een seed
-                                    if(deq.size() >= 3){
+                                    if(deq.size() >= minSeedSize){
                                         Seed newSeed = new Seed(deq, frameN);
                                         frameSeeds.put(newSeed.start,newSeed);
                                     }

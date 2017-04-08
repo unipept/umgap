@@ -26,13 +26,15 @@ public class Frame {
     private final int framenr;
     private int k;
     private int maxGap;
+    private double gapPenalty;
     
-    public Frame (int framenr, int k, int gap){
+    public Frame (int framenr, int k, int gap, double penalty){
         seeds = new TreeMap<>();
         kmers = new TreeMap<>();
         this.framenr = framenr;
         this.k = k;
         this.maxGap = gap;
+        this.gapPenalty = penalty;
     }
     
     public int getFramenr(){
@@ -57,7 +59,7 @@ public class Frame {
     
     public ExtendedSeed extendSeed(int start){
         Seed startSeed = seeds.get(start);
-        ExtendedSeed extension = new ExtendedSeed(startSeed,startSeed.taxon, framenr);
+        ExtendedSeed extension = new ExtendedSeed(startSeed,startSeed.taxon, framenr,gapPenalty);
         seeds.remove(start);
         for(Kmer km: startSeed.getKmer()){
             kmers.remove(km.start);

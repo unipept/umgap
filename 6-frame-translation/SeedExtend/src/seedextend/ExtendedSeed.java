@@ -24,16 +24,17 @@ public class ExtendedSeed {
     public int ngaps = 0;
     private int length;
     private double score;
-    private double gapPenalty = 0.5;
+    private double gapPenalty;
     private ArrayList<String> rankOrder;
     private static final String[] ranks = new String[]{"no rank", "superkingdom", "kingdom", "subkingdom", "superphylum", "phylum", "subphylum","superclass", "class", "subclass", "infraclass",
                                                         "superorder", "order", "suborder", "infraorder", "parvorder", "superfamily", "family", "subfamily", "tribe", "subtribe", "genus", "subgenus", "species group", "species subgroup", "species", "subspecies", "varietas", "forma"};
     private final double[] rankScore = new double[]{0.1,0.2,0.2,0.2,0.3,0.3,0.3,0.4,0.4,0.4,0.4,0.5,0.5,0.5,0.5,0.5,0.6,0.6,0.6,0.7,0.7,0.8,0.8,0.9,0.9,1,1,1,1};
     
     
-    public ExtendedSeed(List<Seed> seeds, int taxonID, int frameN){
+    public ExtendedSeed(List<Seed> seeds, int taxonID, int frameN, double penalty){
         this.length = 0;
         this.score = 0;
+        this.gapPenalty = penalty;
         kmers = new ArrayDeque<>();
         for (Seed s: seeds){
             kmers.addAll(s.getKmer());
@@ -47,7 +48,8 @@ public class ExtendedSeed {
         this.rankOrder = new ArrayList<>(Arrays.asList(ranks));
     }
     
-    public ExtendedSeed(Seed s, int taxonID, int frameN){
+    public ExtendedSeed(Seed s, int taxonID, int frameN, double penalty){
+        this.gapPenalty = penalty;
         this.length = 0;
         this.score = 0;
         kmers = new ArrayDeque<>();
