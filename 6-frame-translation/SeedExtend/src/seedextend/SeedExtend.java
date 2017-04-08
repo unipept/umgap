@@ -102,9 +102,9 @@ public class SeedExtend {
                 ExtendedSeed best = null;
                 for(ExtendedSeed e:extendedSeeds){
 //                    System.out.println("Frame: " + e.frameN + "," + e.start + "," + (e.end + 9) + ", " + e.taxonID);
-                    e.calculateScore();
-                    if(e.score > maxScore){
-                        maxScore = e.score;
+                    double escore = e.getScore();
+                    if(escore > maxScore){
+                        maxScore = escore;
                         best = e;
                     }
                 }
@@ -117,8 +117,6 @@ public class SeedExtend {
                 System.out.println();
                 extendedSeeds.clear();
                 frames.clear();
-//              TODO:
-//                Kies de beste extended seed en geef de aanwezige k-meren terug
             }
         } catch (NumberFormatException | IOException ex) {
             System.out.println("One of both files could not be read");
