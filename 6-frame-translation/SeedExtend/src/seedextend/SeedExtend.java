@@ -23,7 +23,7 @@ import java.util.TreeMap;
 public class SeedExtend {
     private static int minSeedSize;
     private static int gapSize;
-    private static int gapPenalty;
+    private static double gapPenalty;
     private static int k;
     private static final List<ExtendedSeed> extendedSeeds = new ArrayList<>();
     private static final ArrayList<Frame> frames = new ArrayList<>();
@@ -41,7 +41,7 @@ public class SeedExtend {
         BufferedReader sixframe = null;
         minSeedSize = Integer.parseInt(args[3]);
         gapSize = Integer.parseInt(args[4]);
-        gapPenalty = Integer.parseInt(args[5]);
+        gapPenalty = Double.parseDouble(args[5]);
         try {
             k = Integer.parseInt(args[0]);
             File sixframeF = new File(args[1]);
