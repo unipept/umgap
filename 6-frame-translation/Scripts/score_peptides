@@ -53,5 +53,5 @@ do
 		length_score=1
 	fi
 	score=$(echo "scale=2; $score * $length_score" | bc 2>/dev/null)
-	echo "$tax_id 0$score"
+	echo "$tax_id,0$score"
 done 

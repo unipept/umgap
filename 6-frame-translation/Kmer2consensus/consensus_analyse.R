@@ -13,7 +13,7 @@ reads.consensus[,ncol(reads.consensus)+1] <- FALSE
 for(i in 1:nrow(reads.consensus)){
   reads.consensus[i,7] <- as.character(present.taxons[which(present.taxons[,2]==reads.consensus[i,5]),3])
   reads.consensus[i,8] <- as.character(present.taxons[which(present.taxons[,2]==reads.consensus[i,5]),4])
-  if(any(as.character(reads.consensus[i,7])==true.lineages)){
+  if(any(as.character(reads.consensus[i,7])==true.lineages)||as.character(reads.consensus[i,7])=="root"){
     reads.consensus[i,9] <- TRUE
   }else{
     reads.consensus[i,9] <- FALSE
@@ -33,6 +33,7 @@ count(reads.consensus[,"correct"])
 
 
 Voorspellingen <- nrow(reads.consensus)
+
 Genera <- sum(reads.consensus[,"taxonRank"]>="genus")
 cor.genera <- sum(reads.consensus[reads.consensus[,"taxonRank"]>="genus","correct"]==TRUE)
 incor.voorspelling <- sum(reads.consensus[,"correct"]==FALSE)

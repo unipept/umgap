@@ -5,6 +5,8 @@
 *.aln
 *.aux
 *.csv
+*.class
+*.fa
 *.fasta
 *.fna
 *.fq
@@ -15,9 +17,11 @@
 *.Rhistory
 *.sixframe
 *.synctex.gz
+*.taxonList*
 *.test
 *.tsv
 *.txt
+*.xls
 *.xml
 *temp*/
 Adler/
@@ -37,4 +41,12 @@ Kraken_HiSeq_presentTaxons
 six_frame_single
 target/
 *classes*
-
+Kmer2consensus/Kraken_HiSeq_consensus
+Kmer2consensus/pipeline_split2unipept.tex
+Kmer2consensus/temp
+Pseudogymnoascus/
+SixFrameTransl/xac
+testFGS/acinetobacter/
+testFGS/archaea/
+testFGS/eukaryoten/
+testFGS/virus/
