@@ -108,12 +108,15 @@ public class SeedExtend {
                         best = e;
                     }
                 }
-                System.out.println(printHeader);
                 if(best != null){
+                    System.out.println(printHeader);
                     for (Kmer kmer : best.kmers) {
-                        System.out.println(kmer.taxonID);
+                        System.out.print(kmer.taxonID + " ");
                     }
                 }
+                System.out.println();
+                extendedSeeds.clear();
+                frames.clear();
 //              TODO:
 //                Kies de beste extended seed en geef de aanwezige k-meren terug
             }

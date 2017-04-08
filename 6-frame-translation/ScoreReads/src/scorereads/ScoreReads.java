@@ -13,7 +13,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -125,6 +124,7 @@ public class ScoreReads {
                         if(args.length > 5){
                             drawScoredFrame(frame,diepte+6,peptides,(diepte<5),trueLineage);
                         }
+//                        drawUnknownFrame(frame,diepte,peptides,(diepte<5));
                         drawScoredFrame(frame,diepte,peptides,(diepte<5));
                         drawSplitPoints(frame,diepte,(diepte<5));
                         diepte+=1;
@@ -210,6 +210,27 @@ public class ScoreReads {
         }
     }
     
+    public static void drawUnknownFrame(String frame, int framenr, List<Peptide> peptides, boolean forward){
+        double unit = (double) 24/(double)frame.length();
+        for(Peptide pept:peptides){
+            double start;
+            double end;
+            if(forward){
+                start = (double) frame.indexOf(pept.aminoSeq)*unit;
+                end = start + (double) pept.length*unit;
+            }else{
+                end = (double)frame.length()*unit-(double)frame.indexOf(pept.aminoSeq)*unit;
+                start = end - (double) pept.length*unit;    
+            }
+            String taxonName = pept.taxonName;
+            if(taxonName.equalsIgnoreCase("root")){
+                System.out.println("\\draw[root] ("+start+",-"+framenr+") -- ("+end+",-"+framenr+");");
+            }else{
+                System.out.println("\\draw["+pept.taxonRank+"] ("+start+",-"+framenr+") -- ("+end+",-"+framenr+");");
+            }
+        }
+    }
+    
     public static void drawScoredFrame(String frame, int framenr, List<Peptide> peptides, boolean forward, String[] trueLineage){
         double unit = (double) 24/(double)frame.length();
         String lineageString="";
@@ -230,7 +251,7 @@ public class ScoreReads {
             if(taxonName.equalsIgnoreCase("root")){
                 System.out.println("\\draw[root] ("+start+",-"+framenr+") -- ("+end+",-"+framenr+");");
             }else{
-                if(lineageString.contains(taxonName)){
+                if(lineageString.toLowerCase().contains(taxonName.toLowerCase())){
                     System.out.println("\\draw["+pept.taxonRank+"] ("+start+",-"+framenr+") -- ("+end+",-"+framenr+");");
                 }else{
                     String[] lineage = pept.lineage;
@@ -472,12 +493,12 @@ public class ScoreReads {
     
     public static void printEmptyLines(int startindex){
         System.out.println(
-        "\\draw (0,-"+startindex+") -- (24,-"+startindex+") node[anchor=south] {$+1$};\n" +
-        "\\draw (0,-"+(startindex+1)+") -- (24,-"+(startindex+1)+") node[anchor=south] {$+2$};\n" +
-        "\\draw (0,-"+(startindex+2)+") -- (24,-"+(startindex+2)+") node[anchor=south] {$+3$};\n" +
-        "\\draw (0,-"+(startindex+3)+") -- (24,-"+(startindex+3)+") node[anchor=south] {$-1$};\n" +
-        "\\draw (0,-"+(startindex+4)+") -- (24,-"+(startindex+4)+") node[anchor=south] {$-2$};\n" +
-        "\\draw (0,-"+(startindex+5)+") -- (24,-"+(startindex+5)+") node[anchor=south] {$-3$};");
+        "\\draw (0,-"+startindex+") -- (24,-"+startindex+") node[right] {$\\mathbf{+1}$};\n" +
+        "\\draw (0,-"+(startindex+1)+") -- (24,-"+(startindex+1)+") node[right] {$\\mathbf{+2}$};\n" +
+        "\\draw (0,-"+(startindex+2)+") -- (24,-"+(startindex+2)+") node[right] {$\\mathbf{+3}$};\n" +
+        "\\draw (0,-"+(startindex+3)+") -- (24,-"+(startindex+3)+") node[right] {$\\mathbf{-1}$};\n" +
+        "\\draw (0,-"+(startindex+4)+") -- (24,-"+(startindex+4)+") node[right] {$\\mathbf{-2}$};\n" +
+        "\\draw (0,-"+(startindex+5)+") -- (24,-"+(startindex+5)+") node[right] {$\\mathbf{-3}$};");
     }
     
     public static void printFooter(){
