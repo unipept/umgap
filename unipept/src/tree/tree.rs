@@ -13,7 +13,7 @@ pub struct SubTree<T: Default + Copy> {
 }
 
 impl<T: Default + Copy> SubTree<T> {
-    pub fn new(root: TaxonId, parents: &Vec<Option<TaxonId>>, taxons: HashMap<TaxonId, T>) -> Result<Self, TaxonId> {
+    pub fn new(root: TaxonId, parents: &Vec<Option<TaxonId>>, taxons: &HashMap<TaxonId, T>) -> Result<Self, TaxonId> {
         let mut tree: HashMap<TaxonId, HashSet<TaxonId>> = HashMap::with_capacity(taxons.len());
         let mut queue: VecDeque<TaxonId> = taxons.keys().map(|t| *t).collect();
         while let Some(id) = queue.pop_front() {
