@@ -9,21 +9,21 @@ use taxon::TaxonId;
 /// Allows to aggregate over a taxon tree.
 pub trait Aggregator {
     /// Aggregates a set of scored taxons into a resulting taxon id.
-    fn aggregate(&self, taxons: &HashMap<TaxonId, usize>) -> Result<TaxonId, Error>;
+    fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> Result<TaxonId, Error>;
 
     /// Aggregates a list of taxons into a resulting taxon id.
     fn counting_aggregate(&self, taxons: &Vec<TaxonId>) -> Result<TaxonId, Error> {
-        let taxons = taxons.iter().map(|&t| (t, 1));
+        let taxons = taxons.iter().map(|&t| (t, 1.0));
         self.aggregate(&count(taxons))
     }
 }
 
 /// Returns how many times each taxon occurs in a vector of taxons.
-pub fn count<T>(taxons: T) -> HashMap<TaxonId, usize>
-        where T: Iterator<Item=(TaxonId, usize)> {
+pub fn count<T>(taxons: T) -> HashMap<TaxonId, f32>
+        where T: Iterator<Item=(TaxonId, f32)> {
     let mut counts = HashMap::new();
     for (taxon, count) in taxons {
-        *counts.entry(taxon).or_insert(0) += count;
+        *counts.entry(taxon).or_insert(0.0) += count;
     }
     counts
 }
@@ -67,8 +67,6 @@ impl From<TaxonId> for Error {
 
 #[cfg(test)]
 mod tests {
-    extern crate num_rational;
-    use self::num_rational::Ratio;
     use super::*;
     use taxon::TaxonList;
     use fixtures;
@@ -78,13 +76,13 @@ mod tests {
     fn aggregators(by_id: &TaxonList) -> Vec<Box<Aggregator>> { vec![
         Box::new(rmq::lca::LCACalculator::new(fixtures::tree())),
         Box::new(rmq::rtl::RTLCalculator::new(fixtures::ROOT, by_id)),
-        Box::new(rmq::mix::MixCalculator::new(fixtures::tree(), Ratio::new(0, 1))),
-        Box::new(rmq::mix::MixCalculator::new(fixtures::tree(), Ratio::new(1, 1))),
-        Box::new(rmq::mix::MixCalculator::new(fixtures::tree(), Ratio::new(1, 2))),
+        Box::new(rmq::mix::MixCalculator::new(fixtures::tree(), 0.0)),
+        Box::new(rmq::mix::MixCalculator::new(fixtures::tree(), 1.0)),
+        Box::new(rmq::mix::MixCalculator::new(fixtures::tree(), 0.5)),
         Box::new(tree::lca::LCACalculator::new(fixtures::ROOT, by_id)),
-        Box::new(tree::mix::MixCalculator::new(fixtures::ROOT, by_id, Ratio::new(0, 1))),
-        Box::new(tree::mix::MixCalculator::new(fixtures::ROOT, by_id, Ratio::new(1, 1))),
-        Box::new(tree::mix::MixCalculator::new(fixtures::ROOT, by_id, Ratio::new(1, 2))),
+        Box::new(tree::mix::MixCalculator::new(fixtures::ROOT, by_id, 0.0)),
+        Box::new(tree::mix::MixCalculator::new(fixtures::ROOT, by_id, 1.0)),
+        Box::new(tree::mix::MixCalculator::new(fixtures::ROOT, by_id, 0.5)),
     ] }
 
     #[test]

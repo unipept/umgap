@@ -6,9 +6,6 @@ use std::io::Write;
 extern crate clap;
 use clap::{Arg, App};
 
-extern crate num_rational;
-use num_rational::Ratio;
-
 extern crate regex;
 use regex::Regex;
 
@@ -52,7 +49,7 @@ fn main() {
                                .takes_value(true)
                                .possible_values(&["LCA*", "MRTL", "both"]))
                       .arg(Arg::with_name("factor")
-                               .help("Factor used with aggregate both")
+                               .help("Factor used with aggregate both, in [0.0,1.0]")
                                .short("f")
                                .long("factor")
                                .takes_value(true))
@@ -81,22 +78,22 @@ fn main() {
 }
 
 
-fn with_score(pair: &String) -> errors::Result<(TaxonId, usize)> {
+fn with_score(pair: &String) -> errors::Result<(TaxonId, f32)> {
     let split = pair.split('=').collect::<Vec<_>>();
     if split.len() != 2 { try!(Err("Taxon without score")); }
-    Ok((try!(split[0].parse::<TaxonId>()), try!(split[1].parse::<usize>())))
+    Ok((try!(split[0].parse::<TaxonId>()), try!(split[1].parse::<f32>())))
 }
 
-fn not_scored(tid: &String) -> errors::Result<(TaxonId, usize)> {
-    Ok((try!(tid.parse::<TaxonId>()), 1))
+fn not_scored(tid: &String) -> errors::Result<(TaxonId, f32)> {
+    Ok((try!(tid.parse::<TaxonId>()), 1.0))
 }
 
 fn main_result(taxons: &str, method: &str, aggregation: &str, separator: Option<&str>, ranked_only: bool, factor: &str, scored: bool) -> Result<(), String> {
     // Parsing the Taxa file
     let taxons = try!(taxon::read_taxa_file(taxons).map_err(|err| err.to_string()));
 
-    // Parsing the aggregation method
-    let factor = try!(factor.parse::<Ratio<usize>>().map_err(|err| err.to_string()));
+    // Parsing the factor
+    let factor = try!(factor.parse::<f32>().map_err(|err| err.to_string()));
 
     // Parsing the separator regex
     let separator = try!(Regex::new(separator.unwrap_or(r"\s+"))
@@ -125,7 +122,7 @@ fn main_result(taxons: &str, method: &str, aggregation: &str, separator: Option<
         let record = try!(record.map_err(|err| err.to_string()));
         let taxons = record.sequence.iter()
                                     .map(parser)
-                                    .collect::<Result<Vec<(TaxonId, usize)>,_>>();
+                                    .collect::<Result<Vec<(TaxonId, f32)>,_>>();
         let taxons = try!(taxons.map_err(|err| format!("Error reading taxons ({:?}): {}", record, err)));
         let counts = agg::count(taxons.into_iter());
         let aggregate = try!(aggregator.aggregate(&counts).map_err(|err| err.to_string()));

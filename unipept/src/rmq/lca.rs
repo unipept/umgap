@@ -55,7 +55,7 @@ impl LCACalculator {
 }
 
 impl agg::Aggregator for LCACalculator {
-    fn aggregate(&self, taxons: &HashMap<TaxonId, usize>) -> Result<TaxonId, agg::Error> {
+    fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> Result<TaxonId, agg::Error> {
         if taxons.len() == 0 { return Err(agg::Error::EmptyInput); }
         let mut indices    = taxons.keys().map(|t| self.first_occurence(*t));
         let mut consensus  = try!(indices.next().unwrap());
