@@ -21,7 +21,8 @@ pub enum Error {
     Fst(fst::Error),
     Io(io::Error),
     Str(&'static str),
-    Parse(num::ParseIntError)
+    ParseI(num::ParseIntError),
+    ParseF(num::ParseFloatError),
 }
 
 impl fmt::Display for Error {
@@ -31,7 +32,8 @@ impl fmt::Display for Error {
             Error::Io(ref err) => err.fmt(f),
             Error::Fst(ref err) => err.fmt(f),
             Error::Str(ref err) => write!(f, "{}", err),
-            Error::Parse(ref err) => err.fmt(f),
+            Error::ParseI(ref err) => err.fmt(f),
+            Error::ParseF(ref err) => err.fmt(f),
         }
     }
 }
@@ -43,7 +45,8 @@ impl error::Error for Error {
             Error::Io(ref err) => err.description(),
             Error::Fst(ref err) => err.description(),
             Error::Str(ref err) => err,
-            Error::Parse(ref err) => err.description(),
+            Error::ParseI(ref err) => err.description(),
+            Error::ParseF(ref err) => err.description(),
         }
     }
 }
@@ -74,6 +77,12 @@ impl From<&'static str> for Error {
 
 impl From<num::ParseIntError> for Error {
     fn from(err: num::ParseIntError) -> Error {
-        Error::Parse(err)
+        Error::ParseI(err)
+    }
+}
+
+impl From<num::ParseFloatError> for Error {
+    fn from(err: num::ParseFloatError) -> Error {
+        Error::ParseF(err)
     }
 }

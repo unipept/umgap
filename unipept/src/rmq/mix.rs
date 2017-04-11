@@ -3,11 +3,8 @@
 use std::collections::HashMap;
 use std::collections::VecDeque;
 
-extern crate num_traits;
-use self::num_traits::identities::One;
-
-extern crate num_rational;
-use self::num_rational::Ratio;
+extern crate ordered_float;
+use self::ordered_float::NotNaN;
 
 use rmq::lca::LCACalculator;
 use taxon::{TaxonId, TaxonTree};
@@ -18,18 +15,18 @@ use agg;
 /// depending on a given ratio.
 pub struct MixCalculator {
     lca_aggregator: LCACalculator,
-    factor: Ratio<usize>
+    factor: f32,
 }
 
 #[derive(Clone, Copy)]
 struct Weights {
-    lca: usize,
-    rtl: usize
+    lca: f32,
+    rtl: f32
 }
 
 impl Weights {
     fn new() -> Self {
-        Weights { lca: 0, rtl: 0 }
+        Weights { lca: 0.0, rtl: 0.0 }
     }
 }
 
@@ -41,7 +38,7 @@ impl MixCalculator {
     /// * `factor`   - A ratio (i.e. a number in [0.0, 1.0] which decides the
     ///                ratio that MRL or LCA will be chosen as aggregation.
     ///                If factor is 1, LCA will always be chosen; If factor is 0, MRL.
-    pub fn new(taxonomy: TaxonTree, factor: Ratio<usize>) -> Self {
+    pub fn new(taxonomy: TaxonTree, factor: f32) -> Self {
         MixCalculator {
             lca_aggregator: LCACalculator::new(taxonomy),
             factor: factor
@@ -49,12 +46,12 @@ impl MixCalculator {
     }
 }
 
-fn factorize(weights: Weights, factor: Ratio<usize>) -> Ratio<usize> {
-    Ratio::from_integer(weights.lca) * factor + Ratio::from_integer(weights.rtl) * (Ratio::one() - factor)
+fn factorize(weights: Weights, factor: f32) -> f32 {
+    weights.lca * factor + weights.rtl * (1.0 - factor)
 }
 
 impl agg::Aggregator for MixCalculator {
-    fn aggregate(&self, taxons: &HashMap<TaxonId, usize>) -> Result<TaxonId, agg::Error> {
+    fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> Result<TaxonId, agg::Error> {
         let mut weights: HashMap<TaxonId, Weights> = HashMap::with_capacity(taxons.len());
         let mut queue:   VecDeque<TaxonId>         = taxons.keys().map(|&t| t).collect();
 
@@ -80,7 +77,7 @@ impl agg::Aggregator for MixCalculator {
         }
 
         weights.iter()
-               .max_by_key(|&(_, w)| factorize(*w, self.factor))
+               .max_by_key(|&(_, w)| NotNaN::new(factorize(*w, self.factor)).unwrap())
                .map(|tup| *tup.0)
                .ok_or(agg::Error::EmptyInput)
     }
@@ -89,16 +86,13 @@ impl agg::Aggregator for MixCalculator {
 
 #[cfg(test)]
 mod tests {
-    extern crate num_rational;
-    use self::num_rational::Ratio;
-
     use super::MixCalculator;
     use agg::Aggregator;
     use fixtures;
 
     #[test]
     fn test_full_rtl() {
-        let aggregator = MixCalculator::new(fixtures::tree(), Ratio::new(0, 1));
+        let aggregator = MixCalculator::new(fixtures::tree(), 0.0);
         assert_eq!(Ok(185751), aggregator.counting_aggregate(&vec![12884, 185751]));
         assert_eq!(Ok(185752), aggregator.counting_aggregate(&vec![12884, 185751, 185752, 185752]));
         assert_eq!(Ok(10239), aggregator.counting_aggregate(&vec![1, 1, 10239, 10239, 10239, 12884, 185751, 185752]));
@@ -106,7 +100,7 @@ mod tests {
 
     #[test]
     fn test_full_lca() {
-        let aggregator = MixCalculator::new(fixtures::tree(), Ratio::new(1, 1));
+        let aggregator = MixCalculator::new(fixtures::tree(), 1.0);
         assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![12884, 185751]));
         assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![12884, 185751, 185752, 185752]));
         assert_eq!(Ok(1), aggregator.counting_aggregate(&vec![1, 1, 10239, 10239, 10239, 12884, 185751, 185752]));
@@ -115,7 +109,7 @@ mod tests {
     /* TODO: third example might fail because 12884 and 185751 have the same score. */
     #[test]
     fn test_one_half() {
-        let aggregator = MixCalculator::new(fixtures::tree(), Ratio::new(1, 2));
+        let aggregator = MixCalculator::new(fixtures::tree(), 0.5);
         assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![12884, 12884, 185751]));
         assert_eq!(Ok(185751), aggregator.counting_aggregate(&vec![12884, 185751, 185751]));
         assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![1, 12884, 12884, 185751, 185752]));

@@ -3,6 +3,9 @@
 
 use std::collections::HashMap;
 
+extern crate ordered_float;
+use self::ordered_float::NotNaN;
+
 use taxon::{TaxonId, TaxonList};
 use agg;
 
@@ -33,12 +36,12 @@ impl RTLCalculator {
 
 impl agg::Aggregator for RTLCalculator {
     /// Returns the taxon with the MRL for a given list of taxons.
-    fn aggregate(&self, taxons: &HashMap<TaxonId, usize>) -> Result<TaxonId, agg::Error> {
+    fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> Result<TaxonId, agg::Error> {
         let mut rtl_counts = taxons.clone();
         for (taxon, count) in rtl_counts.iter_mut() {
             let mut next = *taxon;
             while let Some(ancestor) = self.ancestors[next] {
-                *count += *taxons.get(&ancestor).unwrap_or(&0);
+                *count += *taxons.get(&ancestor).unwrap_or(&0.0);
                 next = ancestor;
             }
             if next != self.root {
@@ -47,7 +50,7 @@ impl agg::Aggregator for RTLCalculator {
         }
 
         rtl_counts.iter()
-                  .max_by_key(|&(_, count)| count)
+                  .max_by_key(|&(_, &count)| NotNaN::new(count).unwrap())
                   .map(|tup| *tup.0)
                   .ok_or(agg::Error::EmptyInput)
     }
