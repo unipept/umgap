@@ -1,5 +1,6 @@
 //! Allows calculating the Lowest Common Ancestor (LCA).
 
+use std::collections::HashMap;
 use std::ops::Add;
 
 use agg;
@@ -29,10 +30,9 @@ impl LCACalculator {
 }
 
 impl agg::Aggregator for LCACalculator {
-    fn aggregate(&self, taxons: &Vec<TaxonId>) -> Result<TaxonId, agg::Error> {
+    fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> Result<TaxonId, agg::Error> {
         if taxons.len() == 0 { return Err(agg::Error::EmptyInput); }
-        let counts  = agg::count(taxons);
-        let subtree = try!(SubTree::new(self.root, &self.parents, counts)).collapse(&Add::add);
+        let subtree = try!(SubTree::new(self.root, &self.parents, taxons)).collapse(&Add::add);
         Ok(subtree.root)
     }
 }
@@ -45,30 +45,30 @@ mod tests {
 
     #[test]
     fn test_two_on_same_path() {
-        let calculator = LCACalculator::new(fixtures::tree().root, &fixtures::by_id());
-        assert_eq!(Ok(185752), calculator.aggregate(&vec![12884, 185752]));
-        assert_eq!(Ok(185752), calculator.aggregate(&vec![185752, 12884]));
-        assert_eq!(Ok(2), calculator.aggregate(&vec![1, 2]));
-        assert_eq!(Ok(2), calculator.aggregate(&vec![2, 1]));
+        let aggregator = LCACalculator::new(fixtures::tree().root, &fixtures::by_id());
+        assert_eq!(Ok(185752), aggregator.counting_aggregate(&vec![12884, 185752]));
+        assert_eq!(Ok(185752), aggregator.counting_aggregate(&vec![185752, 12884]));
+        assert_eq!(Ok(2), aggregator.counting_aggregate(&vec![1, 2]));
+        assert_eq!(Ok(2), aggregator.counting_aggregate(&vec![2, 1]));
     }
 
     #[test]
     fn test_two_on_fork() {
-        let calculator = LCACalculator::new(fixtures::tree().root, &fixtures::by_id());
-        assert_eq!(Ok(1), calculator.aggregate(&vec![2, 10239]));
-        assert_eq!(Ok(1), calculator.aggregate(&vec![10239, 2]));
-        assert_eq!(Ok(12884), calculator.aggregate(&vec![185751, 185752]));
-        assert_eq!(Ok(12884), calculator.aggregate(&vec![185752, 185751]));
+        let aggregator = LCACalculator::new(fixtures::tree().root, &fixtures::by_id());
+        assert_eq!(Ok(1), aggregator.counting_aggregate(&vec![2, 10239]));
+        assert_eq!(Ok(1), aggregator.counting_aggregate(&vec![10239, 2]));
+        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![185751, 185752]));
+        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![185752, 185751]));
     }
 
     #[test]
     fn test_three_on_triangle() {
-        let calculator = LCACalculator::new(fixtures::tree().root, &fixtures::by_id());
-        assert_eq!(Ok(12884), calculator.aggregate(&vec![12884, 185751, 185752]));
-        assert_eq!(Ok(12884), calculator.aggregate(&vec![12884, 185752, 185751]));
-        assert_eq!(Ok(12884), calculator.aggregate(&vec![185751, 12884, 185752]));
-        assert_eq!(Ok(12884), calculator.aggregate(&vec![185752, 12884, 185751]));
-        assert_eq!(Ok(12884), calculator.aggregate(&vec![185751, 185752, 12884]));
-        assert_eq!(Ok(12884), calculator.aggregate(&vec![185752, 185751, 12884]));
+        let aggregator = LCACalculator::new(fixtures::tree().root, &fixtures::by_id());
+        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![12884, 185751, 185752]));
+        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![12884, 185752, 185751]));
+        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![185751, 12884, 185752]));
+        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![185752, 12884, 185751]));
+        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![185751, 185752, 12884]));
+        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![185752, 185751, 12884]));
     }
 }
