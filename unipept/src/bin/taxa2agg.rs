@@ -106,7 +106,7 @@ fn main_result(taxons: &str, method: &str, aggregation: &str, separator: Option<
     let snapping = tree.snapping(&by_id, ranked_only);
 
     let aggregator: Result<Box<Aggregator>, String> = match (method, aggregation) {
-        ("RMQ",  "MTRL") => Ok(Box::new(rmq::rtl::RTLCalculator::new(tree.root, &by_id))),
+        ("RMQ",  "MRTL") => Ok(Box::new(rmq::rtl::RTLCalculator::new(tree.root, &by_id))),
         ("RMQ",  "LCA*") => Ok(Box::new(rmq::lca::LCACalculator::new(tree))),
         ("RMQ",  "both") => Ok(Box::new(rmq::mix::MixCalculator::new(tree, factor))),
         ("tree", "LCA*") => Ok(Box::new(tree::lca::LCACalculator::new(tree.root, &by_id))),
