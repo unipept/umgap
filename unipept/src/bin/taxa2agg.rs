@@ -108,7 +108,10 @@ fn main_result(taxons: &str, method: &str, aggregation: &str, separator: Option<
     let aggregator: Result<Box<Aggregator>, String> = match (method, aggregation) {
         ("RMQ",  "MRTL") => Ok(Box::new(rmq::rtl::RTLCalculator::new(tree.root, &by_id))),
         ("RMQ",  "LCA*") => Ok(Box::new(rmq::lca::LCACalculator::new(tree))),
-        ("RMQ",  "both") => Ok(Box::new(rmq::mix::MixCalculator::new(tree, factor))),
+        ("RMQ",  "both") => {
+            writeln!(&mut io::stderr(), "Warning: this is a hybrid between LCA/MRTL, not LCA*/MRTL").unwrap();
+            Ok(Box::new(rmq::mix::MixCalculator::new(tree, factor)))
+        },
         ("tree", "LCA*") => Ok(Box::new(tree::lca::LCACalculator::new(tree.root, &by_id))),
         ("tree", "both") => Ok(Box::new(tree::mix::MixCalculator::new(tree.root, &by_id, factor))),
         _                => Err(format!("Invalid method/aggregation combination: {} and {}", method, aggregation))
