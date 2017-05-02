@@ -77,9 +77,9 @@ public class ScoreReads {
                 }
                 if(tp){
                     lca.nextLine();
-                    printEmptyLines(2);
+                    printEmptyLines(2,"BLIND STUDY");
                     if (args.length > 5){
-                        printEmptyLines(8);
+                        printEmptyLines(9,"PRIOR KNOWLEDGE");
                     }
                 }
                 String lcaHeader = lca.nextLine();
@@ -122,7 +122,7 @@ public class ScoreReads {
                             printProteins((double)24/(double)frame.length(),proteins);
                         }
                         if(args.length > 5){
-                            drawScoredFrame(frame,diepte+6,peptides,(diepte<5),trueLineage);
+                            drawScoredFrame(frame,diepte+7,peptides,(diepte<5),trueLineage);
                         }
 //                        drawUnknownFrame(frame,diepte,peptides,(diepte<5));
                         drawScoredFrame(frame,diepte,peptides,(diepte<5));
@@ -486,19 +486,21 @@ public class ScoreReads {
             "subspecies/.style={teal!60!black, line width = 4pt, line cap = round},\n" +
             "varietas/.style={teal!55!black, line width = 4pt, line cap = round},\n" +
             "forma/.style={teal!50!black, line width = 4pt, line cap = round}]\n" +
-            "\\node[font=\\bfseries\\LARGE,align=center,above] at (12,2) {"+title+"} ;\n" +
+            "\\node[font=\\bfseries\\LARGE,align=center,above] at (12,2) {\\textit{"+title+"}} ;\n" +
             "\\node[font=\\bfseries,align=center,above] at (12,1) {"+subtitle+"} ;\n" +
             "\\draw (0,0) -- (24,0) ;");
     }
     
-    public static void printEmptyLines(int startindex){
+    public static void printEmptyLines(int startindex, String what){
         System.out.println(
         "\\draw (0,-"+startindex+") -- (24,-"+startindex+") node[right] {$\\mathbf{+1}$};\n" +
         "\\draw (0,-"+(startindex+1)+") -- (24,-"+(startindex+1)+") node[right] {$\\mathbf{+2}$};\n" +
         "\\draw (0,-"+(startindex+2)+") -- (24,-"+(startindex+2)+") node[right] {$\\mathbf{+3}$};\n" +
         "\\draw (0,-"+(startindex+3)+") -- (24,-"+(startindex+3)+") node[right] {$\\mathbf{-1}$};\n" +
         "\\draw (0,-"+(startindex+4)+") -- (24,-"+(startindex+4)+") node[right] {$\\mathbf{-2}$};\n" +
-        "\\draw (0,-"+(startindex+5)+") -- (24,-"+(startindex+5)+") node[right] {$\\mathbf{-3}$};");
+        "\\draw (0,-"+(startindex+5)+") -- (24,-"+(startindex+5)+") node[right] {$\\mathbf{-3}$};\n" +
+        "\\draw [thick,decoration={brace,raise=0.2cm},decorate] (25,-"+startindex+") -- (25,-"+(startindex+5)+") node[right,text width=1cm] at (25.5,-"+(startindex+2.5)+") {"+ what +"};") ;
+        
     }
     
     public static void printFooter(){

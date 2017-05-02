@@ -101,13 +101,15 @@ public class SeedExtend {
                     frameN ++;
                 }
                 getExtendedSeeds();
-                System.out.println(printHeader);
-                for(ExtendedSeed e:extendedSeeds){
-                    for (Kmer kmer : e.kmers) {
-                        System.out.print(kmer.taxonID + " ");
+                if(! extendedSeeds.isEmpty()){
+                    System.out.println(printHeader);
+                    for(ExtendedSeed e:extendedSeeds){
+                        for (Kmer kmer : e.kmers) {
+                            System.out.print(kmer.taxonID + " ");
+                        }
                     }
+                    System.out.println();
                 }
-                System.out.println();
                 extendedSeeds.clear();
                 frames.clear();
             }
