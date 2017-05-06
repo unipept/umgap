@@ -49,7 +49,7 @@ public class SeedExtend {
             Scanner lcaF = new Scanner(new File(args[2]));
             String lcaHeader = lcaF.nextLine();
             while(lcaF.hasNextLine()){
-                String printHeader = lcaHeader.substring(0,lcaHeader.indexOf("|"));
+                String printHeader = lcaHeader.substring(0,lcaHeader.lastIndexOf("|"));
                 int frameN = 1;
                 while(frameN <= 6){
                     Frame f = new Frame(frameN,k,gapSize,gapPenalty);
