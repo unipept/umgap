@@ -21,8 +21,10 @@ public class Kmer {
         String[] info = Unipeptinfo.split(",");
         this.aminoSeq = info[0];
         this.taxonID = Integer.parseInt(info[1]);
-        this.taxonName = info[2];
-        this.taxonRank = info[3];
+        for(int i=2; i<info.length-1; i++){
+            this.taxonName += info[i];
+        }
+        this.taxonRank = info[info.length-1];
         this.start = start;
         this.k = k;
     }
@@ -30,8 +32,10 @@ public class Kmer {
         String[] info = Unipeptinfo.split(",");
         this.aminoSeq = info[0];
         this.taxonID = Integer.parseInt(info[1]);
-        this.taxonName = info[2];
-        this.taxonRank = info[3];
+        for(int i=2; i<info.length-1; i++){
+            this.taxonName += info[i];
+        }
+        this.taxonRank = info[info.length-1];
         this.k = k;
     }
     

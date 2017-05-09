@@ -13,7 +13,7 @@ all.specificity <- numeric()
 identifications <- numeric()
 
 for(k in c(1,2,3,8,9,10,11,12,13,18,19,20,25,26,27,28,29,30,35,36,37,42,43,44,45,46,47)){
-  filename <- paste0("Kraken_MiSeq.11.Opt",k,".BothTree06.csv")
+  filename <- paste0("Kraken_MiSeq.11.Opt",k,".bothTree07.csv")
   reads <- read.csv(filename, header=TRUE)
   true.lineages <- read.csv("../Kraken_miseq_taxonomy.csv",fill = TRUE, header=TRUE)
   rownames(true.lineages)<- true.lineages[,"header"]
@@ -55,7 +55,8 @@ for(k in c(1,2,3,8,9,10,11,12,13,18,19,20,25,26,27,28,29,30,35,36,37,42,43,44,45
   
   
   specificity <- c(correct.rank/nr.rank,mean(correct.rank/nr.rank))
-  sensitivity <- c(correct.rank/tot.reads,mean(correct.rank/tot.reads))
+  #sensitivity <- c(correct.rank/tot.reads,mean(correct.rank/tot.reads))
+  sensitivity <- c(correct.rank/(correct.rank+(tot.reads-nr.rank)),mean(correct.rank/(correct.rank+(tot.reads-nr.rank))))
   all.sensitivity <- rbind(all.sensitivity,sensitivity)
   all.specificity <- rbind(all.specificity,specificity)
   print(k)
@@ -98,7 +99,7 @@ mat <- cbind(model_params,identifications/tot.reads, all.sensitivity, all.specif
 colnames(mat) <- c("seed_length","gap_size","type","gap_pen","IDs","superkingdom_sens","phylum_sens","class_sens","order_sens","family_sens","genus_sens","species_sens","mean_sens","superkingdom_prec","phylum_prec","class_prec","order_prec","family_prec","genus_prec","species_prec","mean_prec")
 rownames(mat) <- c(1,2,3,8,9,10,11,12,13,18,19,20,25,26,27,28,29,30,35,36,37,42,43,44,45,46,47)
 
-write.csv(mat,file="MiSeq_PR_SE.BothTree06.csv",sep=",")
+write.csv(mat,file="MiSeq_PRe_SE.bothTree07.csv",sep=",")
 
 library(car) 
 data_frame <- as.data.frame(mat)
@@ -107,7 +108,7 @@ data_frame$length_type <- paste(data_frame$seed_length,data_frame$type, sep=";")
 
 scatterplot(genus_prec ~ genus_sens | seed_length,data=data_frame, smoother=FALSE,reg.line=FALSE)
 scatterplot(genus_prec ~ genus_sens | type,data=data_frame, smoother=FALSE,reg.line=FALSE)
-
+scatterplot(genus_prec ~ genus_sens | length_type,data=data_frame, smoother=FALSE,reg.line=FALSE)
 scatterplot(IDs ~ seed_length | length_type, data=data_frame, smoother=FALSE,reg.line=FALSE)
 
 gap_pen28 <- c(which(mat[,"gap_pen"]==0.2),which(mat[,"gap_pen"]==0.8))

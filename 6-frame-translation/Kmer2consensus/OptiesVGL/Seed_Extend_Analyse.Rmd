@@ -10,10 +10,10 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r read data, include=FALSE}
-mat <- read.csv("HiSeq_SP_SE.csv")
-mat.mrl <- read.csv("HiSeq_PR_SE.MRL.csv")
-matM <- read.csv("MiSeq_SP_SE.csv")
-matM.mrl <- read.csv("MiSeq_PR_SE.MRL.csv")
+mat <- read.csv("HiSeq_PR_SE.csv")
+mat.mrl <- read.csv("HiSeq_PRe_SE.MRL.csv")
+matM <- read.csv("MiSeq_PR_SE.csv")
+matM.mrl <- read.csv("MiSeq_PRe_SE.MRL.csv")
 data_frame <- as.data.frame(mat)
 data_frame.mrl <- as.data.frame(mat.mrl)
 data_frameM <- as.data.frame(matM)
@@ -23,58 +23,58 @@ data_frame.mrl$length_type <- paste(data_frame.mrl$seed_length,data_frame$type, 
 data_frameM$length_type <- paste(data_frameM$seed_length,data_frameM$type, sep=";")
 data_frameM.mrl$length_type <- paste(data_frameM.mrl$seed_length,data_frameM$type, sep=";")
 
-matM08.mrl <- read.csv("MiSeq_PR_SE.BothTree08.csv")
+matM08.mrl <- read.csv("MiSeq_PRe_SE.BothTree08.csv")
 data_frameM08.mrl <- as.data.frame(matM08.mrl)
 data_frameM08.mrl$length_type <- paste(data_frameM08.mrl$seed_length,data_frameM08.mrl$type, sep=";")
-mat08.mrl <- read.csv("HiSeq_PR_SE.BothTree08.csv")
+mat08.mrl <- read.csv("HiSeq_PRe_SE.BothTree08.csv")
 data_frame08.mrl <- as.data.frame(mat08.mrl)
 data_frame08.mrl$length_type <- paste(data_frame08.mrl$seed_length,data_frame08.mrl$type, sep=";")
-matM02.mrl <- read.csv("MiSeq_PR_SE.BothTree02.csv")
+matM02.mrl <- read.csv("MiSeq_PRe_SE.BothTree02.csv")
 data_frameM02.mrl <- as.data.frame(matM02.mrl)
 data_frameM02.mrl$length_type <- paste(data_frameM02.mrl$seed_length,data_frameM02.mrl$type, sep=";")
-mat02.mrl <- read.csv("HiSeq_PR_SE.BothTree02.csv")
+mat02.mrl <- read.csv("HiSeq_PRe_SE.BothTree02.csv")
 data_frame02.mrl <- as.data.frame(mat02.mrl)
 data_frame02.mrl$length_type <- paste(data_frame02.mrl$seed_length,data_frame02.mrl$type, sep=";")
 
-matM05.mrl <- read.csv("MiSeq_PR_SE.BothTree05.csv")
+matM05.mrl <- read.csv("MiSeq_PRe_SE.BothTree05.csv")
 data_frameM05.mrl <- as.data.frame(matM05.mrl)
 data_frameM05.mrl$length_type <- paste(data_frameM05.mrl$seed_length,data_frameM05.mrl$type, sep=";")
-mat05.mrl <- read.csv("HiSeq_PR_SE.BothTree05.csv")
+mat05.mrl <- read.csv("HiSeq_PRe_SE.BothTree05.csv")
 data_frame05.mrl <- as.data.frame(mat05.mrl)
 data_frame05.mrl$length_type <- paste(data_frame05.mrl$seed_length,data_frame05.mrl$type, sep=";")
 
-matM04.mrl <- read.csv("MiSeq_PR_SE.BothTree04.csv")
+matM04.mrl <- read.csv("MiSeq_PRe_SE.BothTree04.csv")
 data_frameM04.mrl <- as.data.frame(matM04.mrl)
 data_frameM04.mrl$length_type <- paste(data_frameM04.mrl$seed_length,data_frameM04.mrl$type, sep=";")
-mat04.mrl <- read.csv("HiSeq_PR_SE.BothTree04.csv")
+mat04.mrl <- read.csv("HiSeq_PRe_SE.BothTree04.csv")
 data_frame04.mrl <- as.data.frame(mat04.mrl)
 data_frame04.mrl$length_type <- paste(data_frame04.mrl$seed_length,data_frame04.mrl$type, sep=";")
 
-matM06.mrl <- read.csv("MiSeq_PR_SE.BothTree06.csv")
+matM06.mrl <- read.csv("MiSeq_PRe_SE.BothTree06.csv")
 data_frameM06.mrl <- as.data.frame(matM06.mrl)
 data_frameM06.mrl$length_type <- paste(data_frameM06.mrl$seed_length,data_frameM06.mrl$type, sep=";")
-mat06.mrl <- read.csv("HiSeq_PR_SE.BothTree06.csv")
+mat06.mrl <- read.csv("HiSeq_PRe_SE.BothTree06.csv")
 data_frame06.mrl <- as.data.frame(mat06.mrl)
 data_frame06.mrl$length_type <- paste(data_frame06.mrl$seed_length,data_frame06.mrl$type, sep=";")
 library(car) 
 
 gap2 <- which(mat[,"gap_size"]==2)
-gap_pen28 <- c(which(mat[,"gap_pen"]==0.2),which(mat[,"gap_pen"]==0.8))
+gap_pen28 <- c(which(mat[,"gap_pen"]==0.2),which(mat[,"gap_pen"]==0.5))
 mat_reduced <- mat[-gap_pen28,]
 data_frame_reduced <- as.data.frame(mat_reduced)
 data_frame_reduced$length_type <- paste(data_frame_reduced$seed_length,data_frame_reduced$type, sep=";")
 
-gap_pen28 <- c(which(mat.mrl[,"gap_pen"]==0.2),which(mat.mrl[,"gap_pen"]==0.8))
+gap_pen28 <- c(which(mat.mrl[,"gap_pen"]==0.2),which(mat.mrl[,"gap_pen"]==0.5))
 mat.mrl_reduced <- mat.mrl[-gap_pen28,]
 data_frame.mrl_reduced <- as.data.frame(mat.mrl_reduced)
 data_frame.mrl_reduced$length_type <- paste(data_frame.mrl_reduced$seed_length,data_frame.mrl_reduced$type, sep=";")
 
-gap_pen28M <- c(which(matM[,"gap_pen"]==0.2),which(matM[,"gap_pen"]==0.8))
+gap_pen28M <- c(which(matM[,"gap_pen"]==0.2),which(matM[,"gap_pen"]==0.5))
 matM_reduced <- matM[-gap_pen28M,]
 data_frameM_reduced <- as.data.frame(matM_reduced)
 data_frameM_reduced$length_type <- paste(data_frameM_reduced$seed_length,data_frameM_reduced$type, sep=";")
 
-gap_pen28M <- c(which(matM.mrl[,"gap_pen"]==0.2),which(matM.mrl[,"gap_pen"]==0.8))
+gap_pen28M <- c(which(matM.mrl[,"gap_pen"]==0.2),which(matM.mrl[,"gap_pen"]==0.5))
 matM.mrl_reduced <- matM.mrl[-gap_pen28M,]
 data_frameM.mrl_reduced <- as.data.frame(matM.mrl_reduced)
 data_frameM.mrl_reduced$length_type <- paste(data_frameM.mrl_reduced$seed_length,data_frameM.mrl_reduced$type, sep=";")
@@ -84,11 +84,11 @@ data_frameM.mrl_reduced$length_type <- paste(data_frameM.mrl_reduced$seed_length
 gap-penalty lijkt niet veel invloed te hebben in aanwezigheid van de andere parameters:
 
 ```{r gap penalty, echo=FALSE,results='hide',message=FALSE, fig.height = 4, fig.width=6.5}
-scatterplot(mean_prec ~ mean_sens | gap_pen,data=data_frame, smoother=FALSE,reg.line=FALSE,main="HiSeq")
-scatterplot(mean_prec ~ mean_sens | gap_pen,data=data_frame.mrl, smoother=FALSE,reg.line=FALSE,main="HiSeq")
+scatterplot(mean_prec ~ mean_sens | gap_pen,data=data_frame, smoother=FALSE,reg.line=FALSE,main="HiSeq",xlim=c(0.69,0.8))
+scatterplot(mean_prec ~ mean_sens | gap_pen,data=data_frame.mrl, smoother=FALSE,reg.line=FALSE,main="HiSeq,MRL",xlim=c(0.69,0.8))
 
-scatterplot(mean_prec ~ mean_sens | gap_pen,data=data_frameM, smoother=FALSE,reg.line=FALSE,main="MiSeq")
-scatterplot(mean_prec ~ mean_sens | gap_pen,data=data_frameM.mrl, smoother=FALSE,reg.line=FALSE,main="MiSeq")
+scatterplot(mean_prec ~ mean_sens | gap_pen,data=data_frameM, smoother=FALSE,reg.line=FALSE,main="MiSeq",xlim=c(0.69,0.8))
+scatterplot(mean_prec ~ mean_sens | gap_pen,data=data_frameM.mrl, smoother=FALSE,reg.line=FALSE,main="MiSeq,MRL",xlim=c(0.69,0.8))
 ```
 
 
@@ -241,11 +241,36 @@ intersect(intersect(intersect(intersect(intersect(intersect(
   data_frame$length_type <- paste(data_frame$seed_length,data_frame$type, sep=";")
   scatterplot(mean_prec~gap_size|length_type,data=data_frame,smoother=FALSE,cex.lab=0.5, cex.axis=0.5,cex = 0.5,main="HiSeq")
   scatterplot(mean_sens~gap_size|length_type,data=data_frame,smoother=FALSE,cex.lab=0.5, cex.axis=0.5,cex = 0.5,main="HiSeq")
+  scatterplot(mean_prec~gap_pen|length_type,data=data_frame,smoother=FALSE,cex.lab=0.5, cex.axis=0.5,cex = 0.5,main="HiSeq")
+  scatterplot(mean_sens~gap_pen|length_type,data=data_frame,smoother=FALSE,cex.lab=0.5, cex.axis=0.5,cex = 0.5,main="HiSeq")
   
     data_frameM$length_type <- paste(data_frameM$seed_length,data_frameM$type, sep=";")
   scatterplot(mean_prec~gap_size|length_type,data=data_frameM,smoother=FALSE,cex.lab=0.5, cex.axis=0.5,cex = 0.5,main="MiSeq")
   scatterplot(mean_sens~gap_size|length_type,data=data_frameM,smoother=FALSE,cex.lab=0.5, cex.axis=0.5,cex = 0.5,main="MiSeq")
+  scatterplot(mean_prec~gap_pen|length_type,data=data_frameM,smoother=FALSE,cex.lab=0.5, cex.axis=0.5,cex = 0.5,main="MiSeq")
+  scatterplot(mean_sens~gap_pen|length_type,data=data_frameM,smoother=FALSE,cex.lab=0.5, cex.axis=0.5,cex = 0.5,main="MiSeq")
   ```
+    ```{r gap invloedMRL, echo = FALSE, fig.height = 4, fig.width=4}
+  data_frame$length_type <- paste(data_frame$seed_length,data_frame$type, sep=";")
+  scatterplot(mean_prec~gap_size|length_type,data=data_frame.mrl,smoother=FALSE,cex.lab=0.5, cex.axis=0.5,cex = 0.5,main="HiSeq,MRL")
+  scatterplot(mean_sens~gap_size|length_type,data=data_frame.mrl,smoother=FALSE,cex.lab=0.5, cex.axis=0.5,cex = 0.5,main="HiSeq,MRL")
+  scatterplot(mean_prec~gap_pen|length_type,data=data_frame.mrl,smoother=FALSE,cex.lab=0.5, cex.axis=0.5,cex = 0.5,main="HiSeq,MRL")
+  scatterplot(mean_sens~gap_pen|length_type,data=data_frame.mrl,smoother=FALSE,cex.lab=0.5, cex.axis=0.5,cex = 0.5,main="HiSeq,MRL")
+  
+    data_frameM$length_type <- paste(data_frameM$seed_length,data_frameM$type, sep=";")
+  scatterplot(mean_prec~gap_size|length_type,data=data_frameM.mrl,smoother=FALSE,cex.lab=0.5, cex.axis=0.5,cex = 0.5,main="MiSeq,MRL")
+  scatterplot(mean_sens~gap_size|length_type,data=data_frameM.mrl,smoother=FALSE,cex.lab=0.5, cex.axis=0.5,cex = 0.5,main="MiSeq,MRL")
+  scatterplot(mean_prec~gap_pen|length_type,data=data_frameM.mrl,smoother=FALSE,cex.lab=0.5, cex.axis=0.5,cex = 0.5,main="MiSeq,MRL")
+  scatterplot(mean_sens~gap_pen|length_type,data=data_frameM.mrl,smoother=FALSE,cex.lab=0.5, cex.axis=0.5,cex = 0.5,main="MiSeq,MRL")
+  ```
+  
+  ```{r linear regression}
+    summary(lm(mean_sens~length_type + gap_pen,data=data_frame))
+    summary(lm(mean_prec~length_type + gap_pen,data=data_frame))
+    summary(lm(mean_sens~length_type + gap_pen,data=data_frame.mrl))
+    summary(lm(mean_prec~length_type + gap_pen,data=data_frame.mrl))
+  ```
+
 
 * wanneer lengte van de seeds = 2 werkt enkel model type 1, type 2 geeft slechte sensitiviteit, type 3 geeft slechte precisie
     + reden? 
@@ -279,21 +304,21 @@ intersect(intersect(intersect(intersect(intersect(intersect(
 
 
 ```{r species genus, echo=FALSE,results='hide',message=FALSE, fig.height = 4, fig.width=4}
-scatterplot(genus_prec ~ genus_sens | length_type,data=data_frame_reduced, smoother=FALSE,reg.line=FALSE,labels = mat_reduced[,"gap_size"],id.n = nrow(data_frame_reduced),id.cex = 0.4,xlim=c(0.5,0.8),ylim=c(0.9,0.99),main="HiSeq",legend.coords="bottomleft",legend.columns=3, cex.axis=0.7,cex = 0.7,cex.lab=0.7)
-scatterplot(genus_prec ~ genus_sens | length_type,data=data_frame.mrl_reduced, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7, legend.coords="bottomleft",legend.columns=3,xlim=c(0.5,0.8),ylim=c(0.9,0.99),main="HiSeq,MRL",cex.lab=0.7)
-  scatterplot(genus_prec ~ genus_sens | length_type,data=data_frame08.mrl, smoother=FALSE,reg.line=FALSE,xlim=c(0.5,0.8),ylim=c(0.9,0.99), cex.axis=0.7,cex = 0.7, legend.coords="bottomleft",legend.columns=3,main="HiSeq,hybrid (0.8)",cex.lab=0.7)
-  scatterplot(genus_prec ~ genus_sens | length_type,data=data_frame02.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7,xlim=c(0.5,0.8),ylim=c(0.9,0.99), legend.coords="bottomleft",legend.columns=3,main="HiSeq,hybrid (0.2)",cex.lab=0.7)
-    scatterplot(genus_prec ~ genus_sens | length_type,data=data_frame05.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7,xlim=c(0.5,0.8),ylim=c(0.9,0.99), legend.coords="bottomleft",legend.columns=3,main="HiSeq,hybrid (0.5)",cex.lab=0.7)
-    scatterplot(genus_prec ~ genus_sens | length_type,data=data_frame04.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7,xlim=c(0.5,0.8),ylim=c(0.9,0.99), legend.coords="bottomleft",legend.columns=3,main="HiSeq,hybrid (0.4)",cex.lab=0.7)
-    scatterplot(genus_prec ~ genus_sens | length_type,data=data_frame06.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7,xlim=c(0.5,0.8),ylim=c(0.9,0.99), legend.coords="bottomleft",legend.columns=3,main="HiSeq,hybrid (0.6)",cex.lab=0.7)
+scatterplot(genus_prec ~ genus_sens | length_type,data=data_frame_reduced, smoother=FALSE,reg.line=FALSE,labels = mat_reduced[,"gap_size"],id.n = nrow(data_frame_reduced),id.cex = 0.4,xlim=c(0.5,0.85), ylim=c(0.9,0.99), main="HiSeq", legend.coords="bottomright", legend.columns=3, cex.axis=0.7,cex = 0.7,cex.lab=0.7)
+scatterplot(genus_prec ~ genus_sens | length_type,data=data_frame.mrl_reduced, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7, legend.coords="bottomleft", legend.columns=3,xlim=c(0.5,0.85),ylim=c(0.9,0.99),main="HiSeq,MRL",cex.lab=0.7)
+  scatterplot(genus_prec ~ genus_sens | length_type,data=data_frame08.mrl, smoother=FALSE,reg.line=FALSE,xlim=c(0.5,0.85),ylim=c(0.9,0.99), cex.axis=0.7,cex = 0.7, legend.coords="bottomleft",legend.columns=3,main="HiSeq,hybrid (0.8)",cex.lab=0.7)
+  scatterplot(genus_prec ~ genus_sens | length_type,data=data_frame02.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7,xlim=c(0.5,0.85),ylim=c(0.9,0.99), legend.coords="bottomleft",legend.columns=3,main="HiSeq,hybrid (0.2)",cex.lab=0.7)
+    scatterplot(genus_prec ~ genus_sens | length_type,data=data_frame05.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7,xlim=c(0.5,0.85),ylim=c(0.9,0.99), legend.coords="bottomleft",legend.columns=3,main="HiSeq,hybrid (0.5)",cex.lab=0.7)
+    scatterplot(genus_prec ~ genus_sens | length_type,data=data_frame04.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7,xlim=c(0.5,0.85),ylim=c(0.9,0.99), legend.coords="bottomleft",legend.columns=3,main="HiSeq,hybrid (0.4)",cex.lab=0.7)
+    scatterplot(genus_prec ~ genus_sens | length_type,data=data_frame06.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7,xlim=c(0.5,0.85),ylim=c(0.9,0.99), legend.coords="bottomleft",legend.columns=3,main="HiSeq,hybrid (0.6)",cex.lab=0.7)
 
-scatterplot(genus_prec ~ genus_sens | length_type,data=data_frameM_reduced, smoother=FALSE,reg.line=FALSE,labels = matM_reduced[,"gap_size"],id.n = nrow(data_frameM_reduced),legend.coords="bottomleft",legend.columns=3, cex.axis=0.7,cex = 0.7,id.cex = 0.7,xlim=c(0.35,0.65),ylim=c(0.85,0.98),main="MiSeq",cex.lab=0.7)
-scatterplot(genus_prec ~ genus_sens | length_type,data=data_frameM.mrl_reduced, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7, legend.coords="bottomleft",legend.columns=3,xlim=c(0.35,0.65),ylim=c(0.85,0.98),main="MiSeq,MRL",cex.lab=0.7)
-  scatterplot(genus_prec ~ genus_sens | length_type,data=data_frameM08.mrl, smoother=FALSE,reg.line=FALSE,xlim=c(0.35,0.65),ylim=c(0.85,0.98), cex.axis=0.7,cex = 0.7, legend.coords="bottomleft",legend.columns=3,main="MiSeq,hybrid (0.8)",cex.lab=0.7)
-  scatterplot(genus_prec ~ genus_sens | length_type,data=data_frameM02.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7,xlim=c(0.35,0.65),ylim=c(0.85,0.98), legend.coords="bottomleft",legend.columns=3,main="MiSeq,hybrid (0.2)",cex.lab=0.7)
-  scatterplot(genus_prec ~ genus_sens | length_type,data=data_frameM05.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7,xlim=c(0.35,0.65),ylim=c(0.85,0.98), legend.coords="bottomleft",legend.columns=3,main="MiSeq,hybrid (0.5)",cex.lab=0.7)
-  scatterplot(genus_prec ~ genus_sens | length_type,data=data_frameM04.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7,xlim=c(0.35,0.65),ylim=c(0.85,0.98), legend.coords="bottomleft",legend.columns=3,main="MiSeq,hybrid (0.4)",cex.lab=0.7)
-  scatterplot(genus_prec ~ genus_sens | length_type,data=data_frameM06.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7,xlim=c(0.35,0.65),ylim=c(0.85,0.98), legend.coords="bottomleft",legend.columns=3,main="MiSeq,hybrid (0.6)",cex.lab=0.7)
+scatterplot(genus_prec ~ genus_sens | length_type,data=data_frameM_reduced, smoother=FALSE,reg.line=FALSE,labels = matM_reduced[,"gap_size"],id.n = nrow(data_frameM_reduced),legend.coords="bottomleft",legend.columns=3, cex.axis=0.7,cex = 0.7,id.cex = 0.7,xlim=c(0.3,0.7),ylim=c(0.85,0.98),main="MiSeq",cex.lab=0.7)
+scatterplot(genus_prec ~ genus_sens | length_type,data=data_frameM.mrl_reduced, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7, legend.coords="bottomleft",legend.columns=3,xlim=c(0.3,0.7),ylim=c(0.85,0.98),main="MiSeq,MRL",cex.lab=0.7)
+  scatterplot(genus_prec ~ genus_sens | length_type,data=data_frameM08.mrl, smoother=FALSE,reg.line=FALSE,xlim=c(0.3,0.7),ylim=c(0.85,0.98), cex.axis=0.7,cex = 0.7, legend.coords="bottomleft",legend.columns=3,main="MiSeq,hybrid (0.8)",cex.lab=0.7)
+  scatterplot(genus_prec ~ genus_sens | length_type,data=data_frameM02.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7,xlim=c(0.3,0.7),ylim=c(0.85,0.98), legend.coords="bottomleft",legend.columns=3,main="MiSeq,hybrid (0.2)",cex.lab=0.7)
+  scatterplot(genus_prec ~ genus_sens | length_type,data=data_frameM05.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7,xlim=c(0.3,0.7),ylim=c(0.85,0.98), legend.coords="bottomleft",legend.columns=3,main="MiSeq,hybrid (0.5)",cex.lab=0.7)
+  scatterplot(genus_prec ~ genus_sens | length_type,data=data_frameM04.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7,xlim=c(0.3,0.7),ylim=c(0.85,0.98), legend.coords="bottomleft",legend.columns=3,main="MiSeq,hybrid (0.4)",cex.lab=0.7)
+  scatterplot(genus_prec ~ genus_sens | length_type,data=data_frameM06.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7,xlim=c(0.3,0.7),ylim=c(0.85,0.98), legend.coords="bottomleft",legend.columns=3,main="MiSeq,hybrid (0.6)",cex.lab=0.7)
 ```
 
 ```{r species, echo=FALSE,results='hide',message=FALSE}
@@ -320,7 +345,7 @@ all.sensitivity <- numeric()
 all.specificity <- numeric()
 identifications <- numeric()
 
-  k <- 10
+  k <- 18
   filename <- paste0("Kraken_HiSeq.11.Opt",k,".csv")
   reads <- read.csv(filename, header=TRUE)
   true.lineages <- read.csv("../Kraken_hiseq_taxonomy.csv",fill = TRUE, header=TRUE)
@@ -363,7 +388,7 @@ identifications <- numeric()
 
   
   specificity <- c(correct.rank/nr.rank,mean(correct.rank/nr.rank))
-  sensitivity <- c(correct.rank/tot.reads,mean(correct.rank/tot.reads))
+  sensitivity <- c(correct.rank/(correct.rank+(tot.reads-nr.rank)),mean(correct.rank/(correct.rank+(tot.reads-nr.rank))))
   all.sensitivity <- rbind(all.sensitivity,sensitivity)
   all.specificity <- rbind(all.specificity,specificity)
   
@@ -434,7 +459,7 @@ all.sensitivity <- numeric()
 all.specificity <- numeric()
 identifications <- numeric()
 
-  k <- 10
+  k <- 18
   filename <- paste0("Kraken_MiSeq.11.Opt",k,".csv")
   reads <- read.csv(filename, header=TRUE)
   true.lineages <- read.csv("../Kraken_miseq_taxonomy.csv",fill = TRUE, header=TRUE)
@@ -477,7 +502,7 @@ identifications <- numeric()
 
   
   specificity <- c(correct.rank/nr.rank,mean(correct.rank/nr.rank))
-  sensitivity <- c(correct.rank/tot.reads,mean(correct.rank/tot.reads))
+  sensitivity <- c(correct.rank/(correct.rank+(tot.reads-nr.rank)),mean(correct.rank/(correct.rank+(tot.reads-nr.rank))))
   all.sensitivity <- rbind(all.sensitivity,sensitivity)
   all.specificity <- rbind(all.specificity,specificity)
   
@@ -530,6 +555,7 @@ summary(beiden_fout[beiden_fout[,"correct"]=="B_cereus",])
 summary(beiden_fout[beiden_fout[,"correct"]=="E_cloacae",])
 summary(beiden_fout[beiden_fout[,"correct"]=="K_pneumoniae",])
 summary(beiden_fout[beiden_fout[,"correct"]=="S_enterica",])
+summary(beiden_fout[beiden_fout[,"correct"]=="M_abscessus",])
 
 #### Percentage van foute species met correct genus
 length(intersect(intersect(which(reads[,"taxon_rank"]>="species"),which(correctness[,"species_name"]==FALSE)),which(correctness[,"genus_name"])))/length(intersect(which(reads[,"taxon_rank"]>="species"),which(correctness[,"species_name"]==FALSE)))
