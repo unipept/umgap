@@ -55,7 +55,8 @@ for(k in 1:51){
   
   
   specificity <- c(correct.rank/nr.rank,mean(correct.rank/nr.rank))
-  sensitivity <- c(correct.rank/tot.reads,mean(correct.rank/tot.reads))
+  #sensitivity <- c(correct.rank/tot.reads,mean(correct.rank/tot.reads))
+  sensitivity <- c(correct.rank/(correct.rank+(tot.reads-nr.rank)),mean(correct.rank/(correct.rank+(tot.reads-nr.rank))))
   all.sensitivity <- rbind(all.sensitivity,sensitivity)
   all.specificity <- rbind(all.specificity,specificity)
   print(k)
@@ -145,7 +146,7 @@ mat <- cbind(model_params,identifications/tot.reads, all.sensitivity, all.specif
 colnames(mat) <- c("seed_length","gap_size","type","gap_pen","IDs","superkingdom_sens","phylum_sens","class_sens","order_sens","family_sens","genus_sens","species_sens","mean_sens","superkingdom_prec","phylum_prec","class_prec","order_prec","family_prec","genus_prec","species_prec","mean_prec")
 rownames(mat) <- c(1:51)
 
-write.csv(mat,file="MiSeq_SP_SE.csv",sep=",")
+write.csv(mat,file="MiSeq_PR_SE.csv",sep=",")
 
 library(car) 
 
@@ -158,7 +159,7 @@ scatterplot(mean_prec ~ mean_sens | gap_size,data=data_frame, smoother=FALSE,reg
 scatterplot(mean_prec ~ mean_sens | gap_pen,data=data_frame, smoother=FALSE,reg.line=FALSE)
 
 scatterplot(mean_prec ~ mean_sens | length_type,data=data_frame, smoother=FALSE,reg.line=FALSE)
-scatterplot(mean_prec ~ mean_sens | length_type,data=data_frame, smoother=FALSE,reg.line=FALSE, xlim=c(0.55,0.75), ylim=c(0.89,0.99))
+scatterplot(mean_prec ~ mean_sens | length_type,data=data_frame, smoother=FALSE,reg.line=FALSE,xlim=c(0.69,0.73), ylim=c(0.75,0.95))
 
 ##############################
 ## SUBSET ####################
