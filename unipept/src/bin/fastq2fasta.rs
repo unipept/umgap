@@ -36,7 +36,7 @@ impl<E, I: Iterator<Item=E>> Iterator for Zip<E, I> {
 }
 
 fn open_writer(argument: Option<&str>) -> Result<fasta::Writer<Box<io::Write>>> {
-    let output_arg = try!(argument.ok_or("Please provide a valid output argument."));
+    let output_arg = argument.unwrap_or("-");
     let output: Box<io::Write> = if output_arg == "-" {
         Box::new(io::stdout())
     } else {

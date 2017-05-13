@@ -79,7 +79,7 @@ impl<R: Read> Reader<R> {
 /// sequences/items.
 #[derive(Debug)]
 pub struct Record {
-    /// The record header (without the preceding '<')
+    /// The record header (without the preceding '>')
     pub header: String,
 
     /// The actual sequence of nucleotides
