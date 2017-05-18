@@ -66,7 +66,7 @@ public class Peptide {
     private void calculateScore(){
         double length_score = 0.1;
         if(length>6 && length<=16){
-            length_score = 0.09 * (double) length - 0.44;
+            length_score = 0.1 * (double) length - 0.6;
         }
         if(length >16){
             length_score = 1;

@@ -43,6 +43,7 @@ target/
 *classes*
 Kmer2consensus/Kraken_HiSeq_consensus
 Kmer2consensus/pipeline_split2unipept.tex
+Kmer2consensus/OptiesVGL/*.tex
 Kmer2consensus/temp
 Pseudogymnoascus/
 SixFrameTransl/xac
