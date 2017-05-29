@@ -51,7 +51,7 @@ fn factorize(weights: Weights, factor: f32) -> f32 {
 }
 
 impl agg::Aggregator for MixCalculator {
-    fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> Result<TaxonId, agg::Error> {
+    fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> agg::Result<TaxonId> {
         let mut weights: HashMap<TaxonId, Weights> = HashMap::with_capacity(taxons.len());
         let mut queue:   VecDeque<TaxonId>         = taxons.keys().map(|&t| t).collect();
 
@@ -79,7 +79,7 @@ impl agg::Aggregator for MixCalculator {
         weights.iter()
                .max_by_key(|&(_, w)| NotNaN::new(factorize(*w, self.factor)).unwrap())
                .map(|tup| *tup.0)
-               .ok_or(agg::Error::EmptyInput)
+               .ok_or(agg::ErrorKind::EmptyInput.into())
     }
 
 }
@@ -93,25 +93,25 @@ mod tests {
     #[test]
     fn test_full_rtl() {
         let aggregator = MixCalculator::new(fixtures::tree(), 0.0);
-        assert_eq!(Ok(185751), aggregator.counting_aggregate(&vec![12884, 185751]));
-        assert_eq!(Ok(185752), aggregator.counting_aggregate(&vec![12884, 185751, 185752, 185752]));
-        assert_eq!(Ok(10239), aggregator.counting_aggregate(&vec![1, 1, 10239, 10239, 10239, 12884, 185751, 185752]));
+        assert_eq!(185751, aggregator.counting_aggregate(&vec![12884, 185751]).unwrap());
+        assert_eq!(185752, aggregator.counting_aggregate(&vec![12884, 185751, 185752, 185752]).unwrap());
+        assert_eq!(10239, aggregator.counting_aggregate(&vec![1, 1, 10239, 10239, 10239, 12884, 185751, 185752]).unwrap());
     }
 
     #[test]
     fn test_full_lca() {
         let aggregator = MixCalculator::new(fixtures::tree(), 1.0);
-        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![12884, 185751]));
-        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![12884, 185751, 185752, 185752]));
-        assert_eq!(Ok(1), aggregator.counting_aggregate(&vec![1, 1, 10239, 10239, 10239, 12884, 185751, 185752]));
+        assert_eq!(12884, aggregator.counting_aggregate(&vec![12884, 185751]).unwrap());
+        assert_eq!(12884, aggregator.counting_aggregate(&vec![12884, 185751, 185752, 185752]).unwrap());
+        assert_eq!(1, aggregator.counting_aggregate(&vec![1, 1, 10239, 10239, 10239, 12884, 185751, 185752]).unwrap());
     }
 
     /* TODO: third example might fail because 12884 and 185751 have the same score. */
     #[test]
     fn test_one_half() {
         let aggregator = MixCalculator::new(fixtures::tree(), 0.5);
-        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![12884, 12884, 185751]));
-        assert_eq!(Ok(185751), aggregator.counting_aggregate(&vec![12884, 185751, 185751]));
-        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![1, 12884, 12884, 185751, 185752]));
+        assert_eq!(12884, aggregator.counting_aggregate(&vec![12884, 12884, 185751]).unwrap());
+        assert_eq!(185751, aggregator.counting_aggregate(&vec![12884, 185751, 185751]).unwrap());
+        assert_eq!(12884, aggregator.counting_aggregate(&vec![1, 12884, 12884, 185751, 185752]).unwrap());
     }
 }

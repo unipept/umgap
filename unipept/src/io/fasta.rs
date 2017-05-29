@@ -44,7 +44,7 @@ impl<R: Read> Reader<R> {
         };
 
         if !header.starts_with('>') {
-            return Err(errors::Error::Io(
+            bail!(errors::ErrorKind::Io(
                 io::Error::new(io::ErrorKind::Other,
                                "Expected > at beginning of fasta header.")));
         }

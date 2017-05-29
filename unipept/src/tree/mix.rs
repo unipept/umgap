@@ -37,8 +37,8 @@ impl MixCalculator {
 }
 
 impl agg::Aggregator for MixCalculator {
-    fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> Result<TaxonId, agg::Error> {
-        if taxons.len() == 0 { return Err(agg::Error::EmptyInput); }
+    fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> agg::Result<TaxonId> {
+        if taxons.len() == 0 { bail!(agg::ErrorKind::EmptyInput); }
         let subtree = try!(SubTree::new(self.root, &self.parents, taxons))
             .collapse(&Add::add)
             .aggregate(&Add::add);
@@ -62,26 +62,26 @@ mod tests {
     #[test]
     fn test_full_rtl() {
         let aggregator = MixCalculator::new(fixtures::ROOT, &fixtures::by_id(), 0.0);
-        assert_eq!(Ok(185751), aggregator.counting_aggregate(&vec![12884, 185751]));
-        assert_eq!(Ok(185752), aggregator.counting_aggregate(&vec![12884, 185751, 185752, 185752]));
-        assert!(vec![Ok(185751), Ok(185752)].contains(&aggregator.counting_aggregate(&vec![1, 1, 10239, 10239, 12884, 185751, 185752])));
+        assert_eq!(185751, aggregator.counting_aggregate(&vec![12884, 185751]).unwrap());
+        assert_eq!(185752, aggregator.counting_aggregate(&vec![12884, 185751, 185752, 185752]).unwrap());
+        assert!(vec![185751, 185752].contains(&aggregator.counting_aggregate(&vec![1, 1, 10239, 10239, 12884, 185751, 185752]).unwrap()));
     }
 
     #[test]
     fn test_full_lca() {
         let aggregator = MixCalculator::new(fixtures::ROOT, &fixtures::by_id(), 1.0);
-        assert_eq!(Ok(185751), aggregator.counting_aggregate(&vec![12884, 185751]));
-        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![12884, 185751, 185752, 185752]));
-        assert_eq!(Ok(1), aggregator.counting_aggregate(&vec![1, 1, 10239, 10239, 10239, 12884, 185751, 185752]));
+        assert_eq!(185751, aggregator.counting_aggregate(&vec![12884, 185751]).unwrap());
+        assert_eq!(12884, aggregator.counting_aggregate(&vec![12884, 185751, 185752, 185752]).unwrap());
+        assert_eq!(1, aggregator.counting_aggregate(&vec![1, 1, 10239, 10239, 10239, 12884, 185751, 185752]).unwrap());
     }
 
     #[test]
     fn test_two_thirds() {
         let aggregator = MixCalculator::new(fixtures::ROOT, &fixtures::by_id(), 0.66);
-        assert_eq!(Ok(185751), aggregator.counting_aggregate(&vec![12884, 185751]));
-        assert_eq!(Ok(185751), aggregator.counting_aggregate(&vec![12884, 185751]));
-        assert_eq!(Ok(185751), aggregator.counting_aggregate(&vec![1, 12884, 12884, 185751]));
-        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![1, 12884, 10239, 185751, 185751, 185752]));
+        assert_eq!(185751, aggregator.counting_aggregate(&vec![12884, 185751]).unwrap());
+        assert_eq!(185751, aggregator.counting_aggregate(&vec![12884, 185751]).unwrap());
+        assert_eq!(185751, aggregator.counting_aggregate(&vec![1, 12884, 12884, 185751]).unwrap());
+        assert_eq!(12884, aggregator.counting_aggregate(&vec![1, 12884, 10239, 185751, 185751, 185752]).unwrap());
     }
 }
 

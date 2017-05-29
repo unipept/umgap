@@ -76,7 +76,12 @@ fn main() {
         process::exit(1);
     });
 
-    let readers = matches.values_of("input").expect("clap forces force a value")
+    let readers = matches.values_of("input")
+                         .ok_or("At least one input file (or -) required.")
+                         .unwrap_or_else(|err| {
+                             println!("Error when opening the input files: {}", err);
+                             process::exit(1)
+                         })
                          .map(open_reader)
                          .collect::<Result<Vec<fastq::Records<Box<io::Read>>>>>()
                          .unwrap_or_else(|err| {

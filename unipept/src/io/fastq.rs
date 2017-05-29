@@ -30,9 +30,9 @@ impl<R: Read> Reader<R> {
             Some(header) => try!(header)
         };
         if !header.starts_with('@') {
-            return Err(errors::Error::Io(io::Error::new(
+            bail!(errors::ErrorKind::Io(io::Error::new(
                 io::ErrorKind::Other,
-                "Expected @ at beginning of fasta header."
+                "Expected @ at beginning of fastq header."
             )));
         }
         let _ = header.remove(0);
@@ -53,7 +53,7 @@ impl<R: Read> Reader<R> {
                .and_then(|line| line.ok())
                .map(|line| !line.starts_with('+'))
                .unwrap_or(false) {
-            return Err(errors::Error::Io(io::Error::new(
+            bail!(errors::ErrorKind::Io(io::Error::new(
                 io::ErrorKind::Other,
                 "Expected a + as separator."
             )));
@@ -65,7 +65,7 @@ impl<R: Read> Reader<R> {
             if let Some(line) = self.lines.next() {
                 quality.push_str(&try!(line))
             } else {
-                return Err(errors::Error::Io(io::Error::new(
+                bail!(errors::ErrorKind::Io(io::Error::new(
                     io::ErrorKind::Other,
                     "Expected as many quality lines as sequence lines."
                 )));
