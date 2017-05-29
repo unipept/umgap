@@ -1,5 +1,6 @@
 //! Defines operations and data structures over taxons.
 
+use std;
 use std::fmt;
 use std::io;
 use std::io::BufRead;
@@ -27,8 +28,8 @@ impl Rank {
 }
 
 impl FromStr for Rank {
-    type Err = &'static str;
-    fn from_str(rank: &str) -> Result<Self, Self::Err> {
+    type Err = Error;
+    fn from_str(rank: &str) -> Result<Self> {
         match rank {
             "no rank"          => Ok(Rank::NoRank),
             "superkingdom"     => Ok(Rank::Superkingdom),
@@ -59,7 +60,7 @@ impl FromStr for Rank {
             "subspecies"       => Ok(Rank::Subspecies),
             "varietas"         => Ok(Rank::Varietas),
             "forma"            => Ok(Rank::Forma),
-            _                  => Err("Unknown taxon rank.")
+            _                  => Err(ErrorKind::UnknownRank(rank.to_string()).into())
         }
     }
 }
@@ -132,7 +133,7 @@ impl Taxon {
 }
 
 impl FromStr for Taxon {
-    type Err = &'static str;
+    type Err = Error;
 
     /// Parses a taxon from the given string.
     ///
@@ -155,10 +156,10 @@ impl FromStr for Taxon {
     /// //                  valid: true
     /// //              }
     /// ```
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+    fn from_str(s: &str) -> Result<Self> {
         let split: Vec<&str> = s.trim_right().split('\t').collect();
 
-        if split.len() != 5 { return Err("Taxon requires five fields"); }
+        if split.len() != 5 { bail!("Taxon requires five fields"); }
         match (
             split[0].parse::<TaxonId>(),
             split[1].to_string(),
@@ -168,10 +169,10 @@ impl FromStr for Taxon {
         ) {
             (Ok(id), name, Ok(rank), Ok(parent), "\x01") => Ok(Taxon::new(id, name, rank, parent, true)),
             (Ok(id), name, Ok(rank), Ok(parent), "\x00") => Ok(Taxon::new(id, name, rank, parent, false)),
-            (Err(_), _,    _,        _,          _)      => Err("Couldn't parse the ID"),
-            (_,      _,    Err(_),   _,          _)      => Err("Couldn't parse the Rank"),
-            (_,      _,    _,        Err(_),     _)      => Err("Couldn't parse the parent ID"),
-            _                                            => Err("Couldn't parse the valid byte")
+            (Err(e), _,    _,        _,          _)      => Err(e.into()),
+            (_,      _,    Err(e),   _,          _)      => Err(e.into()),
+            (_,      _,    _,        Err(e),     _)      => Err(e.into()),
+            _                                            => bail!("Couldn't parse the valid byte")
         }
     }
 }
@@ -179,8 +180,8 @@ impl FromStr for Taxon {
 /// Reads in a file where each line can be parsed as a taxon.
 ///
 /// See [Taxon::from_str()](struct.Taxon.html#method.from_str) for more details on the line format.
-pub fn read_taxa_file(filename: &str) -> Result<Vec<Taxon>, &'static str> {
-    let file   = try!(File::open(filename).map_err(|_| "Failed opening taxon file."));
+pub fn read_taxa_file(filename: &str) -> Result<Vec<Taxon>> {
+    let file   = try!(File::open(filename).chain_err(|| "Failed opening taxon file."));
     let reader = io::BufReader::new(file);
     let mut taxa = Vec::new();
     for mline in reader.lines() {
@@ -374,6 +375,24 @@ impl IntoIterator for TaxonTree {
     }
 }
 
+error_chain! {
+    foreign_links {
+        InvalidID(std::num::ParseIntError) #[doc = "Indicates failure to parse a Taxon ID"];
+    }
+    errors {
+        /// Unrecognized taxon rank
+        UnknownRank(rank: String) {
+            description("Unrecognized taxon rank")
+            display("Unknown rank: {}", rank)
+        }
+        /// Encountered an unknown taxon ID
+        UnknownTaxon(tid: TaxonId) {
+            description("Encountered an unknown taxon ID")
+            display("Unknown Taxon ID: {}", tid)
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -381,17 +400,17 @@ mod tests {
 
     #[test]
     fn test_taxon_parsing() {
-        assert_eq!(Ok(Taxon::from_static(1, "root", Rank::NoRank, 1,  true)),  "1	root	no rank	1	\x01".parse());
-        assert_eq!(Ok(Taxon::from_static(1, "root", Rank::Family, 1,  true)),  "1	root	family	1	\x01".parse());
-        assert_eq!(Ok(Taxon::from_static(1, "root", Rank::NoRank, 22, true)),  "1	root	no rank	22	\x01".parse());
-        assert_eq!(Ok(Taxon::from_static(1, "root", Rank::NoRank, 1,  false)), "1	root	no rank	1	\x00".parse());
+        assert_eq!(Taxon::from_static(1, "root", Rank::NoRank, 1,  true),  "1	root	no rank	1	\x01".parse().unwrap());
+        assert_eq!(Taxon::from_static(1, "root", Rank::Family, 1,  true),  "1	root	family	1	\x01".parse().unwrap());
+        assert_eq!(Taxon::from_static(1, "root", Rank::NoRank, 22, true),  "1	root	no rank	22	\x01".parse().unwrap());
+        assert_eq!(Taxon::from_static(1, "root", Rank::NoRank, 1,  false), "1	root	no rank	1	\x00".parse().unwrap());
 
-        assert_eq!(Err("Taxon requires five fields"),    "hello world".parse::<Taxon>());
-        assert_eq!(Err("Couldn't parse the ID"),         "a	root	no_rank	1	\x00".parse::<Taxon>());
-        assert_eq!(Err("Couldn't parse the Rank"),       "1	root	no_rank	1	\x00".parse::<Taxon>());
-        assert_eq!(Err("Couldn't parse the parent ID"),  "1	root	no rank	#	\x00".parse::<Taxon>());
-        assert_eq!(Err("Couldn't parse the parent ID"),  "1	root	no rank		\x00".parse::<Taxon>());
-        assert_eq!(Err("Couldn't parse the valid byte"), "1	root	no rank	7	hello".parse::<Taxon>());
+        assert!("hello world".parse::<Taxon>().is_err());
+        assert!("a	root	no_rank	1	\x00".parse::<Taxon>().is_err());
+        assert!("1	root	no_rank	1	\x00".parse::<Taxon>().is_err());
+        assert!("1	root	no rank	#	\x00".parse::<Taxon>().is_err());
+        assert!("1	root	no rank		\x00".parse::<Taxon>().is_err());
+        assert!("1	root	no rank	7	hello".parse::<Taxon>().is_err());
     }
 
     #[test]

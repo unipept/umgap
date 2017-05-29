@@ -39,24 +39,24 @@ impl LCACalculator {
     }
 
     /// Calculates the lowest common ancestor of 2 taxons.
-    pub fn lca(&self, left: TaxonId, right: TaxonId) -> Result<TaxonId, agg::Error> {
+    pub fn lca(&self, left: TaxonId, right: TaxonId) -> agg::Result<TaxonId> {
         let left_index  = try!(self.first_occurence(left));
         let right_index = try!(self.first_occurence(right));
         let rmq_index   = self.rmq_info.query(left_index, right_index);
         Ok(self.euler_tour[rmq_index])
     }
 
-    fn first_occurence(&self, taxon_id: TaxonId) -> Result<usize, agg::Error> {
+    fn first_occurence(&self, taxon_id: TaxonId) -> taxon::Result<usize> {
         self.first_occurences
             .get(&taxon_id)
-            .ok_or(agg::Error::UnknownTaxon(taxon_id))
+            .ok_or(taxon::ErrorKind::UnknownTaxon(taxon_id).into())
             .map(|t| *t)
     }
 }
 
 impl agg::Aggregator for LCACalculator {
-    fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> Result<TaxonId, agg::Error> {
-        if taxons.len() == 0 { return Err(agg::Error::EmptyInput); }
+    fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> agg::Result<TaxonId> {
+        if taxons.len() == 0 { bail!(agg::ErrorKind::EmptyInput); }
         let mut indices    = taxons.keys().map(|t| self.first_occurence(*t));
         let mut consensus  = try!(indices.next().unwrap());
         let mut join_level = None::<usize>;
@@ -91,30 +91,30 @@ mod tests {
     #[test]
     fn test_two_on_same_path() {
         let aggregator = LCACalculator::new(fixtures::tree());
-        assert_eq!(Ok(185752), aggregator.counting_aggregate(&vec![12884, 185752]));
-        assert_eq!(Ok(185752), aggregator.counting_aggregate(&vec![185752, 12884]));
-        assert_eq!(Ok(2), aggregator.counting_aggregate(&vec![1, 2]));
-        assert_eq!(Ok(2), aggregator.counting_aggregate(&vec![2, 1]));
+        assert_eq!(185752, aggregator.counting_aggregate(&vec![12884, 185752]).unwrap());
+        assert_eq!(185752, aggregator.counting_aggregate(&vec![185752, 12884]).unwrap());
+        assert_eq!(2, aggregator.counting_aggregate(&vec![1, 2]).unwrap());
+        assert_eq!(2, aggregator.counting_aggregate(&vec![2, 1]).unwrap());
     }
 
     #[test]
     fn test_two_on_fork() {
         let aggregator = LCACalculator::new(fixtures::tree());
-        assert_eq!(Ok(1), aggregator.counting_aggregate(&vec![2, 10239]));
-        assert_eq!(Ok(1), aggregator.counting_aggregate(&vec![10239, 2]));
-        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![185751, 185752]));
-        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![185752, 185751]));
+        assert_eq!(1, aggregator.counting_aggregate(&vec![2, 10239]).unwrap());
+        assert_eq!(1, aggregator.counting_aggregate(&vec![10239, 2]).unwrap());
+        assert_eq!(12884, aggregator.counting_aggregate(&vec![185751, 185752]).unwrap());
+        assert_eq!(12884, aggregator.counting_aggregate(&vec![185752, 185751]).unwrap());
     }
 
     #[test]
     fn test_three_on_triangle() {
         let aggregator = LCACalculator::new(fixtures::tree());
-        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![12884, 185751, 185752]));
-        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![12884, 185752, 185751]));
-        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![185751, 12884, 185752]));
-        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![185752, 12884, 185751]));
-        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![185751, 185752, 12884]));
-        assert_eq!(Ok(12884), aggregator.counting_aggregate(&vec![185752, 185751, 12884]));
+        assert_eq!(12884, aggregator.counting_aggregate(&vec![12884, 185751, 185752]).unwrap());
+        assert_eq!(12884, aggregator.counting_aggregate(&vec![12884, 185752, 185751]).unwrap());
+        assert_eq!(12884, aggregator.counting_aggregate(&vec![185751, 12884, 185752]).unwrap());
+        assert_eq!(12884, aggregator.counting_aggregate(&vec![185752, 12884, 185751]).unwrap());
+        assert_eq!(12884, aggregator.counting_aggregate(&vec![185751, 185752, 12884]).unwrap());
+        assert_eq!(12884, aggregator.counting_aggregate(&vec![185752, 185751, 12884]).unwrap());
     }
 
     fn taxon(id: TaxonId, parent: TaxonId) -> Taxon {
@@ -144,11 +144,11 @@ mod tests {
     #[test]
     fn test_with_deeper_interns() {
         let large_aggregator = LCACalculator::new(TaxonTree::new(&large_taxon_list()));
-        assert_eq!(Ok(3), large_aggregator.counting_aggregate(&vec![9, 7]));
-        assert_eq!(Ok(3), large_aggregator.counting_aggregate(&vec![9, 10]));
-        assert_eq!(Ok(3), large_aggregator.counting_aggregate(&vec![7, 9]));
-        assert_eq!(Ok(3), large_aggregator.counting_aggregate(&vec![14, 8]));
-        assert_eq!(Ok(3), large_aggregator.counting_aggregate(&vec![14, 8]));
+        assert_eq!(3, large_aggregator.counting_aggregate(&vec![9, 7]).unwrap());
+        assert_eq!(3, large_aggregator.counting_aggregate(&vec![9, 10]).unwrap());
+        assert_eq!(3, large_aggregator.counting_aggregate(&vec![7, 9]).unwrap());
+        assert_eq!(3, large_aggregator.counting_aggregate(&vec![14, 8]).unwrap());
+        assert_eq!(3, large_aggregator.counting_aggregate(&vec![14, 8]).unwrap());
     }
 }
 

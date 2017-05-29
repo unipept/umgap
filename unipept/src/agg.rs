@@ -1,18 +1,17 @@
 //! Defines aggregation operations over a taxon tree.
 
 use std::collections::HashMap;
-use std::fmt;
-use std::error;
 
+use taxon;
 use taxon::TaxonId;
 
 /// Allows to aggregate over a taxon tree.
 pub trait Aggregator {
     /// Aggregates a set of scored taxons into a resulting taxon id.
-    fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> Result<TaxonId, Error>;
+    fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> Result<TaxonId>;
 
     /// Aggregates a list of taxons into a resulting taxon id.
-    fn counting_aggregate(&self, taxons: &Vec<TaxonId>) -> Result<TaxonId, Error> {
+    fn counting_aggregate(&self, taxons: &Vec<TaxonId>) -> Result<TaxonId> {
         let taxons = taxons.iter().map(|&t| (t, 1.0));
         self.aggregate(&count(taxons))
     }
@@ -28,40 +27,16 @@ pub fn count<T>(taxons: T) -> HashMap<TaxonId, f32>
     counts
 }
 
-/// Defines an error which occurred during an aggregation operation
-#[derive(Debug, PartialEq)]
-pub enum Error {
-    /// Returned if the collection to be aggregated is empty
-    EmptyInput,
-    /// Returned if the collection contains an unknown TaxonId
-    UnknownTaxon(TaxonId),
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            Error::EmptyInput      => write!(f, "Aggregation called on empty list"),
-            Error::UnknownTaxon(t) => write!(f, "Unknown Taxon ID: {}", t),
+error_chain! {
+    links {
+        Taxon(taxon::Error, taxon::ErrorKind) #[doc = "Taxon"];
+    }
+    errors {
+        /// Aggregation called on an empty list
+        EmptyInput {
+            description("Aggregration called on an empty list")
+            display("Aggregration called on an empty list")
         }
-    }
-}
-
-impl error::Error for Error {
-    fn description(&self) -> &str {
-        match *self {
-            Error::EmptyInput      => "The `aggregate` method was called on an empty list.",
-            Error::UnknownTaxon(_) => "Result of aggregating taxa no in the list of known taxa.",
-        }
-    }
-
-    fn cause(&self) -> Option<&error::Error> {
-        None
-    }
-}
-
-impl From<TaxonId> for Error {
-    fn from(id: TaxonId) -> Error {
-        Error::UnknownTaxon(id)
     }
 }
 
@@ -88,10 +63,10 @@ mod tests {
     #[test]
     fn test_empty_query() {
         for aggregator in aggregators(&fixtures::by_id()) {
-            assert_eq!(
-                Err(Error::EmptyInput),
-                aggregator.counting_aggregate(&Vec::new())
-            );
+            match *aggregator.counting_aggregate(&Vec::new()).unwrap_err().kind() {
+                ErrorKind::EmptyInput => (),
+                ref other             => panic!(other.to_string()),
+            }
         }
     }
 
@@ -99,7 +74,7 @@ mod tests {
     fn test_singleton_is_singleton() {
         for aggregator in aggregators(&fixtures::by_id()) {
             for taxon in fixtures::taxon_list() {
-                assert_eq!(Ok(taxon.id), aggregator.counting_aggregate(&vec![taxon.id]));
+                assert_eq!(taxon.id, aggregator.counting_aggregate(&vec![taxon.id]).unwrap());
             }
         }
     }
@@ -107,14 +82,14 @@ mod tests {
     #[test]
     fn test_invalid_taxa() {
         for aggregator in aggregators(&fixtures::by_id()) {
-            assert_eq!(
-                Err(Error::UnknownTaxon(5)),
-                aggregator.counting_aggregate(&vec![5])
-            );
-            assert_eq!(
-                Err(Error::UnknownTaxon(5)),
-                aggregator.counting_aggregate(&vec![1, 2, 5, 1])
-            );
+            match *aggregator.counting_aggregate(&vec![5]).unwrap_err().kind() {
+                ErrorKind::Taxon(taxon::ErrorKind::UnknownTaxon(5)) => (),
+                ref other                                           => assert!(false, other.to_string()),
+            }
+            match *aggregator.counting_aggregate(&vec![1, 2, 5, 1]).unwrap_err().kind() {
+                ErrorKind::Taxon(taxon::ErrorKind::UnknownTaxon(5)) => (),
+                ref other                                           => assert!(false, other.to_string()),
+            }
         }
     }
 }
