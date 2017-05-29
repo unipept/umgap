@@ -62,26 +62,26 @@ mod tests {
     #[test]
     fn test_full_rtl() {
         let aggregator = MixCalculator::new(fixtures::ROOT, &fixtures::by_id(), 0.0);
-        assert_eq!(185751, aggregator.counting_aggregate(&vec![12884, 185751]).unwrap());
-        assert_eq!(185752, aggregator.counting_aggregate(&vec![12884, 185751, 185752, 185752]).unwrap());
+        assert_matches!(aggregator.counting_aggregate(&vec![12884, 185751]), Ok(185751));
+        assert_matches!(aggregator.counting_aggregate(&vec![12884, 185751, 185752, 185752]), Ok(185752));
         assert!(vec![185751, 185752].contains(&aggregator.counting_aggregate(&vec![1, 1, 10239, 10239, 12884, 185751, 185752]).unwrap()));
     }
 
     #[test]
     fn test_full_lca() {
         let aggregator = MixCalculator::new(fixtures::ROOT, &fixtures::by_id(), 1.0);
-        assert_eq!(185751, aggregator.counting_aggregate(&vec![12884, 185751]).unwrap());
-        assert_eq!(12884, aggregator.counting_aggregate(&vec![12884, 185751, 185752, 185752]).unwrap());
-        assert_eq!(1, aggregator.counting_aggregate(&vec![1, 1, 10239, 10239, 10239, 12884, 185751, 185752]).unwrap());
+        assert_matches!(aggregator.counting_aggregate(&vec![12884, 185751]), Ok(185751));
+        assert_matches!(aggregator.counting_aggregate(&vec![12884, 185751, 185752, 185752]), Ok(12884));
+        assert_matches!(aggregator.counting_aggregate(&vec![1, 1, 10239, 10239, 10239, 12884, 185751, 185752]), Ok(1));
     }
 
     #[test]
     fn test_two_thirds() {
         let aggregator = MixCalculator::new(fixtures::ROOT, &fixtures::by_id(), 0.66);
-        assert_eq!(185751, aggregator.counting_aggregate(&vec![12884, 185751]).unwrap());
-        assert_eq!(185751, aggregator.counting_aggregate(&vec![12884, 185751]).unwrap());
-        assert_eq!(185751, aggregator.counting_aggregate(&vec![1, 12884, 12884, 185751]).unwrap());
-        assert_eq!(12884, aggregator.counting_aggregate(&vec![1, 12884, 10239, 185751, 185751, 185752]).unwrap());
+        assert_matches!(aggregator.counting_aggregate(&vec![12884, 185751]), Ok(185751));
+        assert_matches!(aggregator.counting_aggregate(&vec![12884, 185751]), Ok(185751));
+        assert_matches!(aggregator.counting_aggregate(&vec![1, 12884, 12884, 185751]), Ok(185751));
+        assert_matches!(aggregator.counting_aggregate(&vec![1, 12884, 10239, 185751, 185751, 185752]), Ok(12884));
     }
 }
 

@@ -46,29 +46,29 @@ mod tests {
     #[test]
     fn test_two_on_same_path() {
         let aggregator = LCACalculator::new(fixtures::tree().root, &fixtures::by_id());
-        assert_eq!(185752, aggregator.counting_aggregate(&vec![12884, 185752]).unwrap());
-        assert_eq!(185752, aggregator.counting_aggregate(&vec![185752, 12884]).unwrap());
-        assert_eq!(2, aggregator.counting_aggregate(&vec![1, 2]).unwrap());
-        assert_eq!(2, aggregator.counting_aggregate(&vec![2, 1]).unwrap());
+        assert_matches!(aggregator.counting_aggregate(&vec![12884, 185752]), Ok(185752));
+        assert_matches!(aggregator.counting_aggregate(&vec![185752, 12884]), Ok(185752));
+        assert_matches!(aggregator.counting_aggregate(&vec![1, 2]), Ok(2));
+        assert_matches!(aggregator.counting_aggregate(&vec![2, 1]), Ok(2));
     }
 
     #[test]
     fn test_two_on_fork() {
         let aggregator = LCACalculator::new(fixtures::tree().root, &fixtures::by_id());
-        assert_eq!(1, aggregator.counting_aggregate(&vec![2, 10239]).unwrap());
-        assert_eq!(1, aggregator.counting_aggregate(&vec![10239, 2]).unwrap());
-        assert_eq!(12884, aggregator.counting_aggregate(&vec![185751, 185752]).unwrap());
-        assert_eq!(12884, aggregator.counting_aggregate(&vec![185752, 185751]).unwrap());
+        assert_matches!(aggregator.counting_aggregate(&vec![2, 10239]), Ok(1));
+        assert_matches!(aggregator.counting_aggregate(&vec![10239, 2]), Ok(1));
+        assert_matches!(aggregator.counting_aggregate(&vec![185751, 185752]), Ok(12884));
+        assert_matches!(aggregator.counting_aggregate(&vec![185752, 185751]), Ok(12884));
     }
 
     #[test]
     fn test_three_on_triangle() {
         let aggregator = LCACalculator::new(fixtures::tree().root, &fixtures::by_id());
-        assert_eq!(12884, aggregator.counting_aggregate(&vec![12884, 185751, 185752]).unwrap());
-        assert_eq!(12884, aggregator.counting_aggregate(&vec![12884, 185752, 185751]).unwrap());
-        assert_eq!(12884, aggregator.counting_aggregate(&vec![185751, 12884, 185752]).unwrap());
-        assert_eq!(12884, aggregator.counting_aggregate(&vec![185752, 12884, 185751]).unwrap());
-        assert_eq!(12884, aggregator.counting_aggregate(&vec![185751, 185752, 12884]).unwrap());
-        assert_eq!(12884, aggregator.counting_aggregate(&vec![185752, 185751, 12884]).unwrap());
+        assert_matches!(aggregator.counting_aggregate(&vec![12884, 185751, 185752]), Ok(12884));
+        assert_matches!(aggregator.counting_aggregate(&vec![12884, 185752, 185751]), Ok(12884));
+        assert_matches!(aggregator.counting_aggregate(&vec![185751, 12884, 185752]), Ok(12884));
+        assert_matches!(aggregator.counting_aggregate(&vec![185752, 12884, 185751]), Ok(12884));
+        assert_matches!(aggregator.counting_aggregate(&vec![185751, 185752, 12884]), Ok(12884));
+        assert_matches!(aggregator.counting_aggregate(&vec![185752, 185751, 12884]), Ok(12884));
     }
 }

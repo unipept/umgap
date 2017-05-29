@@ -405,12 +405,12 @@ mod tests {
         assert_eq!(Taxon::from_static(1, "root", Rank::NoRank, 22, true),  "1	root	no rank	22	\x01".parse().unwrap());
         assert_eq!(Taxon::from_static(1, "root", Rank::NoRank, 1,  false), "1	root	no rank	1	\x00".parse().unwrap());
 
-        assert!("hello world".parse::<Taxon>().is_err());
-        assert!("a	root	no_rank	1	\x00".parse::<Taxon>().is_err());
-        assert!("1	root	no_rank	1	\x00".parse::<Taxon>().is_err());
-        assert!("1	root	no rank	#	\x00".parse::<Taxon>().is_err());
-        assert!("1	root	no rank		\x00".parse::<Taxon>().is_err());
-        assert!("1	root	no rank	7	hello".parse::<Taxon>().is_err());
+        assert_matches!(*"hello world".parse::<Taxon>().unwrap_err().kind(), ErrorKind::Msg(_));
+        assert_matches!(*"a	root	no_rank	1	\x00".parse::<Taxon>().unwrap_err().kind(),  ErrorKind::InvalidID(_));
+        assert_matches!(*"1	root	no_rank	1	\x00".parse::<Taxon>().unwrap_err().kind(),  ErrorKind::UnknownRank(_));
+        assert_matches!(*"1	root	no rank	#	\x00".parse::<Taxon>().unwrap_err().kind(),  ErrorKind::InvalidID(_));
+        assert_matches!(*"1	root	no rank		\x00".parse::<Taxon>().unwrap_err().kind(),  ErrorKind::InvalidID(_));
+        assert_matches!(*"1	root	no rank	7	hello".parse::<Taxon>().unwrap_err().kind(), ErrorKind::Msg(_));
     }
 
     #[test]

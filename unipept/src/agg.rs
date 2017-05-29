@@ -63,10 +63,10 @@ mod tests {
     #[test]
     fn test_empty_query() {
         for aggregator in aggregators(&fixtures::by_id()) {
-            match *aggregator.counting_aggregate(&Vec::new()).unwrap_err().kind() {
-                ErrorKind::EmptyInput => (),
-                ref other             => panic!(other.to_string()),
-            }
+            assert_matches!(
+                *aggregator.counting_aggregate(&Vec::new()).unwrap_err().kind(),
+                ErrorKind::EmptyInput
+            );
         }
     }
 
@@ -74,7 +74,7 @@ mod tests {
     fn test_singleton_is_singleton() {
         for aggregator in aggregators(&fixtures::by_id()) {
             for taxon in fixtures::taxon_list() {
-                assert_eq!(taxon.id, aggregator.counting_aggregate(&vec![taxon.id]).unwrap());
+                assert_matches!(aggregator.counting_aggregate(&vec![taxon.id]), Ok(tid) if tid == taxon.id);
             }
         }
     }
@@ -82,14 +82,14 @@ mod tests {
     #[test]
     fn test_invalid_taxa() {
         for aggregator in aggregators(&fixtures::by_id()) {
-            match *aggregator.counting_aggregate(&vec![5]).unwrap_err().kind() {
-                ErrorKind::Taxon(taxon::ErrorKind::UnknownTaxon(5)) => (),
-                ref other                                           => assert!(false, other.to_string()),
-            }
-            match *aggregator.counting_aggregate(&vec![1, 2, 5, 1]).unwrap_err().kind() {
-                ErrorKind::Taxon(taxon::ErrorKind::UnknownTaxon(5)) => (),
-                ref other                                           => assert!(false, other.to_string()),
-            }
+            assert_matches!(
+                *aggregator.counting_aggregate(&vec![5]).unwrap_err().kind(),
+                ErrorKind::Taxon(taxon::ErrorKind::UnknownTaxon(5))
+            );
+            assert_matches!(
+                *aggregator.counting_aggregate(&vec![1, 2, 5, 1]).unwrap_err().kind(),
+                ErrorKind::Taxon(taxon::ErrorKind::UnknownTaxon(5))
+            );
         }
     }
 }
