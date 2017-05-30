@@ -5,15 +5,22 @@ juist <- juist[,-1]
 fout <- fout[,-1]
 juist <- juist[-which(is.na(juist$taxon_rank)),]
 fout <- fout[-which(is.na(fout$taxon_rank)),]
+fout.noRoot <- fout[-which(fout[,"taxon_name"]=="root"),]
 juist.n <- as.numeric(paste(juist[,5]))
 fout.n <- as.numeric(paste(fout[,5]))
 sum(fout.n >=16)/length(fout.n)
 sum(juist.n==5)/length(juist.n)
+juist.lengtes <- as.numeric(paste(juist[,5])) 
 summary(as.numeric(paste(juist[,5])))
+boxplot(juist.lengtes,as.numeric(paste(fout.noRoot[,5])),names=c("juist","fout"),horizontal = T,xlab="peptide lengte")
+summary(as.numeric(paste(fout.noRoot[,5])))
 summary(as.numeric(paste(fout[,5])))
 hist(as.numeric(paste(juist[,5])))
 histo <-hist(as.numeric(paste(fout[,5])))
 histo
+
+sum(as.numeric(paste(fout.noRoot[,5]))>=16)
+summary(fout.noRoot[as.numeric(paste(fout.noRoot[,5]))>=16,"taxon_name"])
 
 sum(tabel$taxon_id==1)/nrow(tabel)
 

@@ -418,6 +418,8 @@ tot_perSP <- 1000
 IDs_perSP <- summary(reads[,"correct"])
 IDs_perSP/tot_perSP
 
+1000-summary(reads[which(reads[,"taxon_rank"]>="species"),"correct"])
+
 plot(correct_dataframe$A_hydrophila,type='n',ylim=c(0,1000))
 for(i in 1:10){
   lines(correct_dataframe[i], col=rainbow(10)[i])
@@ -531,7 +533,8 @@ correct_dataframe  <- as.data.frame(correct_mat)
 ```{r info over fouten MiSeq}
 tot_perSP <- 1000
 IDs_perSP <- summary(reads[,"correct"])
-IDs_perSP
+
+1000-summary(reads[which(reads[,"taxon_rank"]>="species"),"correct"])
 
 plot(correct_dataframe$B_cereus,type='n',ylim=c(0,1000))
 for(i in 1:10){

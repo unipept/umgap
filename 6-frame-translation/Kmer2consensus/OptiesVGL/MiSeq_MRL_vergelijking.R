@@ -15,7 +15,7 @@ identifications <- numeric()
 for(k in c(1,2,3,8,9,10,11,12,13,18,19,20,25,26,27,28,29,30,35,36,37,42,43,44,45,46,47)){
   filename <- paste0("Kraken_MiSeq.11.Opt",k,".bothTree07.csv")
   reads <- read.csv(filename, header=TRUE)
-  true.lineages <- read.csv("../Kraken_miseq_taxonomy.csv",fill = TRUE, header=TRUE)
+  true.lineages <- read.csv("../Kraken_miseq_taxonomy2.csv",fill = TRUE, header=TRUE)
   rownames(true.lineages)<- true.lineages[,"header"]
   reads[,"taxon_rank"] <- ordered(reads[,"taxon_rank"], levels = CLASSES)
   
