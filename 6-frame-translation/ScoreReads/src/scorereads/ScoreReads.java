@@ -72,7 +72,7 @@ public class ScoreReads {
                 String[] trueLineage = new String[0];
                 if(args.length > 5){
                     File lineageF = new File(args[5]);
-                    lineageR = new CSVReader(new FileReader(lineageF),';');
+                    lineageR = new CSVReader(new FileReader(lineageF),',');
                     trueLineage = args[6].split(";");
                 }
                 if(tp){
@@ -88,7 +88,7 @@ public class ScoreReads {
                 String header;
                 while((header=sixframe.readLine())!=null){
                     String frame = sixframe.readLine();
-    //      Specifiek voor Triptische Peptiden  
+    //      Specifiek voor Tryptische Peptiden  
                     if (tp){
                         ArrayList<Peptide> peptides = new ArrayList<>();
                         while(lca.hasNextLine() && lcaHeader.contains(header)){
@@ -106,7 +106,7 @@ public class ScoreReads {
                             }
                             lcaHeader = lca.nextLine();
                         }
-                        if(diepte==7){
+                        if(! lca.hasNextLine() && !lcaHeader.isEmpty()){
                             if(args.length > 5){
                                 if(lcaHeader.contains("root")){
                                     String[] root = new String[1];
@@ -120,6 +120,7 @@ public class ScoreReads {
                                 peptides.add(new Peptide(lcaHeader,taxonomy_score));
                             }
                             printProteins((double)24/(double)frame.length(),proteins);
+                            lcaHeader="";
                         }
                         if(args.length > 5){
                             drawScoredFrame(frame,diepte+7,peptides,(diepte<5),trueLineage);
@@ -263,6 +264,7 @@ public class ScoreReads {
     
     public static void drawKmerFrame(String frame, int framenr, boolean forward, List<Kmer> kmers, int k){
         double unit = (double) 24/(double)frame.length();
+        int linew = Math.max((int) ((double)14*unit),1);
         int pos=0;
         for(Kmer kmer: kmers){
             double start;
@@ -276,9 +278,9 @@ public class ScoreReads {
             double above = ((double)framenr + 0.2)/2;
             double below = ((double)framenr - 0.2)/2;
             if(taxonName.equalsIgnoreCase("root")){
-                System.out.println("\\draw[root, line cap=butt, line width = 2pt] ("+start+",-"+above+") -- ("+start+",-"+below+");");
+                System.out.println("\\draw[root, line cap=butt, line width = "+linew+"pt] ("+start+",-"+above+") -- ("+start+",-"+below+");");
             }else{
-                System.out.println("\\draw["+kmer.taxonRank+", line cap=butt, line width = 2pt] ("+start+",-"+above+") -- ("+start+",-"+below+");");
+                System.out.println("\\draw["+kmer.taxonRank+", line cap=butt, line width = "+linew+"pt] ("+start+",-"+above+") -- ("+start+",-"+below+");");
             }
         }
     }
@@ -288,6 +290,7 @@ public class ScoreReads {
             lineageString=lineageString + trueLineage[i];
         }
         double unit = (double) 24/(double)frame.length();
+        int linew = Math.max((int) ((double)14*unit),1);
         int pos=0;
         for(Kmer kmer: kmers){
             double start;
@@ -301,13 +304,13 @@ public class ScoreReads {
             double above = ((double)framenr + 0.2)/2;
             double below = ((double)framenr - 0.2)/2;
             if(taxonName.equalsIgnoreCase("root")){
-                System.out.println("\\draw[root, line cap=butt, line width = 2pt] ("+start+",-"+above+") -- ("+start+",-"+below+");");
+                System.out.println("\\draw[root, line cap=butt, line width = "+linew+"pt] ("+start+",-"+above+") -- ("+start+",-"+below+");");
             }else{
                 if(lineageString.contains(taxonName)){
-                    System.out.println("\\draw["+kmer.taxonRank+", line cap=butt, line width = 2pt] ("+start+",-"+above+") -- ("+start+",-"+below+");");
+                    System.out.println("\\draw["+kmer.taxonRank+", line cap=butt, line width = "+linew+"pt] ("+start+",-"+above+") -- ("+start+",-"+below+");");
                 }else{
                     String[] lineage = kmer.lineage;
-                    printKmerDisagreement(lineage,trueLineage,start,framenr);
+                    printKmerDisagreement(lineage,trueLineage,start,framenr,linew);
                 }
             }
         }
@@ -439,15 +442,16 @@ public class ScoreReads {
     
     public static void plotCoverageDepths(int frame, int diepte, int[] depths, int k, int factor){
         double unit = (double) 24 / (double) depths.length;
+        int linew = Math.max((int) ((double)14*unit),1);
         int n = depths.length;
         for(int i=0;i<depths.length;i++){
             int fact = depths[i]*100/k;
             double above = ((double)diepte + 0.2)/factor;
             double below = ((double)diepte - 0.2)/factor;
             if(frame<4){
-                System.out.println("\\draw [RoyalBlue!"+fact+",line width=2pt] ("+(i)*unit+",-"+above+") -- ("+(i)*unit+",-"+below+");");
+                System.out.println("\\draw [RoyalBlue!"+fact+",line width="+linew+"pt] ("+(i)*unit+",-"+above+") -- ("+(i)*unit+",-"+below+");");
             }else{
-                System.out.println("\\draw [RoyalBlue!"+fact+",line width=2pt] ("+(n-i)*unit+",-"+above+") -- ("+(n-i)*unit+",-"+below+");");
+                System.out.println("\\draw [RoyalBlue!"+fact+",line width="+linew+"pt] ("+(n-i)*unit+",-"+above+") -- ("+(n-i)*unit+",-"+below+");");
             }
         }
     }
@@ -513,13 +517,14 @@ public class ScoreReads {
         while(agreement< lineage.length && agreement< trueLin.length &&lineage[agreement].trim().equals(trueLin[agreement])){
             agreement +=1;
         }
+        String falseID = lineage[lineage.length-1];
         disagreement[0] = lineage.length + 1 + trueLin.length - 2*agreement;
         disagreement[1] = 100-disagreement[0];
         System.out.println("\\draw[red!"+disagreement[1]+", line width = 4pt, line cap = round] ("+start+",-"+framenr+") -- ("+end+",-"+framenr+");");
-        System.out.println("\\node[below, font=\\small] at ("+(start+end)/(double)2+",-"+framenr+") {"+disagreement[0]+"};");
+        System.out.println("\\node[below, font=\\scriptsize] at ("+(start+end)/(double)2+",-"+framenr+") {"+falseID+" ("+disagreement[0]+")};");
     }
     
-    public static void printKmerDisagreement(String[] lineage, String[] trueLin, double start, int framenr){
+    public static void printKmerDisagreement(String[] lineage, String[] trueLin, double start, int framenr,int linew){
         int[] disagreement = new int[2];
         int agreement = 0;
         while(agreement< lineage.length && agreement< trueLin.length &&lineage[agreement].trim().equals(trueLin[agreement])){
@@ -529,7 +534,7 @@ public class ScoreReads {
         disagreement[1] = 100-disagreement[0];
         double above = ((double)framenr + 0.2)/2;
         double below = ((double)framenr - 0.2)/2;
-        System.out.println("\\draw[red!"+disagreement[1]+", line width = 2pt, line cap = butt] ("+start+",-"+above+") -- ("+start+",-"+below+");");
+        System.out.println("\\draw[red!"+disagreement[1]+", line width = "+linew+"pt, line cap = butt] ("+start+",-"+above+") -- ("+start+",-"+below+");");
         System.out.println("\\node[draw=none, below, font=\\sffamily\\fontsize{2}{1}\\selectfont] at ("+start+",-"+(below+0.2)+") {"+disagreement[0]+"};");
     }
     
