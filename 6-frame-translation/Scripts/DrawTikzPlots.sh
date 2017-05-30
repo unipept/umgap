@@ -52,7 +52,9 @@ echo "\documentclass[10pt,a4paper,landscape]{report}
 \usepackage[dvipsnames]{xcolor}
 \usepackage{tikz}
 \usepackage[left=2cm,right=2cm,top=3cm,bottom=3cm]{geometry}
+\usetikzlibrary{decorations.pathreplacing}
 \begin{document}" 
+
 
 for i in $translationTables
 do
@@ -77,12 +79,18 @@ do
 			then
 				egrep -v '^>' $inputLocation/$lca | cut -d ',' -f2 | while read line
 	                        do
-                                efetch -db taxonomy -id "$line" -format xml | xtract -pattern Taxon -element Lineage
+                                	if [ ! $line -eq 1 ]
+					then
+						unipept taxonomy -a -s "*_name" $line | tail -1 | cut -d',' -f2- | tr -s ',' |sed 's/,$//'
+					fi 
         	                done > "$lineage"
 			else
 				cut -d "," -f 3 $inputLocation/$lca | sed '1d' | while read line
 				do 
-					efetch -db taxonomy -id "$line" -format xml | xtract -pattern Taxon -element Lineage
+					if [ ! $line -eq 1 ]
+                                        then
+                                                unipept taxonomy -a -s "*_name" $line | tail -1 | cut -d',' -f2- | tr -s ',' |sed 's/,$//'
+                                        fi
 				done > "$lineage"
 			fi
 		fi
