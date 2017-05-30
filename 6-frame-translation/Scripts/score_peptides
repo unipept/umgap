@@ -32,8 +32,9 @@ do
 	temp_header=$(echo "$line" |cut -d',' -f1)
 	if [ ! "$temp_header" = "$header" ] 
 	then
+		echo
 		header="$temp_header"
-		echo "$header"
+		echo "$(echo $header|sed 's/|.*$//')"
 	fi
 	pept=$(echo "$line" | cut -d',' -f2)
 	tax_id=$(echo "$line" | cut -d',' -f3) 
@@ -53,5 +54,5 @@ do
 		length_score=1
 	fi
 	score=$(echo "scale=2; $score * $length_score" | bc 2>/dev/null)
-	echo "$tax_id,0$score"
+	echo -n "$tax_id=0$score "
 done 
