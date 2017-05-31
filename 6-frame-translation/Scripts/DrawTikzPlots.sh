@@ -63,7 +63,8 @@ do
 	then
 		lca=$name.$i.${k}mer.lca
 	else
-		lca=found_lcas_$name.$i.txt
+		#lca=found_lcas_$name.$i.txt
+		lca=$name.$i.pept.lca
 	fi
 	if [ "$organism" ]
 	then
@@ -85,7 +86,8 @@ do
 					fi 
         	                done > "$lineage"
 			else
-				cut -d "," -f 3 $inputLocation/$lca | sed '1d' | while read line
+				#cut -d "," -f 3 $inputLocation/$lca | sed '1d' | while read line
+				egrep -v '^>' $inputLocation/$lca | cut -d ',' -f2 | while read line
 				do 
 					if [ ! $line -eq 1 ]
                                         then
@@ -111,8 +113,9 @@ do
                 lca=$inputLocation/$name.$i.${k}mer.lca
 		tex=$name.$i.${k}mer
         else
-                lca=$inputLocation/found_lcas_$name.$i.txt
-        	tex=$name.$i.pept
+                #lca=$inputLocation/found_lcas_$name.$i.txt
+        	lca=$inputLocation/$name.$i.pept.lca
+		tex=$name.$i.pept
 	fi
 	if [ "$organism" ]
 	then
