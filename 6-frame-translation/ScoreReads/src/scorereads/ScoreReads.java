@@ -76,7 +76,6 @@ public class ScoreReads {
                     trueLineage = args[6].split(";");
                 }
                 if(tp){
-                    lca.nextLine();
                     printEmptyLines(2,"BLIND STUDY");
                     if (args.length > 5){
                         printEmptyLines(9,"PRIOR KNOWLEDGE");
@@ -91,43 +90,66 @@ public class ScoreReads {
     //      Specifiek voor Tryptische Peptiden  
                     if (tp){
                         ArrayList<Peptide> peptides = new ArrayList<>();
-                        while(lca.hasNextLine() && lcaHeader.contains(header)){
-                            if(args.length > 5){
-                                if(lcaHeader.contains("root")){
-                                    String[] root = new String[1];
-                                    root[0] = "root";
-                                    peptides.add(new Peptide(lcaHeader, taxonomy_score, root));
-                                }else{
-                                    String[] lineage = lineageR.readNext();
-                                    peptides.add(new Peptide(lcaHeader, taxonomy_score, lineage));
-                                }
+                        while(lca.hasNextLine() && lcaHeader.equals(header)){
+                            String nextLCA = lca.nextLine();
+                            if(nextLCA.startsWith(">")){
+                                lcaHeader = nextLCA;
                             }else{
-                                peptides.add(new Peptide(lcaHeader,taxonomy_score));
-                            }
-                            lcaHeader = lca.nextLine();
-                        }
-                        if(! lca.hasNextLine() && !lcaHeader.isEmpty()){
-                            if(args.length > 5){
-                                if(lcaHeader.contains("root")){
-                                    String[] root = new String[1];
-                                    root[0] = "root";
-                                    peptides.add(new Peptide(lcaHeader, taxonomy_score, root));
+                                if(args.length > 5){
+                                    if(nextLCA.contains("root")){
+                                        String[] root = new String[1];
+                                        root[0] = "root";
+                                        peptides.add(new Peptide(nextLCA,taxonomy_score, root));;
+                                    }else{
+                                        String[] lineage = lineageR.readNext();
+                                        peptides.add(new Peptide(nextLCA,taxonomy_score, lineage));;
+                                    }
                                 }else{
-                                    String[] lineage = lineageR.readNext();
-                                    peptides.add(new Peptide(lcaHeader, taxonomy_score, lineage));
+                                    peptides.add(new Peptide(nextLCA,taxonomy_score));
                                 }
-                            }else{
-                                peptides.add(new Peptide(lcaHeader,taxonomy_score));
                             }
-                            printProteins((double)24/(double)frame.length(),proteins);
-                            lcaHeader="";
                         }
+//                        OUDE VERSIE WANNEER UNIPEPT PEPT2LCA WERD GEBRUIKT
+//                        while(lca.hasNextLine() && lcaHeader.contains(header)){
+//                            if(args.length > 5){
+//                                if(lcaHeader.contains("root")){
+//                                    String[] root = new String[1];
+//                                    root[0] = "root";
+//                                    peptides.add(new Peptide(lcaHeader, taxonomy_score, root));
+//                                }else{
+//                                    String[] lineage = lineageR.readNext();
+//                                    peptides.add(new Peptide(lcaHeader, taxonomy_score, lineage));
+//                                }
+//                            }else{
+//                                peptides.add(new Peptide(lcaHeader,taxonomy_score));
+//                            }
+//                            lcaHeader = lca.nextLine();
+//                        }
+//                        if(! lca.hasNextLine() && !lcaHeader.isEmpty()){
+//                            if(args.length > 5){
+//                                if(lcaHeader.contains("root")){
+//                                    String[] root = new String[1];
+//                                    root[0] = "root";
+//                                    peptides.add(new Peptide(lcaHeader, taxonomy_score, root));
+//                                }else{
+//                                    String[] lineage = lineageR.readNext();
+//                                    peptides.add(new Peptide(lcaHeader, taxonomy_score, lineage));
+//                                }
+//                            }else{
+//                                peptides.add(new Peptide(lcaHeader,taxonomy_score));
+//                            }
+//                            printProteins((double)24/(double)frame.length(),proteins);
+//                            lcaHeader="";
+//                        }
                         if(args.length > 5){
                             drawScoredFrame(frame,diepte+7,peptides,(diepte<5),trueLineage);
                         }
 //                        drawUnknownFrame(frame,diepte,peptides,(diepte<5));
                         drawScoredFrame(frame,diepte,peptides,(diepte<5));
                         drawSplitPoints(frame,diepte,(diepte<5));
+                        if(diepte == 2){
+                            printProteins((double)24/(double)frame.length(),proteins);
+                        }
                         diepte+=1;
                     }else{
     //      Specifiek voor K-meren

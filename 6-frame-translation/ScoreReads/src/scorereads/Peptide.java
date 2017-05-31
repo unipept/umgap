@@ -42,22 +42,20 @@ public class Peptide {
     }
     public Peptide(String UnipeptOut, Map<String,Double> taxScore){
         String[] info = UnipeptOut.split(",");
-        int n = info.length;
-        this.taxonRank = info[n-1];
-        this.taxonName = info[n-2];
-        this.taxonID = Integer.parseInt(info[n-3]);
-        this.aminoSeq = info[n-4];
+        this.aminoSeq = info[0];
+        this.taxonID = Integer.parseInt(info[1]);
+        this.taxonName = info[2];
+        this.taxonRank = info[3];
         this.length = aminoSeq.length();
         this.taxonomy_score = taxScore;
         calculateScore();
     }
     public Peptide(String UnipeptOut, Map<String,Double> taxScore, String[] lineage){
         String[] info = UnipeptOut.split(",");
-        int n = info.length;
-        this.taxonRank = info[n-1];
-        this.taxonName = info[n-2];
-        this.taxonID = Integer.parseInt(info[n-3]);
-        this.aminoSeq = info[n-4];
+        this.aminoSeq = info[0];
+        this.taxonID = Integer.parseInt(info[1]);
+        this.taxonName = info[2];
+        this.taxonRank = info[3];
         this.length = aminoSeq.length();
         this.taxonomy_score = taxScore;
         calculateScore();
