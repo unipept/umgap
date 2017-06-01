@@ -1,0 +1,13 @@
+
+
+./seedextend $name location parameter-options
+
+
+cat $name.seedextend |sed '/^>/s_/.*__' | fasta-uniq | sed '/^>/s_$_;_' | sed '/^>/s_^_;_'| tr '\n' ' ' | tr ';' '\n' | sed 's/^ //'| sed '/./,$!d' | ./taxa2agg taxons.9mer.tsv> $name.LCA.consensus
+	—> voor MRL of hybride, gebruik de opties van taxa2agg
+
+cat $name.LCA.consensus | python3 lineages2.py lineages.tsv | paste -d',' - - > $name.LCA.csv 
+
+sed -i -e's/^>\([A-Za-z0-9]*\)[^_,]*_\([A-Za-z0-9]*\)[^,]*,/\2,\1,/' $name.LCA.csv; sed -i -e's/^ENA,/,ENA,/' $name.LCA.csv ; sed -i -e's/^tpg,/,tpg,/' $name.LCA.csv
+
+cat $name.csv | sort | uniq -c | sed 's/^[ \t]*\([0-9]*\) /\1,/' > $name.LCA.counts
