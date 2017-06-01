@@ -1,11 +1,11 @@
+package drawlca4fgs;
+
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package scorereads;
-
-import java.util.Map;
 
 /**
  *
@@ -19,7 +19,7 @@ public class Kmer {
     public int k;
     public String[] lineage;
     
-    public Kmer(String seq, String taxonName, int taxonID, String taxonRank, int k, Map<String,Double> taxScore){
+    public Kmer(String seq, String taxonName, int taxonID, String taxonRank, int k){
         this.aminoSeq = seq;
         this.taxonID = taxonID;
         this.taxonName = taxonName;
@@ -27,7 +27,7 @@ public class Kmer {
         this.k = k;
     }
     
-    public Kmer(String Unipeptinfo, int k, Map<String,Double> taxScore){
+    public Kmer(String Unipeptinfo, int k){
         String[] info = Unipeptinfo.split(",");
         this.aminoSeq = info[0];
         this.taxonID = Integer.parseInt(info[1]);
@@ -36,7 +36,7 @@ public class Kmer {
         this.k = k;
     }
     
-    public Kmer(String Unipeptinfo, int k, Map<String,Double> taxScore, String[] lineage){
+    public Kmer(String Unipeptinfo, int k, String[] lineage){
         String[] info = Unipeptinfo.split(",");
         this.aminoSeq = info[0];
         this.taxonID = Integer.parseInt(info[1]);
@@ -45,6 +45,4 @@ public class Kmer {
         this.k = k;
         this.lineage=lineage;
     }
-    
-    
 }

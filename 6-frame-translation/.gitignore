@@ -55,9 +55,6 @@ Kmer2consensus/metabenchmark/present_lineage.onlyTaxID
 Kmer2consensus/metabenchmark/*.tex
 Pseudogymnoascus/
 SixFrameTransl/xac
-testFGS/acinetobacter/
-testFGS/archaea/
-testFGS/eukaryoten/
-testFGS/virus/
+testFGS
 Kmer2consensus/OptiesVGL/gap_pen_PR_Mmrl
 Kraken.OneRead*/

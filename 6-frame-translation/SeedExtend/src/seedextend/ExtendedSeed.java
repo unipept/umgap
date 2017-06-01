@@ -24,8 +24,8 @@ public class ExtendedSeed {
     public int ngaps = 0;
     private int length;
     private double score;
-    private double gapPenalty;
-    private ArrayList<String> rankOrder;
+    private final double gapPenalty;
+    private final ArrayList<String> rankOrder;
     private static final String[] ranks = new String[]{"no rank", "superkingdom", "kingdom", "subkingdom", "superphylum", "phylum", "subphylum","superclass", "class", "subclass", "infraclass",
                                                         "superorder", "order", "suborder", "infraorder", "parvorder", "superfamily", "family", "subfamily", "tribe", "subtribe", "genus", "subgenus", "species group", "species subgroup", "species", "subspecies", "varietas", "forma"};
     private final double[] rankScore = new double[]{0.1,0.2,0.2,0.2,0.3,0.3,0.3,0.4,0.4,0.4,0.4,0.5,0.5,0.5,0.5,0.5,0.6,0.6,0.6,0.7,0.7,0.8,0.8,0.9,0.9,1,1,1,1};
