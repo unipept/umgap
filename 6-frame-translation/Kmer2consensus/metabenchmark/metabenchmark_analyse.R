@@ -7,7 +7,6 @@ CLASSES = c("no rank", "superkingdom", "kingdom", "subkingdom", "superphylum", "
 tot.reads = 27658749
 tot.random = 4970853
 grades <- c("superkingdom_id","phylum_id","class_id","order_id","family_id","genus_id","species_id")
-header <- c("superkingdom","phylum","class","order","family","genus","species")
 
 all.sensitivity <- numeric()
 all.npv <- numeric()
@@ -20,7 +19,7 @@ for(k in c(1,8,11,18,19,25,26,28,29,36,43,46)){
   filename <- paste0("setA1.",k,".Hybrid04.counts")
   reads <- read.csv(filename, header=FALSE)
   colnames(reads) <- c("count","phylum", "embl","taxon_rank","taxon_id","superkingdom_id","kingdom_id","subkingdom_id","superphylum_id","phylum_id","subphylum_id","superclass_id","class_id","subclass_id","infraclass_id","superorder_id","order_id","suborder_id","infraorder_id","parvorder_id","superfamily_id","family_id","subfamily_id","tribe_id","subtribe_id","genus_id","subgenus_id","species_group_id","species_subgroup_id","species_id","subspecies_id","varietas_id","forma_id")
-  true.lineages <- read.csv("present_lineages2.csv",fill = TRUE, header=FALSE)
+  true.lineages <- read.csv("present_lineages.csv",fill = TRUE, header=FALSE)
   colnames(true.lineages) <- c("phylum", "embl","taxon_id","superkingdom_id","kingdom_id","subkingdom_id","superphylum_id","phylum_id","subphylum_id","superclass_id","class_id","subclass_id","infraclass_id","superorder_id","order_id","suborder_id","infraorder_id","parvorder_id","superfamily_id","family_id","subfamily_id","tribe_id","subtribe_id","genus_id","subgenus_id","species_group_id","species_subgroup_id","species_id","subspecies_id","varietas_id","forma_id")
   #rownames(true.lineages)<- true.lineages[,"embl"]
   reads[,"taxon_rank"] <- ordered(reads[,"taxon_rank"], levels = CLASSES)
@@ -55,30 +54,7 @@ for(k in c(1,8,11,18,19,25,26,28,29,36,43,46)){
     correct.rank <- c(correct.rank,sum(reads.reduced[intersect(which(reads.reduced[,"taxon_rank"]>=rank),which(correctness[,paste0(rank,"_id")])),"count"]))
     nr.rank <- c(nr.rank,sum(reads.reduced[which(reads.reduced[,"taxon_rank"]>=rank),"count"],na.rm=TRUE))
   }
-  
-  # correct.rank <- c(correct.rank,sum(reads.reduced[intersect(which(reads.reduced[,"taxon_rank"]>="superkingdom"),which(correctness[,"superkingdom_id"])),"count"]))
-  # nr.rank <- c(nr.rank,sum(reads.reduced[which(reads.reduced[,"taxon_rank"]>="superkingdom"),"count"],na.rm=TRUE))
-  # 
-  # correct.rank <- c(correct.rank,sum(reads.reduced[intersect(which(reads.reduced[,"taxon_rank"]>="phylum"),which(correctness[,"phylum_id"])),"count"]))
-  # nr.rank <- c(nr.rank,sum(reads.reduced[which(reads.reduced[,"taxon_rank"]>="phylum"),"count"],na.rm=TRUE))
-  # 
-  # correct.rank <- c(correct.rank,sum(reads.reduced[intersect(which(reads.reduced[,"taxon_rank"]>="class"),which(correctness[,"class_id"])),"count"]))
-  # nr.rank <- c(nr.rank,sum(reads.reduced[which(reads.reduced[,"taxon_rank"]>="class"),"count"],na.rm=TRUE))
-  # 
-  # correct.rank <- c(correct.rank,sum(reads.reduced[intersect(which(reads.reduced[,"taxon_rank"]>="order"),which(correctness[,"order_id"])),"count"]))
-  # nr.rank <- c(nr.rank,sum(reads.reduced[which(reads.reduced[,"taxon_rank"]>="order"),"count"],na.rm=TRUE))
-  # 
-  # correct.rank <- c(correct.rank,sum(reads.reduced[intersect(which(reads.reduced[,"taxon_rank"]>="family"),which(correctness[,"family_id"])),"count"]))
-  # nr.rank <- c(nr.rank,sum(reads.reduced[which(reads.reduced[,"taxon_rank"]>="family"),"count"],na.rm=TRUE))
-  # 
-  # correct.rank <- c(correct.rank,sum(reads.reduced[intersect(which(reads.reduced[,"taxon_rank"]>="genus"),which(correctness[,"genus_id"])),"count"]))
-  # nr.rank <- c(nr.rank,sum(reads.reduced[which(reads.reduced[,"taxon_rank"]>="genus"),"count"],na.rm=TRUE))
-  # 
-  # correct.rank <- c(correct.rank,sum(reads.reduced[intersect(which(reads.reduced[,"taxon_rank"]>="species"),which(correctness[,"species_id"])),"count"]))
-  # nr.rank <- c(nr.rank,sum(reads.reduced[which(reads.reduced[,"taxon_rank"]>="species"),"count"],na.rm=TRUE))
-  
-  
-  
+
   TN <- tot.random - random.mapped.rank
   FP <- nr.rank - correct.rank + random.mapped.rank
   TP <- correct.rank
@@ -122,14 +98,3 @@ rownames(mat) <- c(1,8,11,18,19,25,26,28,29,36,43,46)
 
 write.csv(mat,file="Metabench_analyse.Hybrid04.csv",sep=",")
 
-unique(reads[,"phylum"])
-unique(reads[,"embl"])
-
-sorted <- reads[order(reads[,"count"], decreasing=TRUE),]
-
-order <- reads[intersect(which(reads[,"taxon_rank"]>="order"),which(correctness[,"order_id"])),]
-order[intersect(which(reads[,"taxon_rank"]>="class"),which(correctness[,"class_id"])),]
-reads.reduced[intersect(which(correctness[,"order_id"]),which(!correctness[,"class_id"])),c("embl","order_id","class_id")]
-true.lineages[which(true.lineages[,"genus_id"]==332102),]
-
-reads[2036,]

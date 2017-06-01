@@ -48,9 +48,7 @@ Kraken_HiSeq_presentTaxons
 six_frame_single
 target/
 *classes*
-Kmer2consensus/Kraken_HiSeq_consensus
-Kmer2consensus/pipeline_split2unipept.tex
-Kmer2consensus/OptiesVGL/*.tex
+Kmer2consensus/Kraken/*.tex
 Kmer2consensus/temp
 Kmer2consensus/metabenchmark/present_lineage.onlyTaxID
 Kmer2consensus/metabenchmark/*.tex
@@ -58,7 +56,7 @@ Kmer2consensus/OUD/
 Pseudogymnoascus/
 SixFrameTransl/xac
 testFGS
-Kmer2consensus/OptiesVGL/gap_pen_PR_Mmrl
+Kmer2consensus/Kraken/gap_pen_PR_Mmrl
 Kraken.OneRead*/
 Scripts/javaDrawTikz.sh
 Scripts/multipleframepics.sh
