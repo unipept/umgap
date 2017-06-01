@@ -30,7 +30,8 @@
 *.xls
 *.xml
 *temp*/
-Adler/
+6Frame_Translation/
+DrawSixFrame/
 FastaFiles/
 Kmeren/kmer_tekening.tex
 Kmeren/lca_file.temp
@@ -58,3 +59,5 @@ SixFrameTransl/xac
 testFGS
 Kmer2consensus/OptiesVGL/gap_pen_PR_Mmrl
 Kraken.OneRead*/
+Scripts/javaDrawTikz.sh
+Scripts/multipleframepics.sh
