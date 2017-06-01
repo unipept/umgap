@@ -1,10 +1,12 @@
+First determine sixframe translation and give it a name: $name
 
+./kmer.sh $name
 
-./seedextend $name location parameter-options
+seedextend $name location parameter-options
 
 
 cat $name.seedextend |sed '/^>/s_/.*__' | fasta-uniq | sed '/^>/s_$_;_' | sed '/^>/s_^_;_'| tr '\n' ' ' | tr ';' '\n' | sed 's/^ //'| sed '/./,$!d' | ./taxa2agg taxons.9mer.tsv> $name.LCA.consensus
-	—> voor MRL of hybride, gebruik de opties van taxa2agg
+	—> For MRL or hybrid, us the available taxa2agg options (hybrid only works with Tree, not RMQ) 
 
 cat $name.LCA.consensus | python3 lineages2.py lineages.tsv | paste -d',' - - > $name.LCA.csv 
 
