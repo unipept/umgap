@@ -1,4 +1,4 @@
-setwd("/Users/Aranka/Documents/Unief/Thesis/Thesis/Kmer2consensus/OptiesVGL")
+setwd("/Users/Aranka/Documents/Unief/Thesis/Thesis/Kmer2consensus/Kraken")
 
 CLASSES = c("no rank", "superkingdom", "kingdom", "subkingdom", "superphylum", "phylum",
             "subphylum", "superclass", "class", "subclass", "infraclass", "superorder", "order", "suborder", 
@@ -159,7 +159,6 @@ scatterplot(mean_prec ~ mean_sens | gap_size,data=data_frame, smoother=FALSE,reg
 scatterplot(mean_prec ~ mean_sens | gap_pen,data=data_frame, smoother=FALSE,reg.line=FALSE)
 
 scatterplot(mean_prec ~ mean_sens | length_type,data=data_frame, smoother=FALSE,reg.line=FALSE)
-scatterplot(mean_prec ~ mean_sens | length_type,data=data_frame, smoother=FALSE,reg.line=FALSE,xlim=c(0.69,0.73), ylim=c(0.75,0.95))
 
 ##############################
 ## SUBSET ####################

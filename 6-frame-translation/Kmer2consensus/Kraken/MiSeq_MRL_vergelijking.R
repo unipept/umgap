@@ -1,4 +1,4 @@
-setwd("/Users/Aranka/Documents/Unief/Thesis/Thesis/Kmer2consensus/OptiesVGL")
+setwd("/Users/Aranka/Documents/Unief/Thesis/Thesis/Kmer2consensus/Kraken")
 
 CLASSES = c("no rank", "superkingdom", "kingdom", "subkingdom", "superphylum", "phylum",
             "subphylum", "superclass", "class", "subclass", "infraclass", "superorder", "order", "suborder", 

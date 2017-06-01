@@ -1,4 +1,4 @@
-setwd("/Users/Aranka/Documents/Unief/Thesis/Thesis/Kmer2consensus/OptiesVGL")
+setwd("/Users/Aranka/Documents/Unief/Thesis/Thesis/Kmer2consensus/Kraken")
 
 CLASSES = c("no rank", "superkingdom", "kingdom", "subkingdom", "superphylum", "phylum",
             "subphylum", "superclass", "class", "subclass", "infraclass", "superorder", "order", "suborder", 
@@ -187,7 +187,6 @@ summary(data_frame)
 plot(mat[,"superkingdom_sens"],mat[,"superkingdom_prec"])
 
 library(car) 
-?scatterplot
 scatterplot(mean_prec ~ mean_sens | seed_length,data=data_frame, smoother=FALSE,reg.line=FALSE,
             labels = data_frame[,"type"],id.n = nrow(data_frame),id.cex = 0.7)
 scatterplot(mean_prec ~ mean_sens | seed_length,data=data_frame, 
@@ -231,13 +230,6 @@ scatterplot(mean_sens~gap_size|length_type,data=data_frame,smoother=FALSE)
 scatterplot(mean_sens~gap_size|type,data=data_frame,smoother=FALSE)
 
 scatterplot(mean_prec ~ mean_sens | length_type,data=data_frame, smoother=FALSE,reg.line=FALSE)
-
-summary(lm(mean_sens~length_type + gap_pen,data=data_frame))
-summary(lm(mean_prec~length_type + gap_pen,data=data_frame))
-
-
-library(MASS)
-parcoord(data_frame[,6:12], col=rainbow(51), var.label=TRUE)
 
 
 
