@@ -40,9 +40,6 @@ then
 fi
 
 
-# outputLocation=$(cd $outputLocation | pwd)
-
-
 cd "$(dirname $0)/../SixFrameTransl"
 
 for i in $translationTables

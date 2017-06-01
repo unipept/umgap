@@ -54,6 +54,7 @@ Kmer2consensus/OptiesVGL/*.tex
 Kmer2consensus/temp
 Kmer2consensus/metabenchmark/present_lineage.onlyTaxID
 Kmer2consensus/metabenchmark/*.tex
+Kmer2consensus/OUD/
 Pseudogymnoascus/
 SixFrameTransl/xac
 testFGS
