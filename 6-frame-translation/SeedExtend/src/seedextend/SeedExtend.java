@@ -100,6 +100,7 @@ public class SeedExtend {
                     frames.add(f);
                     frameN ++;
                 }
+//                Zoek hoogst scorende extended seed en print de aanwezige taxa uit (VOOR SCORE2)
                 getExtendedSeeds();
                 if(! extendedSeeds.isEmpty()){
                     System.out.println(printHeader);
@@ -110,6 +111,17 @@ public class SeedExtend {
                     }
                     System.out.println();
                 }
+                System.out.println();
+//                METHODE VOOR SCORE1, alles uitprinten
+//                if(! extendedSeeds.isEmpty()){
+//                    System.out.println(printHeader);
+//                    for(ExtendedSeed e:extendedSeeds){
+//                        for (Kmer kmer : e.kmers) {
+//                            System.out.print(kmer.taxonID + " ");
+//                        }
+//                    }
+//                    System.out.println();
+//                }
                 extendedSeeds.clear();
                 frames.clear();
             }
@@ -119,9 +131,7 @@ public class SeedExtend {
         
     }
     
-    private static void getExtendedSeeds(){
-//        TODO:
-//          evt. strenger stopcriterium
+    private static void getExtendedSeeds(){  
         while(! frames.get(0).getSeeds().isEmpty()
                 || ! frames.get(1).getSeeds().isEmpty()
                 || ! frames.get(2).getSeeds().isEmpty()
@@ -145,14 +155,4 @@ public class SeedExtend {
         }
     }
     
-    private static void printBestSeed(String header){
-        ExtendedSeed longest = extendedSeeds.get(0);
-        for(int i=1; i< extendedSeeds.size();i++){
-            if(extendedSeeds.get(i).getLength()>longest.getLength()){
-                longest = extendedSeeds.get(i);
-            }
-        }
-        System.out.println(header + "|Frame " + longest.frameN);
-        System.out.println(longest.start + "," + longest.end + ": " + longest.taxonID);
-    }
 }

@@ -3,12 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package scorereads;
+package drawlca4fgs;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.TreeMap;
 
 /**
@@ -25,35 +22,43 @@ public class Peptide {
     private Map<String,Double> taxonomy_score = new TreeMap<>();
     public String[] lineage;
     
-    public Peptide(String aminoSeq, String taxonName, int taxonID, String taxonRank){
-        this.aminoSeq = aminoSeq;
-        this.taxonName = taxonName;
-        this.taxonID = taxonID;
-        this.taxonRank = taxonRank;
-        this.length = aminoSeq.length();
-        try {
-            fillTaxScore("taxonomy_score.txt");
-        } catch (FileNotFoundException ex) {
-            System.out.println("Initiating taxonomy scores failed");
-        }
-        calculateScore();
-    }
     public Peptide(String UnipeptOut, Map<String,Double> taxScore){
         String[] info = UnipeptOut.split(",");
-        this.aminoSeq = info[0];
-        this.taxonID = Integer.parseInt(info[1]);
-        this.taxonName = info[2];
-        this.taxonRank = info[3];
+        int n = info.length;
+        this.taxonRank = info[n-1];
+        this.taxonName = info[n-2];
+        this.taxonID = Integer.parseInt(info[n-3]);
+        this.aminoSeq = info[n-4];
         this.length = aminoSeq.length();
         this.taxonomy_score = taxScore;
         calculateScore();
     }
+    public Peptide(String UnipeptOut){
+        String[] info = UnipeptOut.split(",");
+        int n = info.length;
+        this.taxonRank = info[n-1];
+        this.taxonName = info[n-2];
+        this.taxonID = Integer.parseInt(info[n-3]);
+        this.aminoSeq = info[n-4];
+        this.length = aminoSeq.length();
+    }
+    public Peptide(String UnipeptOut, String[] lineage){
+        String[] info = UnipeptOut.split(",");
+        int n = info.length;
+        this.taxonRank = info[n-1];
+        this.taxonName = info[n-2];
+        this.taxonID = Integer.parseInt(info[n-3]);
+        this.aminoSeq = info[n-4];
+        this.length = aminoSeq.length();
+        this.lineage = lineage;
+    }
     public Peptide(String UnipeptOut, Map<String,Double> taxScore, String[] lineage){
         String[] info = UnipeptOut.split(",");
-        this.aminoSeq = info[0];
-        this.taxonID = Integer.parseInt(info[1]);
-        this.taxonName = info[2];
-        this.taxonRank = info[3];
+        int n = info.length;
+        this.taxonRank = info[n-1];
+        this.taxonName = info[n-2];
+        this.taxonID = Integer.parseInt(info[n-3]);
+        this.aminoSeq = info[n-4];
         this.length = aminoSeq.length();
         this.taxonomy_score = taxScore;
         calculateScore();
@@ -62,7 +67,7 @@ public class Peptide {
     private void calculateScore(){
         double length_score = 0.1;
         if(length>6 && length<=16){
-            length_score = 0.1 * (double) length - 0.6;
+            length_score = 0.09 * (double) length - 0.44;
         }
         if(length >16){
             length_score = 1;
@@ -75,17 +80,5 @@ public class Peptide {
     public double getScore(){
         return score;
     }
-    
-    private void fillTaxScore(String file) throws FileNotFoundException{
-        taxonomy_score.put("no rank", 0.1);
-        File input = new File(file);
-        Scanner sc = new Scanner(input);
-        while(sc.hasNextLine()){
-            String[] taxa = sc.next().split(",");
-            double s = sc.nextDouble();
-            for(String taxon : taxa){
-                taxonomy_score.put(taxon, s);
-            }
-        }
-    }
+
 }

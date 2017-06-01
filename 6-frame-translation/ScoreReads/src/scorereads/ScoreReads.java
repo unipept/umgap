@@ -25,9 +25,8 @@ import java.util.logging.Logger;
  * @author Aranka
  */
 public class ScoreReads {
-    private static Map<String,Double> taxonomy_score = new TreeMap<>();
-    private static String title = "Acinetobacter Baumannii";
-    private static String subtitle = "";
+    private final static Map<String,Double> taxonomy_score = new TreeMap<>();
+    private static String title = "";
 
     /**
      * @param args the command line arguments
@@ -163,10 +162,10 @@ public class ScoreReads {
                                     if(nextLCA.contains("root")){
                                         String[] root = new String[1];
                                         root[0] = "root";
-                                        kmers.add(new Kmer(nextLCA,k,taxonomy_score, root));;
+                                        kmers.add(new Kmer(nextLCA,k,taxonomy_score, root));
                                     }else{
                                         String[] lineage = lineageR.readNext();
-                                        kmers.add(new Kmer(nextLCA,k,taxonomy_score, lineage));;
+                                        kmers.add(new Kmer(nextLCA,k,taxonomy_score, lineage));
                                     }
                                 }else{
                                     kmers.add(new Kmer(nextLCA,k,taxonomy_score));
@@ -208,6 +207,13 @@ public class ScoreReads {
         }
     }
     
+    /** 
+     * Print de gescoorde voorstelling van een tryptic peptide split alsof we niet weten wat het juiste organisme is
+     * @param frame sequentie van het huidige frame
+     * @param framenr tekendiepte
+     * @param peptides lijst met peptiden 
+     * @param forward forward richting ja of neen
+     */
     public static void drawScoredFrame(String frame, int framenr, List<Peptide> peptides, boolean forward){
         double unit = (double) 24/(double)frame.length();
         for(Peptide pept:peptides){
@@ -233,6 +239,13 @@ public class ScoreReads {
         }
     }
     
+    /**
+     * Voorstelling van een tryptic peptide split zonder scores en zonder voorkennis
+     * @param frame sequentie van de huidige frame
+     * @param framenr tekendiepte
+     * @param peptides lijst met peptiden
+     * @param forward  forward richting ja of neen
+     */
     public static void drawUnknownFrame(String frame, int framenr, List<Peptide> peptides, boolean forward){
         double unit = (double) 24/(double)frame.length();
         for(Peptide pept:peptides){
@@ -253,7 +266,14 @@ public class ScoreReads {
             }
         }
     }
-    
+    /**
+     * Gescoorde voorstelling van een tryptic peptide split waarbij we rekening houden met voorkennis
+     * @param frame sequentie van het huidige frame
+     * @param framenr tekendiepte
+     * @param peptides lijst met peptiden
+     * @param forward forward richting ja of neen
+     * @param trueLineage de lineage van het correcte taxon
+     */
     public static void drawScoredFrame(String frame, int framenr, List<Peptide> peptides, boolean forward, String[] trueLineage){
         double unit = (double) 24/(double)frame.length();
         String lineageString="";
@@ -284,6 +304,14 @@ public class ScoreReads {
         }
     }
     
+    /**
+     * Deel van de k-meer voorstelling wanneer lineage gekend is dat geen rekening houdt met de lineage
+     * @param frame sequentie van het huidige frame
+     * @param framenr tekendiepte 
+     * @param forward forward richting ja of neen?
+     * @param kmers lijst met k-meren
+     * @param k k uit k-meer
+     */
     public static void drawKmerFrame(String frame, int framenr, boolean forward, List<Kmer> kmers, int k){
         double unit = (double) 24/(double)frame.length();
         int linew = Math.max((int) ((double)14*unit),1);
@@ -306,6 +334,16 @@ public class ScoreReads {
             }
         }
     }
+    
+    /**
+     * Deel van de k-meer voorstelling wanneer lineage gekend is dat rekening houdt met de lineage
+     * @param frame sequentie van  huidige frame
+     * @param framenr tekenpositie
+     * @param forward op de forward richting ja of neen
+     * @param kmers lijst met k-meren
+     * @param k k uit k-meer
+     * @param trueLineage de lineage van het correcte organisme
+     */
     public static void drawKmerFrame(String frame, int framenr, boolean forward, List<Kmer> kmers, int k, String[] trueLineage){
         String lineageString="";
         for(int i=0; i<trueLineage.length;i++){
@@ -338,6 +376,15 @@ public class ScoreReads {
         }
     }
     
+    /**
+     * Print de gelaagde k-meer voorstelling (wanneer lineages niet gekend zijn)
+     * @param frame sequentie van het frame
+     * @param diepte tekendiepte
+     * @param forward 1-3: forward, 4-6: reverse
+     * @param kmers lijst van k-meren
+     * @param k de k uit k-meer
+     * @return 
+     */
     public static int drawKmerFrame(String frame, int diepte, int forward, List<Kmer> kmers, int k){
         int depth = 0;
         double unit = (double) 24/(double)frame.length();
@@ -387,6 +434,12 @@ public class ScoreReads {
         return depth;
     }
     
+    /**
+     * Teken de plekken waar de frame gesplitst wordt (in geval van tryptische peptiden-
+     * @param frame sequentie van het frame
+     * @param framenr tekendiepte
+     * @param forward forward richting ja of neen
+     */
     public static void drawSplitPoints(String frame, int framenr, boolean forward){
         double unit = (double) 24/(double)frame.length();
         double above = framenr + 0.2;
@@ -430,6 +483,11 @@ public class ScoreReads {
         }
     }
     
+    /**
+     * leest het bestand met de scores voor taxonomische diepte in
+     * @param file het bestand met de scores
+     * @throws FileNotFoundException 
+     */
     private static void fillTaxScore(String file) throws FileNotFoundException{
         taxonomy_score.put("no rank", 0.1);
         File input = new File(file);
@@ -448,7 +506,13 @@ public class ScoreReads {
         }
     }
     
-    
+    /**
+     * Bereken coverage depth van een frame
+     * @param frame sequentie van het frame
+     * @param kmers lijst met geïdentificeerde k-meren op dat frame
+     * @param k de k uit k-meer
+     * @return 
+     */
     private static int[] getCoverageDepth(String frame, List<Kmer> kmers, int k){
         int[] depths = new int[frame.length()];
         int cur_pos = 0;
@@ -462,6 +526,14 @@ public class ScoreReads {
         return depths;
     }
     
+    /**
+     * Plot de coverage depths
+     * @param frame sequentie van het huidige frame
+     * @param diepte tekendiepte
+     * @param depths coverage dieptes
+     * @param k k uit k-meer
+     * @param factor  schalingsfactor
+     */
     public static void plotCoverageDepths(int frame, int diepte, int[] depths, int k, int factor){
         double unit = (double) 24 / (double) depths.length;
         int linew = Math.max((int) ((double)14*unit),1);
@@ -513,7 +585,6 @@ public class ScoreReads {
             "varietas/.style={teal!55!black, line width = 4pt, line cap = round},\n" +
             "forma/.style={teal!50!black, line width = 4pt, line cap = round}]\n" +
             "\\node[font=\\bfseries\\LARGE,align=center,above] at (12,2) {\\textit{"+title+"}} ;\n" +
-            "\\node[font=\\bfseries,align=center,above] at (12,1) {"+subtitle+"} ;\n" +
             "\\draw (0,0) -- (24,0) ;");
     }
     
@@ -533,6 +604,14 @@ public class ScoreReads {
         System.out.println("\\end{tikzpicture}");
     }
     
+    /**
+     * Bereken afstand tussen fout en correct taxon en teken de nodige visualisatie voor tryptische peptiden
+     * @param lineage lineage van het foute taxon
+     * @param trueLin lineage van het correcte taxon
+     * @param start startpositie van de peptide
+     * @param end eindpositie van de peptide
+     * @param framenr tekendiepte
+     */
     public static void printDisagreement(String[] lineage, String[] trueLin, double start, double end, int framenr){
         int[] disagreement = new int[2];
         int agreement = 0;
@@ -546,6 +625,14 @@ public class ScoreReads {
         System.out.println("\\node[below, font=\\scriptsize] at ("+(start+end)/(double)2+",-"+framenr+") {"+falseID+" ("+disagreement[0]+")};");
     }
     
+    /**
+     * Bereken de afstand tussen fout en correct taxon en teken het nodige, voor k-meren
+     * @param lineage lineage van foute taxon
+     * @param trueLin lineage van correct taxon
+     * @param start tekenpositie
+     * @param framenr tekendiepte
+     * @param linew dikte van de lijn
+     */
     public static void printKmerDisagreement(String[] lineage, String[] trueLin, double start, int framenr,int linew){
         int[] disagreement = new int[2];
         int agreement = 0;
@@ -560,6 +647,11 @@ public class ScoreReads {
         System.out.println("\\node[draw=none, below, font=\\sffamily\\fontsize{2}{1}\\selectfont] at ("+start+",-"+(below+0.2)+") {"+disagreement[0]+"};");
     }
     
+    /**
+     * teken de correcte proteinen
+     * @param unit eenhuid om te tekenen
+     * @param proteinPos afwisselend start en stop posities
+     */
     private static void printProteins(double unit, String[] proteinPos) {
         if(proteinPos.length!=0){
             for (int i = 0; i < proteinPos.length-1;i+=2){
