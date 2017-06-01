@@ -1,4 +1,5 @@
 #!/bin/bash
+# Script to run the Java-code that makes the plots
 
 usage(){ echo "Syntax: $(basename $0) [-k k(Integer)] [-t tt1-tt2-...] [-l organismName] outputLocation  name  inputLocation  title  [proteinPositions]" 1>&2; exit 1;}
 

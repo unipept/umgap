@@ -1,5 +1,5 @@
 #!/bin/bash
-# vraagt taxon naam en taxon rang op wanneer enkel taxon id is gegeven, was nodig toen enkel taxon id als output werd gegeven, zal nu niet meer nodig zijn
+# Vraagt taxon naam en taxon rang op wanneer enkel taxon id is gegeven.
 
 usage(){ echo "Syntax: $(basename $0) [-k k(Integer)] [-t tt1-tt2-...] namePrefix" 1>&2; exit 1;}
 

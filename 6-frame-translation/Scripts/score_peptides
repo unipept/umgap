@@ -1,4 +1,5 @@
 #!/bin/bash
+# Gives scores to tryptic peptides
 
 usage(){ echo "Syntax: $(basename $0) [-t taxscoreFile] lcaFile"; exit 1;}
 while getopts ":t:" opt; do
