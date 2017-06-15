@@ -39,7 +39,7 @@ public class ExtendedSeed {
         for (Seed s: seeds){
             kmers.addAll(s.getKmer());
             length += s.getKmer().size();
-            score += s.calculateScore();
+            score += s.getScore();
         }
         this.start = kmers.peekFirst().start;
         this.end = kmers.peekLast().start;
@@ -55,7 +55,7 @@ public class ExtendedSeed {
         kmers = new ArrayDeque<>();
         kmers.addAll(s.getKmer());
         length += s.getKmer().size();
-        score += s.calculateScore();
+        score += s.getScore();
         this.start = s.start;
         this.end = s.end;
         this.taxonID = taxonID;
@@ -75,7 +75,7 @@ public class ExtendedSeed {
         }
         this.start = kmers.peekFirst().start;
         length+=s.getKmer().size();
-        score += s.calculateScore();
+        score += s.getScore();
     }
     
     public void addRight(Seed s){
@@ -85,7 +85,7 @@ public class ExtendedSeed {
         }
         this.end = kmers.peekLast().start;
         length+=s.getKmer().size();
-        score += s.calculateScore();
+        score += s.getScore();
     }
     
     public void addLeft(Kmer k){

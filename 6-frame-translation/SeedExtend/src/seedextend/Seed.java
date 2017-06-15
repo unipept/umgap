@@ -24,6 +24,7 @@ public class Seed implements Comparable<Seed>{
     public String rank;
     public String taxonName;
     public ArrayList<String> rankOrder;
+    private double score;
     public static final String[] ranks = new String[]{"no rank", "superkingdom", "kingdom", "subkingdom", "superphylum", "phylum", "subphylum","superclass", "class", "subclass", "infraclass",
                                                         "superorder", "order", "suborder", "infraorder", "parvorder", "superfamily", "family", "subfamily", "tribe", "subtribe", "genus", "subgenus", "species group", "species subgroup", "species", "subspecies", "varietas", "forma"};
     public final double[] rankScore = new double[]{0.1,0.2,0.2,0.2,0.3,0.3,0.3,0.4,0.4,0.4,0.4,0.5,0.5,0.5,0.5,0.5,0.6,0.6,0.6,0.7,0.7,0.8,0.8,0.9,0.9,1,1,1,1};
@@ -37,6 +38,7 @@ public class Seed implements Comparable<Seed>{
         this.taxonName = kmers.peekFirst().taxonName;
         this.end = kmers.peekLast().start;
         this.rankOrder = new ArrayList<>(Arrays.asList(ranks));
+        this.score = calculateScore();
     }
     
     public Deque<Kmer> getKmer(){
@@ -78,17 +80,20 @@ public class Seed implements Comparable<Seed>{
 //            }else{
 //                return (rankOrder.indexOf(this.rank) < rankOrder.indexOf(o.rank) ? -1: 1);
 //            }
-            double score = calculateScore();
-            double oscore = o.calculateScore();
-            if(score <= oscore){
-                return(score < oscore ? -1 : 0);
+            double oscore = o.getScore();
+            if(this.score <= oscore){
+                return(this.score < oscore ? -1 : 0);
             }else{
                 return 1;
             }
         }
     }
     
-    public double calculateScore(){
+    public double getScore(){
+        return this.score;
+    }
+    
+    private double calculateScore(){
         double rankS = this.rankScore[rankOrder.indexOf(this.rank)];
         double length = (double) kmers.size();
         return rankS * length;
