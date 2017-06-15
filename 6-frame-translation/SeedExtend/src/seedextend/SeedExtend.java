@@ -144,8 +144,8 @@ public class SeedExtend {
                 TreeMap<Integer,Seed> seeds = frames.get(i).getSeeds();
                 for(Integer pos: seeds.keySet()){
                     Seed test = seeds.get(pos);
-                    if(bestScore < test.calculateScore()){
-                        bestScore = test.calculateScore();
+                    if(bestScore < test.getScore()){
+                        bestScore = test.getScore();
                         bestPos[0] = i;
                         bestPos[1] = pos;
                     }
