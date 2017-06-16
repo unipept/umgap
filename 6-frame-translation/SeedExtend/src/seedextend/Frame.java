@@ -68,7 +68,7 @@ public class Frame {
         int right = startSeed.end;
         boolean elongatedL = true;
         boolean elongatedR = true;
-        while(elongatedL && ! (seeds.headMap(left).isEmpty() && seeds.headMap(left).isEmpty())){
+        while(elongatedL && ! (seeds.headMap(left).isEmpty() && kmers.headMap(left).isEmpty())){
             SortedMap<Integer,Seed> leftSeeds =  seeds.headMap(left);
             SortedMap<Integer,Kmer> leftKmers = kmers.headMap(left);
             if(! leftSeeds.isEmpty()){

@@ -70,21 +70,21 @@ public class ExtendedSeed {
     
     public void addLeft(Seed s){
         Deque<Kmer> s_kmers = s.getKmer();
+        length+=s.getKmer().size();
         while (! s_kmers.isEmpty()){
             kmers.addFirst(s_kmers.pollLast());
         }
         this.start = kmers.peekFirst().start;
-        length+=s.getKmer().size();
         score += s.getScore();
     }
     
     public void addRight(Seed s){
         Deque<Kmer> s_kmers = s.getKmer();
+        length+=s.getKmer().size();
         while (! s_kmers.isEmpty()){
             kmers.addLast(s_kmers.pollFirst());
         }
         this.end = kmers.peekLast().start;
-        length+=s.getKmer().size();
         score += s.getScore();
     }
     
@@ -108,7 +108,7 @@ public class ExtendedSeed {
     }
     
     public double getScore(){
-        return score;
-//        return score/(double) length;
+//        return score;  // score 2
+        return score/(double) length; // score 3
     }
 }
