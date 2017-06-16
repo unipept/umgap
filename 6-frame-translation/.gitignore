@@ -50,6 +50,7 @@ target/
 *classes*
 Kmer2consensus/Kraken/*.tex
 Kmer2consensus/temp
+Kmer2consensus/Opnieuw
 Kmer2consensus/metabenchmark/present_lineage.onlyTaxID
 Kmer2consensus/metabenchmark/*.tex
 Kmer2consensus/OUD/
