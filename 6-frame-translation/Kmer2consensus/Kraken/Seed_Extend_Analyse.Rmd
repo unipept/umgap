@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r read data, include=FALSE}
-mat <- read.csv("HiSeq_PR_SE.csv")
+mat <- read.csv("../opnieuw/HiSeq_PR_SE_nieuw.csv")
 mat.mrl <- read.csv("HiSeq_PRe_SE.MRL.csv")
 matM <- read.csv("MiSeq_PR_SE.csv")
 matM.mrl <- read.csv("MiSeq_PRe_SE.MRL.csv")
@@ -533,6 +533,7 @@ correct_dataframe  <- as.data.frame(correct_mat)
 ```{r info over fouten MiSeq}
 tot_perSP <- 1000
 IDs_perSP <- summary(reads[,"correct"])
+IDs_perSP
 
 1000-summary(reads[which(reads[,"taxon_rank"]>="species"),"correct"])
 
