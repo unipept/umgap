@@ -100,8 +100,25 @@ public class SeedExtend {
                     frames.add(f);
                     frameN ++;
                 }
-//                Zoek hoogst scorende extended seed en print de aanwezige taxa uit (VOOR SCORE2)
                 getExtendedSeeds();
+//                Zoek hoogst scorende extended seed en print de aanwezige taxa uit (VOOR SCORE2)
+//                double maxScore = 0;
+//                ExtendedSeed best = null;
+//                for(ExtendedSeed e:extendedSeeds){
+//                    double escore = e.getScore();
+//                    if(escore > maxScore){
+//                        maxScore = escore;
+//                        best = e;
+//                    }
+//                }
+//                if(best != null){
+//                    System.out.println(printHeader);
+//                    for (Kmer kmer : best.kmers) {
+//                        System.out.print(kmer.taxonID + " ");
+//                    }
+//                }
+//                System.out.println();
+//                METHODE VOOR SCORE1, alles uitprinten
                 if(! extendedSeeds.isEmpty()){
                     System.out.println(printHeader);
                     for(ExtendedSeed e:extendedSeeds){
@@ -111,17 +128,6 @@ public class SeedExtend {
                     }
                     System.out.println();
                 }
-                System.out.println();
-//                METHODE VOOR SCORE1, alles uitprinten
-//                if(! extendedSeeds.isEmpty()){
-//                    System.out.println(printHeader);
-//                    for(ExtendedSeed e:extendedSeeds){
-//                        for (Kmer kmer : e.kmers) {
-//                            System.out.print(kmer.taxonID + " ");
-//                        }
-//                    }
-//                    System.out.println();
-//                }
                 extendedSeeds.clear();
                 frames.clear();
             }
