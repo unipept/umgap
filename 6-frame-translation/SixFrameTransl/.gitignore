@@ -1,0 +1,10 @@
+.
+../*
+*.txt
+nb-configuration.xml
+nbactions.xml
+output
+*.test
+*.fasta
+six_frame_single
+

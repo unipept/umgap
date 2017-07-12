@@ -1,0 +1,26 @@
+#!/bin/bash
+# Gets all protein positions based on a GenBank ID or other id with which you can search the NCBI nucleotide database
+
+if [ ! $# -eq 1 ]
+then
+	echo "usage: $(basename $0) nuccoreID"
+	exit 1
+fi
+
+nuccoreID=$1
+
+efetch -db nuccore -id $nuccoreID -format GenBank | egrep '^ *(from|to|strand) [0-9]*' | sed 's/^ *//g' | sed 's/ , *//g' | while read from; read to; read strand
+do
+	from=$(echo $from | tr -dc '0-9')
+	if [ $from -eq 0 ]
+	then
+		break
+	fi
+	to=$(echo $to | tr -dc '0-9')
+	if [[ $strand == *minus* ]]
+	then
+		echo "$from:$to -"
+	else
+		echo "$from:$to +"
+	fi
+done

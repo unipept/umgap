@@ -1,0 +1,563 @@
+---
+title: "SeedExtend analyse"
+author: "Aranka Steyaert"
+date: "4/16/2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r read data, include=FALSE}
+mat <- read.csv("../opnieuw/HiSeq_PR_SE_nieuw.csv")
+mat.mrl <- read.csv("HiSeq_PRe_SE.MRL.csv")
+matM <- read.csv("MiSeq_PR_SE.csv")
+matM.mrl <- read.csv("MiSeq_PRe_SE.MRL.csv")
+data_frame <- as.data.frame(mat)
+data_frame.mrl <- as.data.frame(mat.mrl)
+data_frameM <- as.data.frame(matM)
+data_frameM.mrl <- as.data.frame(matM.mrl)
+data_frame$length_type <- paste(data_frame$seed_length,data_frame$type, sep=";")
+data_frame.mrl$length_type <- paste(data_frame.mrl$seed_length,data_frame$type, sep=";")
+data_frameM$length_type <- paste(data_frameM$seed_length,data_frameM$type, sep=";")
+data_frameM.mrl$length_type <- paste(data_frameM.mrl$seed_length,data_frameM$type, sep=";")
+
+matM08.mrl <- read.csv("MiSeq_PRe_SE.BothTree08.csv")
+data_frameM08.mrl <- as.data.frame(matM08.mrl)
+data_frameM08.mrl$length_type <- paste(data_frameM08.mrl$seed_length,data_frameM08.mrl$type, sep=";")
+mat08.mrl <- read.csv("HiSeq_PRe_SE.BothTree08.csv")
+data_frame08.mrl <- as.data.frame(mat08.mrl)
+data_frame08.mrl$length_type <- paste(data_frame08.mrl$seed_length,data_frame08.mrl$type, sep=";")
+matM02.mrl <- read.csv("MiSeq_PRe_SE.BothTree02.csv")
+data_frameM02.mrl <- as.data.frame(matM02.mrl)
+data_frameM02.mrl$length_type <- paste(data_frameM02.mrl$seed_length,data_frameM02.mrl$type, sep=";")
+mat02.mrl <- read.csv("HiSeq_PRe_SE.BothTree02.csv")
+data_frame02.mrl <- as.data.frame(mat02.mrl)
+data_frame02.mrl$length_type <- paste(data_frame02.mrl$seed_length,data_frame02.mrl$type, sep=";")
+
+matM05.mrl <- read.csv("MiSeq_PRe_SE.BothTree05.csv")
+data_frameM05.mrl <- as.data.frame(matM05.mrl)
+data_frameM05.mrl$length_type <- paste(data_frameM05.mrl$seed_length,data_frameM05.mrl$type, sep=";")
+mat05.mrl <- read.csv("HiSeq_PRe_SE.BothTree05.csv")
+data_frame05.mrl <- as.data.frame(mat05.mrl)
+data_frame05.mrl$length_type <- paste(data_frame05.mrl$seed_length,data_frame05.mrl$type, sep=";")
+
+matM04.mrl <- read.csv("MiSeq_PRe_SE.BothTree04.csv")
+data_frameM04.mrl <- as.data.frame(matM04.mrl)
+data_frameM04.mrl$length_type <- paste(data_frameM04.mrl$seed_length,data_frameM04.mrl$type, sep=";")
+mat04.mrl <- read.csv("HiSeq_PRe_SE.BothTree04.csv")
+data_frame04.mrl <- as.data.frame(mat04.mrl)
+data_frame04.mrl$length_type <- paste(data_frame04.mrl$seed_length,data_frame04.mrl$type, sep=";")
+
+matM06.mrl <- read.csv("MiSeq_PRe_SE.BothTree06.csv")
+data_frameM06.mrl <- as.data.frame(matM06.mrl)
+data_frameM06.mrl$length_type <- paste(data_frameM06.mrl$seed_length,data_frameM06.mrl$type, sep=";")
+mat06.mrl <- read.csv("HiSeq_PRe_SE.BothTree06.csv")
+data_frame06.mrl <- as.data.frame(mat06.mrl)
+data_frame06.mrl$length_type <- paste(data_frame06.mrl$seed_length,data_frame06.mrl$type, sep=";")
+library(car) 
+
+gap2 <- which(mat[,"gap_size"]==2)
+gap_pen28 <- c(which(mat[,"gap_pen"]==0.2),which(mat[,"gap_pen"]==0.8))
+mat_reduced <- mat[-gap_pen28,]
+data_frame_reduced <- as.data.frame(mat_reduced)
+data_frame_reduced$length_type <- paste(data_frame_reduced$seed_length,data_frame_reduced$type, sep=";")
+
+gap_pen28 <- c(which(mat.mrl[,"gap_pen"]==0.2),which(mat.mrl[,"gap_pen"]==0.8))
+mat.mrl_reduced <- mat.mrl[-gap_pen28,]
+data_frame.mrl_reduced <- as.data.frame(mat.mrl_reduced)
+data_frame.mrl_reduced$length_type <- paste(data_frame.mrl_reduced$seed_length,data_frame.mrl_reduced$type, sep=";")
+
+gap_pen28M <- c(which(matM[,"gap_pen"]==0.2),which(matM[,"gap_pen"]==0.8))
+matM_reduced <- matM[-gap_pen28M,]
+data_frameM_reduced <- as.data.frame(matM_reduced)
+data_frameM_reduced$length_type <- paste(data_frameM_reduced$seed_length,data_frameM_reduced$type, sep=";")
+
+
+gap_pen28M <- c(which(matM.mrl[,"gap_pen"]==0.2),which(matM.mrl[,"gap_pen"]==0.8))
+matM.mrl_reduced <- matM.mrl[-gap_pen28M,]
+data_frameM.mrl_reduced <- as.data.frame(matM.mrl_reduced)
+data_frameM.mrl_reduced$length_type <- paste(data_frameM.mrl_reduced$seed_length,data_frameM.mrl_reduced$type, sep=";")
+```
+## Enkele Plots met gemiddelde van precisie en sensitiviteit
+
+gap-penalty lijkt niet veel invloed te hebben in aanwezigheid van de andere parameters:
+
+```{r gap penalty, echo=FALSE,results='hide',message=FALSE, fig.height = 4, fig.width=6.5}
+
+scatterplot(mean_prec ~ mean_sens | gap_pen,data=data_frame, smoother=FALSE,reg.line=FALSE,main="HiSeq",xlim=c(0.69,0.8))
+scatterplot(mean_prec ~ mean_sens | gap_pen,data=data_frame.mrl, smoother=FALSE,reg.line=FALSE,main="HiSeq,MRL",xlim=c(0.69,0.8))
+
+scatterplot(mean_prec ~ mean_sens | gap_pen,data=data_frameM, smoother=FALSE,reg.line=FALSE,main="MiSeq",xlim=c(0.69,0.8))
+scatterplot(mean_prec ~ mean_sens | gap_pen,data=data_frameM.mrl, smoother=FALSE,reg.line=FALSE,main="MiSeq,MRL",xlim=c(0.69,0.8))
+
+```
+
+
+```{r summary}
+summary(data_frame)
+summary(data_frame.mrl)
+summary(data_frameM)
+summary(data_frameM.mrl)
+```
+
+### Enkel gap penalty = 0.5
+
+```{r gereduceerd , echo=FALSE,results='hide',message=FALSE}
+scatterplot(mean_prec ~ mean_sens | seed_length,data=data_frame_reduced,smoother=FALSE,
+            reg.line=FALSE,labels = data_frame_reduced[,"type"],
+            id.n = nrow(data_frame_reduced),id.cex = 0.7, main="HiSeq")
+scatterplot(mean_prec ~ mean_sens | seed_length,data=data_frame_reduced, 
+            smoother=FALSE,reg.line=FALSE,labels = data_frame_reduced[,"type"],
+            id.n = nrow(data_frame_reduced),id.cex = 0.7,
+            xlim=c(0.66,0.76),ylim=c(0.95,0.99),main="HiSeq")
+scatterplot(mean_prec ~ mean_sens | seed_length,data=data_frameM_reduced,smoother=FALSE,
+            reg.line=FALSE,labels = data_frameM_reduced[,"type"],
+            id.n = nrow(data_frameM_reduced),id.cex = 0.7,main="MiSeq")
+scatterplot(mean_prec ~ mean_sens | seed_length,data=data_frameM_reduced, 
+            smoother=FALSE,reg.line=FALSE,labels = data_frameM_reduced[,"type"],
+            id.n = nrow(data_frameM_reduced),id.cex = 0.7,
+            xlim=c(0.55,0.75),ylim=c(0.90,0.97),main="MiSeq")
+
+scatterplot(genus_prec ~ genus_sens | seed_length,data=data_frame_reduced, smoother=FALSE,reg.line=FALSE,labels = rownames(mat_reduced),id.n = nrow(data_frame_reduced),id.cex = 0.7,xlim=c(0.66,0.76),ylim=c(0.95,0.99), main="HiSeq")
+scatterplot(species_prec ~ species_sens | seed_length,data=data_frame_reduced, smoother=FALSE,reg.line=FALSE,labels = rownames(mat_reduced),id.n = nrow(data_frame_reduced),id.cex = 0.7,xlim=c(0.31,0.36),ylim=c(0.85,0.96), main="HiSeq")
+
+scatterplot(genus_prec ~ genus_sens | seed_length,data=data_frameM_reduced, smoother=FALSE,reg.line=FALSE,labels = rownames(matM_reduced),id.n = nrow(data_frameM_reduced),id.cex = 0.7,xlim=c(0.45,0.6),ylim=c(0.87,0.96),main="MiSeq")
+scatterplot(species_prec ~ species_sens | seed_length,data=data_frameM_reduced, smoother=FALSE,reg.line=FALSE,labels = rownames(matM_reduced),id.n = nrow(data_frameM_reduced),id.cex = 0.7,xlim=c(0.24,0.34),ylim=c(0.85,0.96),main="MiSeq")
+```
+
+labels = type model:
+1: kiest beste seed en houdt rekening met lengte van die seed in de score
+2: geeft alle extended seeds terug
+3: kiest beste seed, maar middelt score uit over de lengte
+
+
+## Welke methodes zijn nu de beste?
+
+```{r sorteer preprocessing, echo=FALSE}
+more_info <- cbind(mat_reduced, mat_reduced[,"mean_sens"]*mat_reduced[,"mean_prec"],
+                        mat_reduced[,"superkingdom_sens"]*mat_reduced[,"superkingdom_prec"],
+                        mat_reduced[,"phylum_sens"]*mat_reduced[,"phylum_prec"], 
+                        mat_reduced[,"class_sens"]*mat_reduced[,"class_prec"],
+                        mat_reduced[,"order_sens"]*mat_reduced[,"order_prec"],
+                        mat_reduced[,"family_sens"]*mat_reduced[,"family_prec"],
+                        mat_reduced[,"genus_sens"]*mat_reduced[,"genus_prec"],
+                        mat_reduced[,"species_sens"]*mat_reduced[,"species_prec"])
+rownames(more_info) <- rownames(mat_reduced)
+per_mean <- sort(more_info[,23],decreasing = TRUE,index.return = TRUE)$x
+names(per_mean) <- rownames(more_info)[sort(more_info[,23],decreasing = TRUE,index.return = TRUE)$ix]
+per_kingdom <- sort(more_info[,24],decreasing=TRUE,index.return = TRUE)$x
+names(per_kingdom) <- rownames(more_info)[sort(more_info[,24],decreasing=TRUE,index.return = TRUE)$ix]
+per_phylum <- sort(more_info[,25],decreasing = TRUE,index.return = TRUE)$x
+names(per_phylum) <- rownames(more_info)[sort(more_info[,25],decreasing = TRUE,index.return = TRUE)$ix]
+per_class <- sort(more_info[,26],decreasing = TRUE,index.return = TRUE)$x
+names(per_class) <- rownames(more_info)[sort(more_info[,26],decreasing = TRUE,index.return = TRUE)$ix]
+per_order <- sort(more_info[,27],decreasing = TRUE,index.return = TRUE)$x
+names(per_order) <- rownames(more_info)[sort(more_info[,27],decreasing = TRUE,index.return = TRUE)$ix]
+per_family <- sort(more_info[,28],decreasing = TRUE,index.return = TRUE)$x
+names(per_family) <- rownames(more_info)[sort(more_info[,28],decreasing = TRUE,index.return = TRUE)$ix]
+per_genus <- sort(more_info[,29],decreasing = TRUE,index.return = TRUE)$x
+names(per_genus) <- rownames(more_info)[sort(more_info[,29],decreasing = TRUE,index.return = TRUE)$ix]
+per_species <- sort(more_info[,30],decreasing = TRUE,index.return = TRUE)$x
+names(per_species) <- rownames(more_info)[sort(more_info[,30],decreasing = TRUE,index.return = TRUE)$ix]
+
+sens_kingdom <- sort(mat_reduced[,"superkingdom_sens"],decreasing = TRUE,index.return=TRUE)$x
+names(sens_kingdom) <- rownames(mat_reduced)[sort(mat_reduced[,"superkingdom_sens"],decreasing = TRUE,index.return=TRUE)$ix]
+sens_phylum <- sort(mat_reduced[,"phylum_sens"],decreasing = TRUE,index.return=TRUE)$x
+names(sens_phylum) <- rownames(mat_reduced)[sort(mat_reduced[,"phylum_sens"],decreasing = TRUE,index.return=TRUE)$ix]
+sens_class <- sort(mat_reduced[,"class_sens"],decreasing = TRUE,index.return=TRUE)$x
+names(sens_class) <- rownames(mat_reduced)[sort(mat_reduced[,"class_sens"],decreasing = TRUE,index.return=TRUE)$ix]
+sens_order <- sort(mat_reduced[,"order_sens"],decreasing = TRUE,index.return=TRUE)$x
+names(sens_order) <- rownames(mat_reduced)[sort(mat_reduced[,"order_sens"],decreasing = TRUE,index.return=TRUE)$ix]
+sens_family <- sort(mat_reduced[,"family_sens"],decreasing = TRUE,index.return=TRUE)$x
+names(sens_family) <- rownames(mat_reduced)[sort(mat_reduced[,"family_sens"],decreasing = TRUE,index.return=TRUE)$ix]
+sens_genus <- sort(mat_reduced[,"genus_sens"],decreasing = TRUE,index.return=TRUE)$x
+names(sens_genus) <- rownames(mat_reduced)[sort(mat_reduced[,"genus_sens"],decreasing = TRUE,index.return=TRUE)$ix]
+sens_species <- sort(mat_reduced[,"species_sens"],decreasing = TRUE,index.return=TRUE)$x
+names(sens_species) <- rownames(mat_reduced)[sort(mat_reduced[,"species_sens"],decreasing = TRUE,index.return=TRUE)$ix]
+
+prec_kingdom <- sort(mat_reduced[,"superkingdom_prec"],decreasing = TRUE,index.return=TRUE)$x
+names(prec_kingdom) <- rownames(mat_reduced)[sort(mat_reduced[,"superkingdom_prec"],decreasing = TRUE,index.return=TRUE)$ix]
+prec_phylum <- sort(mat_reduced[,"phylum_prec"],decreasing = TRUE,index.return=TRUE)$x
+names(prec_phylum) <- rownames(mat_reduced)[sort(mat_reduced[,"phylum_prec"],decreasing = TRUE,index.return=TRUE)$ix]
+prec_class <- sort(mat_reduced[,"class_prec"],decreasing = TRUE,index.return=TRUE)$x
+names(prec_class) <- rownames(mat_reduced)[sort(mat_reduced[,"class_prec"],decreasing = TRUE,index.return=TRUE)$ix]
+prec_order <- sort(mat_reduced[,"order_prec"],decreasing = TRUE,index.return=TRUE)$x
+names(prec_order) <- rownames(mat_reduced)[sort(mat_reduced[,"order_prec"],decreasing = TRUE,index.return=TRUE)$ix]
+prec_family <- sort(mat_reduced[,"family_prec"],decreasing = TRUE,index.return=TRUE)$x
+names(prec_family) <- rownames(mat_reduced)[sort(mat_reduced[,"family_prec"],decreasing = TRUE,index.return=TRUE)$ix]
+prec_genus <- sort(mat_reduced[,"genus_prec"],decreasing = TRUE,index.return=TRUE)$x
+names(prec_genus) <- rownames(mat_reduced)[sort(mat_reduced[,"genus_prec"],decreasing = TRUE,index.return=TRUE)$ix]
+prec_species <- sort(mat_reduced[,"species_prec"],decreasing = TRUE,index.return=TRUE)$x
+names(prec_species) <- rownames(mat_reduced)[sort(mat_reduced[,"species_prec"],decreasing = TRUE,index.return=TRUE)$ix]
+
+
+```
+```{r intersections}
+intersect(intersect(intersect(intersect(intersect(
+  names(per_kingdom[1:15]),names(per_phylum[1:15])),names(per_class[1:15])),
+     names(per_order[1:15])),names(per_family[1:15])),names(per_genus[1:15]))
+
+names(per_species[1:15])
+
+intersect(intersect(intersect(intersect(intersect(intersect(
+  names(per_kingdom[1:15]),names(per_phylum[1:15])),names(per_class[1:15])),
+      names(per_order[1:15])),names(per_family[1:15])),names(per_genus[1:15])),names(per_species[1:15]))
+
+intersect(intersect(intersect(intersect(intersect(
+  names(sens_kingdom[1:15]),names(sens_phylum[1:15])),names(sens_class[1:15])),
+  names(sens_order[1:15])),names(sens_family[1:15])),names(sens_genus[1:15]))
+
+names(sens_species[1:15])
+
+intersect(intersect(intersect(intersect(intersect(intersect(
+  names(sens_kingdom[1:15]),names(sens_phylum[1:15])),names(sens_class[1:15])),
+    names(sens_order[1:15])),names(sens_family[1:15])),names(sens_genus[1:15])),names(sens_species[1:15]))
+
+intersect(intersect(intersect(intersect(intersect(intersect(
+  names(prec_kingdom[1:15]),names(prec_phylum[1:15])),names(prec_class[1:15])),
+    names(prec_order[1:15])),names(prec_family[1:15])),names(prec_genus[1:15])),names(prec_species[1:15]))
+```
+
+\newpage
+
+## Een aantal conlusies
+
+* totaal aantal identificaties afhankelijk van de lengte van de seeds
+
+  ```{r IDs en seed_length, echo = FALSE, fig.height = 3.5, fig.width=3.5}
+  scatterplot(IDs~seed_length, data = data_frame, smoother=FALSE,main="HiSeq")
+  scatterplot(IDs~seed_length, data = data_frameM, smoother=FALSE,main="MiSeq")
+  ```
+
+* precisie stijgt met de seed lengte vooral voor algoritme type 3 is het belangrijk om een grotere seed lengte te hebben
+
+  ```{r precisie en seed lengte, echo = FALSE, fig.height = 4, fig.width=4}
+  scatterplot(seed_length~mean_prec | type, data=data_frame, smoother=FALSE,main="HiSeq")
+  scatterplot(seed_length~mean_prec | type, data=data_frameM, smoother=FALSE,main="MiSeq")
+  ```
+  
+* zodra de seedlengte en type model vastliggen zorgt de grootte van gaps voor een daling in sensitiviteit en een stijging in precisie
+
+  ```{r gap invloed, echo = FALSE, fig.height = 4, fig.width=4}
+  data_frame$length_type <- paste(data_frame$seed_length,data_frame$type, sep=";")
+  scatterplot(mean_prec~gap_size|length_type,data=data_frame,smoother=FALSE,cex.lab=0.5, cex.axis=0.5,cex = 0.5,main="HiSeq")
+  scatterplot(mean_sens~gap_size|length_type,data=data_frame,smoother=FALSE,cex.lab=0.5, cex.axis=0.5,cex = 0.5,main="HiSeq")
+    data_frameM$length_type <- paste(data_frameM$seed_length,data_frameM$type, sep=";")
+  scatterplot(mean_prec~gap_pen|length_type,data=data_frameM,smoother=FALSE,cex.lab=0.5, cex.axis=0.5,cex = 0.5,main="MiSeq")
+  scatterplot(mean_sens~gap_pen|length_type,data=data_frameM,smoother=FALSE,cex.lab=0.5, cex.axis=0.5,cex = 0.5,main="MiSeq")
+  ```
+  
+    ```{r gap invloedMRL, echo = FALSE, fig.height = 4, fig.width=4}
+  data_frame$length_type <- paste(data_frame$seed_length,data_frame$type, sep=";")
+  scatterplot(mean_prec~gap_size|length_type,data=data_frame.mrl,smoother=FALSE,cex.lab=0.5, cex.axis=0.5,cex = 0.5,main="HiSeq,MRL")
+  scatterplot(mean_sens~gap_size|length_type,data=data_frame.mrl,smoother=FALSE,cex.lab=0.5, cex.axis=0.5,cex = 0.5,main="HiSeq,MRL")
+  scatterplot(mean_prec~gap_pen|length_type,data=data_frame.mrl,smoother=FALSE,cex.lab=0.5, cex.axis=0.5,cex = 0.5,main="HiSeq,MRL")
+  scatterplot(mean_sens~gap_pen|length_type,data=data_frame.mrl,smoother=FALSE,cex.lab=0.5, cex.axis=0.5,cex = 0.5,main="HiSeq,MRL")
+  
+    data_frameM$length_type <- paste(data_frameM$seed_length,data_frameM$type, sep=";")
+  scatterplot(mean_prec~gap_size|length_type,data=data_frameM.mrl,smoother=FALSE,cex.lab=0.5, cex.axis=0.5,cex = 0.5,main="MiSeq,MRL")
+  scatterplot(mean_sens~gap_size|length_type,data=data_frameM.mrl,smoother=FALSE,cex.lab=0.5, cex.axis=0.5,cex = 0.5,main="MiSeq,MRL")
+  scatterplot(mean_prec~gap_pen|length_type,data=data_frameM.mrl,smoother=FALSE,cex.lab=0.5, cex.axis=0.5,cex = 0.5,main="MiSeq,MRL")
+  scatterplot(mean_sens~gap_pen|length_type,data=data_frameM.mrl,smoother=FALSE,cex.lab=0.5, cex.axis=0.5,cex = 0.5,main="MiSeq,MRL")
+```
+  
+  ```{r linear regression}
+    summary(lm(mean_sens~length_type + gap_pen,data=data_frame))
+    summary(lm(mean_prec~length_type + gap_pen,data=data_frame))
+    summary(lm(mean_sens~length_type + gap_pen,data=data_frame.mrl))
+    summary(lm(mean_prec~length_type + gap_pen,data=data_frame.mrl))
+  ```
+
+
+* wanneer lengte van de seeds = 2 werkt enkel model type 1, type 2 geeft slechte sensitiviteit, type 3 geeft slechte precisie
+    + reden? 
+    + door geen rekening te houden met lengte van de extended seed selecteert 3 waarschijnlijk de kleine foute seeds (2x zelfde species niveau, maar fout zal hogere uitgemiddelde score hebben dan een lange met een aantal juiste op species, maar ook wat gaps en wat hoger gelegen identificaties)
+    + door alle extended seeds terug te geven blijven er met seed lengte = 2 nog een aantal fouten over die het consensustaxon op root of bacteria e.d. zetten --> in totaal minder diepe identificaties trekt sensitiviteit naar omlaag, maar van alle identificaties die op een diep niveau geraken zijn er wel redelijk veel juist dus toch hoge precisie
+    + Met model type 1 is de sensitiviteit het hoogst (ook in vgl met andere seed lengtes), maar om zo veel te detecteren boet je wel wat in aan precisie om dat je ondanks deze redelijk goede filter methode toch iets meer foute identificaties door het net laat glippen ook.
+  ```{r overzicht, echo = FALSE, fig.height = 4, fig.width=6}
+  scatterplot(mean_prec ~ mean_sens | length_type,data=data_frame_reduced, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7, legend.coords="bottomleft",legend.columns=3,main="HiSeq")
+  scatterplot(mean_prec ~ mean_sens | length_type,data=data_frame.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7, legend.coords="bottomright",legend.columns=3,main="HiSeq,MRL")
+  scatterplot(mean_prec ~ mean_sens | length_type,data=data_frame08.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7, legend.coords="bottomleft",legend.columns=3,main="HiSeq,hybrid (0.8)")
+  scatterplot(mean_prec ~ mean_sens | length_type,data=data_frame02.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7, legend.coords="bottomright",legend.columns=3,main="HiSeq,hybrid (0.2)")
+  
+  scatterplot(mean_prec ~ mean_sens | length_type,data=data_frameM, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7, legend.coords="bottomleft",legend.columns=3,main="MiSeq")
+    scatterplot(mean_prec ~ mean_sens | length_type,data=data_frameM.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7, legend.coords="bottomright",legend.columns=3,main="MiSeq,MRL")
+    scatterplot(mean_prec ~ mean_sens | length_type,data=data_frameM08.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7, legend.coords="bottomleft",legend.columns=3,main="MiSeq,hybrid (0.8)")
+    scatterplot(mean_prec ~ mean_sens | length_type,data=data_frameM02.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7, legend.coords="bottomright",legend.columns=3,main="MiSeq,hybrid (0.2)")
+  ```
+  
+* Over de overgebleven modellen:
+    + Model type 2 zorgt in het algemeen voor de beste precisie, maar een slecht sensitiviteit
+    + Hoe groter de lengte van de initiele seeds, hoe lager de sensitiviteit (grootste oorzaak hiervan wss de daling in identificaties?)
+    + zodra seed_lengte >2 heeft de keuze type 1 of 3 weinig invloed op sensitiviteit, enkel op precisie
+  ```{r , echo = FALSE, fig.height = 4.5, fig.width=6}
+ scatterplot(mean_prec ~ mean_sens | length_type,data=data_frame_reduced,   smoother=FALSE,reg.line=FALSE,xlim=c(0.65,0.76),ylim=c(0.95,0.99),cex.lab=0.8, cex.axis=0.8,cex = 0.8, legend.coords="bottomleft", legend.columns=3,main="HiSeq")
+ 
+ scatterplot(mean_prec ~ mean_sens | length_type,data=data_frameM_reduced,   smoother=FALSE,reg.line=FALSE,xlim=c(0.55,0.75),ylim=c(0.90,0.96),cex.lab=0.8, cex.axis=0.8,cex = 0.8, legend.coords="bottomleft", legend.columns=3,main="MiSeq")
+  ```
+\newpage
+
+## Plots voor Species en Genus niveau
+
+
+```{r species genus, echo=FALSE,results='hide',message=FALSE, fig.height = 4, fig.width=4}
+scatterplot(genus_prec ~ genus_sens | length_type,data=data_frame_reduced, smoother=FALSE,reg.line=FALSE,labels = mat_reduced[,"gap_size"],id.n = nrow(data_frame_reduced),id.cex = 0.4,xlim=c(0.5,0.85), ylim=c(0.9,0.99), main="HiSeq", legend.coords="bottomright", legend.columns=3, cex.axis=0.7,cex = 0.7,cex.lab=0.7)
+scatterplot(genus_prec ~ genus_sens | length_type,data=data_frame.mrl_reduced, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7, legend.coords="bottomleft", legend.columns=3,xlim=c(0.5,0.85),ylim=c(0.9,0.99),main="HiSeq,MRL",cex.lab=0.7)
+  scatterplot(genus_prec ~ genus_sens | length_type,data=data_frame08.mrl, smoother=FALSE,reg.line=FALSE,xlim=c(0.5,0.85),ylim=c(0.9,0.99), cex.axis=0.7,cex = 0.7, legend.coords="bottomleft",legend.columns=3,main="HiSeq,hybrid (0.8)",cex.lab=0.7)
+  scatterplot(genus_prec ~ genus_sens | length_type,data=data_frame02.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7,xlim=c(0.5,0.85),ylim=c(0.9,0.99), legend.coords="bottomleft",legend.columns=3,main="HiSeq,hybrid (0.2)",cex.lab=0.7)
+    scatterplot(genus_prec ~ genus_sens | length_type,data=data_frame05.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7,xlim=c(0.5,0.85),ylim=c(0.9,0.99), legend.coords="bottomleft",legend.columns=3,main="HiSeq,hybrid (0.5)",cex.lab=0.7)
+    scatterplot(genus_prec ~ genus_sens | length_type,data=data_frame04.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7,xlim=c(0.5,0.85),ylim=c(0.9,0.99), legend.coords="bottomleft",legend.columns=3,main="HiSeq,hybrid (0.4)",cex.lab=0.7)
+    scatterplot(genus_prec ~ genus_sens | length_type,data=data_frame06.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7,xlim=c(0.5,0.85),ylim=c(0.9,0.99), legend.coords="bottomleft",legend.columns=3,main="HiSeq,hybrid (0.6)",cex.lab=0.7)
+
+scatterplot(genus_prec ~ genus_sens | length_type,data=data_frameM_reduced, smoother=FALSE,reg.line=FALSE,labels = matM_reduced[,"gap_size"],id.n = nrow(data_frameM_reduced),legend.coords="bottomleft",legend.columns=3, cex.axis=0.7,cex = 0.7,id.cex = 0.7,xlim=c(0.3,0.7),ylim=c(0.85,0.98),main="MiSeq",cex.lab=0.7)
+scatterplot(genus_prec ~ genus_sens | length_type,data=data_frameM.mrl_reduced, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7, legend.coords="bottomleft",legend.columns=3,xlim=c(0.3,0.7),ylim=c(0.85,0.98),main="MiSeq,MRL",cex.lab=0.7)
+  scatterplot(genus_prec ~ genus_sens | length_type,data=data_frameM08.mrl, smoother=FALSE,reg.line=FALSE,xlim=c(0.3,0.7),ylim=c(0.85,0.98), cex.axis=0.7,cex = 0.7, legend.coords="bottomleft",legend.columns=3,main="MiSeq,hybrid (0.8)",cex.lab=0.7)
+  scatterplot(genus_prec ~ genus_sens | length_type,data=data_frameM02.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7,xlim=c(0.3,0.7),ylim=c(0.85,0.98), legend.coords="bottomleft",legend.columns=3,main="MiSeq,hybrid (0.2)",cex.lab=0.7)
+  scatterplot(genus_prec ~ genus_sens | length_type,data=data_frameM05.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7,xlim=c(0.3,0.7),ylim=c(0.85,0.98), legend.coords="bottomleft",legend.columns=3,main="MiSeq,hybrid (0.5)",cex.lab=0.7)
+  scatterplot(genus_prec ~ genus_sens | length_type,data=data_frameM04.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7,xlim=c(0.3,0.7),ylim=c(0.85,0.98), legend.coords="bottomleft",legend.columns=3,main="MiSeq,hybrid (0.4)",cex.lab=0.7)
+  scatterplot(genus_prec ~ genus_sens | length_type,data=data_frameM06.mrl, smoother=FALSE,reg.line=FALSE, cex.axis=0.7,cex = 0.7,xlim=c(0.3,0.7),ylim=c(0.85,0.98), legend.coords="bottomleft",legend.columns=3,main="MiSeq,hybrid (0.6)",cex.lab=0.7)
+```
+
+```{r species, echo=FALSE,results='hide',message=FALSE}
+
+scatterplot(species_prec ~ species_sens | length_type,data=data_frameM_reduced, smoother=FALSE,reg.line=FALSE,labels =matM_reduced[,"gap_size"],id.n = nrow(data_frameM_reduced),id.cex = 0.7,xlim=c(0.24,0.33),ylim=c(0.68,0.78),main="MiSeq")
+  scatterplot(species_prec ~ species_sens | length_type,data=data_frame_reduced, smoother=FALSE,reg.line=FALSE,labels =mat_reduced[,"gap_size"],id.n = nrow(data_frame_reduced),id.cex = 0.7,xlim=c(0.31,0.36),ylim=c(0.85,0.96),main="HiSeq")
+```
+
+
+## Onderzoek van de foute identificaties
+
+### HiSeq dataset
+
+```{r fouten HiSeq, echo=FALSE}
+CLASSES = c("no rank", "superkingdom", "kingdom", "subkingdom", "superphylum", "phylum",
+            "subphylum", "superclass", "class", "subclass", "infraclass", "superorder", "order", "suborder", 
+            "infraorder", "parvorder", "superfamily", "family", "subfamily", "tribe", "subtribe", "genus",
+            "subgenus", "species group", "species subgroup", "species", "subspecies", "varietas", "forma")
+tot.reads = 10000
+grades <- c("superkingdom_name","phylum_name","class_name","order_name","family_name","genus_name","species_name")
+header <- c("superkingdom","phylum","class","order","family","genus","species")
+
+all.sensitivity <- numeric()
+all.specificity <- numeric()
+identifications <- numeric()
+
+  k <- 18
+  filename <- paste0("Kraken_HiSeq.11.Opt",k,".csv")
+  reads <- read.csv(filename, header=TRUE)
+  true.lineages <- read.csv("../Kraken_hiseq_taxonomy.csv",fill = TRUE, header=TRUE)
+  rownames(true.lineages)<- true.lineages[,"header"]
+  reads[,"taxon_rank"] <- ordered(reads[,"taxon_rank"], levels = CLASSES)
+
+  correctness <- matrix(FALSE,nrow = nrow(reads), ncol = 7)
+  colnames(correctness) = grades
+  identifications <- c(identifications,nrow(reads))
+
+  for(i in 1:nrow(reads)){
+    for(j in 1:length(grades)){
+      correctness[i,j] <- as.character(reads[i,grades[j]]) == as.character(true.lineages[reads[i,"correct"],grades[j]])
+    }
+  }
+
+  correct.rank <- numeric(0)
+  nr.rank <- numeric(0)
+
+  correct.rank <- c(correct.rank, length(intersect(which(reads[,"taxon_rank"]>="superkingdom"),which(correctness[,"superkingdom_name"]))))
+  nr.rank <- c(nr.rank,sum(reads[,"taxon_rank"]>="superkingdom",na.rm=TRUE))
+
+  correct.rank <- c(correct.rank,length(intersect(which(reads[,"taxon_rank"]>="phylum"),which(correctness[,"phylum_name"]))))
+  nr.rank <- c(nr.rank,sum(reads[,"taxon_rank"]>="phylum",na.rm=TRUE))
+
+  correct.rank <- c(correct.rank,length(intersect(which(reads[,"taxon_rank"]>="class"),which(correctness[,"class_name"]))))
+  nr.rank <- c(nr.rank,sum(reads[,"taxon_rank"]>="class",na.rm=TRUE))
+
+  correct.rank <- c(correct.rank,length(intersect(which(reads[,"taxon_rank"]>="order"),which(correctness[,"order_name"]))))
+  nr.rank <- c(nr.rank,sum(reads[,"taxon_rank"]>="order",na.rm=TRUE))
+
+  correct.rank <- c(correct.rank,length(intersect(which(reads[,"taxon_rank"]>="family"),which(correctness[,"family_name"]))))
+  nr.rank <- c(nr.rank,sum(reads[,"taxon_rank"]>="family",na.rm=TRUE))
+
+  correct.rank <- c(correct.rank,length(intersect(which(reads[,"taxon_rank"]>="genus"),which(correctness[,"genus_name"]))))
+  nr.rank <- c(nr.rank,sum(reads[,"taxon_rank"]>="genus",na.rm=TRUE))
+
+  correct.rank <- c(correct.rank,length(intersect(which(reads[,"taxon_rank"]>="species"),which(correctness[,"species_name"]))))
+  nr.rank <- c(nr.rank,sum(reads[,"taxon_rank"]>="species",na.rm=TRUE))
+
+  
+  specificity <- c(correct.rank/nr.rank,mean(correct.rank/nr.rank))
+  sensitivity <- c(correct.rank/(correct.rank+(tot.reads-nr.rank)),mean(correct.rank/(correct.rank+(tot.reads-nr.rank))))
+  all.sensitivity <- rbind(all.sensitivity,sensitivity)
+  all.specificity <- rbind(all.specificity,specificity)
+  
+  corr_kingdom <- NULL
+corr_phylum <- NULL
+corr_class <- NULL
+corr_order <- NULL
+corr_family <- NULL
+corr_genus <- NULL
+corr_species <- NULL
+for(x in levels(reads[,"correct"])){
+  corr_kingdom <- c(corr_kingdom,length(intersect(which(reads[,"correct"]==x),intersect(which(reads[,"taxon_rank"]>="superkingdom"),which(correctness[,"superkingdom_name"])))))
+  corr_phylum <- c(corr_phylum,length(intersect(which(reads[,"correct"]==x),intersect(which(reads[,"taxon_rank"]>="phylum"),which(correctness[,"phylum_name"])))))
+  corr_class <- c(corr_class,length(intersect(which(reads[,"correct"]==x),intersect(which(reads[,"taxon_rank"]>="class"),which(correctness[,"class_name"])))))
+  corr_order <- c(corr_order,length(intersect(which(reads[,"correct"]==x),intersect(which(reads[,"taxon_rank"]>="order"),which(correctness[,"order_name"])))))
+  corr_family <- c(corr_family,length(intersect(which(reads[,"correct"]==x),intersect(which(reads[,"taxon_rank"]>="family"),which(correctness[,"family_name"])))))
+  corr_genus <- c(corr_genus,length(intersect(which(reads[,"correct"]==x),intersect(which(reads[,"taxon_rank"]>="genus"),which(correctness[,"genus_name"])))))
+  corr_species <- c(corr_species,length(intersect(which(reads[,"correct"]==x),intersect(which(reads[,"taxon_rank"]>="species"),which(correctness[,"species_name"])))))
+}
+correct_mat <- rbind(corr_kingdom,corr_phylum,corr_class,corr_order,corr_family,corr_genus,corr_species)
+colnames(correct_mat) <- levels(reads[,"correct"])
+correct_dataframe  <- as.data.frame(correct_mat)
+```
+
+```{r info over fouten HiSeq}
+tot_perSP <- 1000
+IDs_perSP <- summary(reads[,"correct"])
+IDs_perSP/tot_perSP
+
+plot(correct_dataframe$A_hydrophila,type='n',ylim=c(0,1000))
+for(i in 1:10){
+  lines(correct_dataframe[i], col=rainbow(10)[i])
+}
+legend("bottomleft",legend=levels(reads[,"correct"]), col=rainbow(10),fill=rainbow(10),ncol=2,cex=0.5)
+
+#### Genus juist, species fout
+genus_juist <- reads[intersect(intersect(which(reads[,"taxon_rank"]>="species"),which(correctness[,"species_name"]==FALSE)),which(correctness[,"genus_name"])),c("correct","species_name","genus_name")]
+summary(genus_juist[,"correct"])
+summary(genus_juist[genus_juist[,"correct"]=="M_abscessus",])
+summary(genus_juist[genus_juist[,"correct"]=="S_pneumoniae",])
+summary(genus_juist[genus_juist[,"correct"]=="X_axonopodis",])
+
+#### Zowel genus als species fout
+beide_fout <- reads[intersect(intersect(which(reads[,"taxon_rank"]>="species"),which(correctness[,"species_name"]==FALSE)),which(correctness[,"genus_name"]==F)),c("correct","species_name","genus_name")]
+summary(beide_fout[,"correct"])
+summary(beide_fout[beide_fout[,"correct"]=="B_cereus",])
+summary(beide_fout[beide_fout[,"correct"]=="S_pneumoniae",])
+
+#### Percentage van foute species met correct genus
+length(intersect(intersect(which(reads[,"taxon_rank"]>="species"),which(correctness[,"species_name"]==FALSE)),which(correctness[,"genus_name"])))/length(intersect(which(reads[,"taxon_rank"]>="species"),which(correctness[,"species_name"]==FALSE)))
+
+```
+
+\newpage
+
+### MiSeq Dataset
+
+```{r fouten MiSeq, echo=FALSE}
+CLASSES = c("no rank", "superkingdom", "kingdom", "subkingdom", "superphylum", "phylum",
+            "subphylum", "superclass", "class", "subclass", "infraclass", "superorder", "order", "suborder", 
+            "infraorder", "parvorder", "superfamily", "family", "subfamily", "tribe", "subtribe", "genus",
+            "subgenus", "species group", "species subgroup", "species", "subspecies", "varietas", "forma")
+tot.reads = 10000
+grades <- c("superkingdom_name","phylum_name","class_name","order_name","family_name","genus_name","species_name")
+header <- c("superkingdom","phylum","class","order","family","genus","species")
+
+all.sensitivity <- numeric()
+all.specificity <- numeric()
+identifications <- numeric()
+
+  k <- 18
+  filename <- paste0("Kraken_MiSeq.11.Opt",k,".csv")
+  reads <- read.csv(filename, header=TRUE)
+  true.lineages <- read.csv("../Kraken_miseq_taxonomy.csv",fill = TRUE, header=TRUE)
+  rownames(true.lineages)<- true.lineages[,"header"]
+  reads[,"taxon_rank"] <- ordered(reads[,"taxon_rank"], levels = CLASSES)
+
+  correctness <- matrix(FALSE,nrow = nrow(reads), ncol = 7)
+  colnames(correctness) = grades
+  identifications <- c(identifications,nrow(reads))
+
+  for(i in 1:nrow(reads)){
+    for(j in 1:length(grades)){
+      correctness[i,j] <- as.character(reads[i,grades[j]]) == as.character(true.lineages[reads[i,"correct"],grades[j]])
+    }
+  }
+
+  correct.rank <- numeric(0)
+  nr.rank <- numeric(0)
+
+  correct.rank <- c(correct.rank, length(intersect(which(reads[,"taxon_rank"]>="superkingdom"),which(correctness[,"superkingdom_name"]))))
+  nr.rank <- c(nr.rank,sum(reads[,"taxon_rank"]>="superkingdom",na.rm=TRUE))
+
+  correct.rank <- c(correct.rank,length(intersect(which(reads[,"taxon_rank"]>="phylum"),which(correctness[,"phylum_name"]))))
+  nr.rank <- c(nr.rank,sum(reads[,"taxon_rank"]>="phylum",na.rm=TRUE))
+
+  correct.rank <- c(correct.rank,length(intersect(which(reads[,"taxon_rank"]>="class"),which(correctness[,"class_name"]))))
+  nr.rank <- c(nr.rank,sum(reads[,"taxon_rank"]>="class",na.rm=TRUE))
+
+  correct.rank <- c(correct.rank,length(intersect(which(reads[,"taxon_rank"]>="order"),which(correctness[,"order_name"]))))
+  nr.rank <- c(nr.rank,sum(reads[,"taxon_rank"]>="order",na.rm=TRUE))
+
+  correct.rank <- c(correct.rank,length(intersect(which(reads[,"taxon_rank"]>="family"),which(correctness[,"family_name"]))))
+  nr.rank <- c(nr.rank,sum(reads[,"taxon_rank"]>="family",na.rm=TRUE))
+
+  correct.rank <- c(correct.rank,length(intersect(which(reads[,"taxon_rank"]>="genus"),which(correctness[,"genus_name"]))))
+  nr.rank <- c(nr.rank,sum(reads[,"taxon_rank"]>="genus",na.rm=TRUE))
+
+  correct.rank <- c(correct.rank,length(intersect(which(reads[,"taxon_rank"]>="species"),which(correctness[,"species_name"]))))
+  nr.rank <- c(nr.rank,sum(reads[,"taxon_rank"]>="species",na.rm=TRUE))
+
+  
+  specificity <- c(correct.rank/nr.rank,mean(correct.rank/nr.rank))
+  sensitivity <- c(correct.rank/(correct.rank+(tot.reads-nr.rank)),mean(correct.rank/(correct.rank+(tot.reads-nr.rank))))
+  all.sensitivity <- rbind(all.sensitivity,sensitivity)
+  all.specificity <- rbind(all.specificity,specificity)
+  
+corr_kingdom <- NULL
+corr_phylum <- NULL
+corr_class <- NULL
+corr_order <- NULL
+corr_family <- NULL
+corr_genus <- NULL
+corr_species <- NULL
+for(x in levels(reads[,"correct"])){
+  corr_kingdom <- c(corr_kingdom,length(intersect(which(reads[,"correct"]==x),intersect(which(reads[,"taxon_rank"]>="superkingdom"),which(correctness[,"superkingdom_name"])))))
+  corr_phylum <- c(corr_phylum,length(intersect(which(reads[,"correct"]==x),intersect(which(reads[,"taxon_rank"]>="phylum"),which(correctness[,"phylum_name"])))))
+  corr_class <- c(corr_class,length(intersect(which(reads[,"correct"]==x),intersect(which(reads[,"taxon_rank"]>="class"),which(correctness[,"class_name"])))))
+  corr_order <- c(corr_order,length(intersect(which(reads[,"correct"]==x),intersect(which(reads[,"taxon_rank"]>="order"),which(correctness[,"order_name"])))))
+  corr_family <- c(corr_family,length(intersect(which(reads[,"correct"]==x),intersect(which(reads[,"taxon_rank"]>="family"),which(correctness[,"family_name"])))))
+  corr_genus <- c(corr_genus,length(intersect(which(reads[,"correct"]==x),intersect(which(reads[,"taxon_rank"]>="genus"),which(correctness[,"genus_name"])))))
+  corr_species <- c(corr_species,length(intersect(which(reads[,"correct"]==x),intersect(which(reads[,"taxon_rank"]>="species"),which(correctness[,"species_name"])))))
+}
+correct_mat <- rbind(corr_kingdom,corr_phylum,corr_class,corr_order,corr_family,corr_genus,corr_species)
+colnames(correct_mat) <- levels(reads[,"correct"])
+correct_dataframe  <- as.data.frame(correct_mat)
+
+```
+
+```{r info over fouten MiSeq}
+tot_perSP <- 1000
+IDs_perSP <- summary(reads[,"correct"])
+IDs_perSP
+
+1000-summary(reads[which(reads[,"taxon_rank"]>="species"),"correct"])
+
+plot(correct_dataframe$B_cereus,type='n',ylim=c(0,1000))
+for(i in 1:10){
+  lines(correct_dataframe[i], col=rainbow(10)[i])
+}
+legend("bottomleft",legend=levels(reads[,"correct"]),col=rainbow(10),fill=rainbow(10),ncol=2,cex=0.5)
+
+#### Genus juist, species fout
+genus_juist <- reads[intersect(intersect(which(reads[,"taxon_rank"]>="species"),which(correctness[,"species_name"]==FALSE)),which(correctness[,"genus_name"])),c("correct","species_name","genus_name")]
+summary(genus_juist[,"correct"])
+summary(genus_juist[genus_juist[,"correct"]=="B_cereus",])
+summary(genus_juist[genus_juist[,"correct"]=="K_pneumoniae",])
+summary(genus_juist[genus_juist[,"correct"]=="M_abscessus",])
+summary(genus_juist[genus_juist[,"correct"]=="P_vulgaris",])
+
+#### Zowel genus als species fout
+beiden_fout <- reads[intersect(intersect(which(reads[,"taxon_rank"]>="species"),which(correctness[,"species_name"]==FALSE)),which(correctness[,"genus_name"]==F)),c("correct","species_name","genus_name")]
+summary(beiden_fout[,"correct"])
+summary(beiden_fout[beiden_fout[,"correct"]=="C_freundii",])
+summary(beiden_fout[beiden_fout[,"correct"]=="B_cereus",])
+summary(beiden_fout[beiden_fout[,"correct"]=="E_cloacae",])
+summary(beiden_fout[beiden_fout[,"correct"]=="K_pneumoniae",])
+summary(beiden_fout[beiden_fout[,"correct"]=="S_enterica",])
+
+#### Percentage van foute species met correct genus
+length(intersect(intersect(which(reads[,"taxon_rank"]>="species"),which(correctness[,"species_name"]==FALSE)),which(correctness[,"genus_name"])))/length(intersect(which(reads[,"taxon_rank"]>="species"),which(correctness[,"species_name"]==FALSE)))
+
+
