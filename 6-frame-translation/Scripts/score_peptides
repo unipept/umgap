@@ -1,0 +1,59 @@
+#!/bin/bash
+# Gives scores to tryptic peptides
+
+usage(){ echo "Syntax: $(basename $0) [-t taxscoreFile] lcaFile"; exit 1;}
+while getopts ":t:" opt; do
+        case $opt in
+                t) taxScore=$OPTARG     ;;
+                :) usage ;;
+                \?) usage
+  esac
+done
+shift $((OPTIND - 1))
+
+
+if [ $# -ne 1 ]
+then 
+	usage
+fi
+
+lcaFile=$1
+taxScore=${taxScore:="../ScoreReads/taxonomy_score.txt"}
+
+if [ ! -r $taxScore ]
+then 
+	echo "File with taxon-rank scores $taxScore not found" 1>&2
+	exit 2
+fi
+
+header=""
+
+cat $lcaFile | sed '1d' | while read line
+do
+	temp_header=$(echo "$line" |cut -d',' -f1)
+	if [ ! "$temp_header" = "$header" ] 
+	then
+		echo
+		header="$temp_header"
+		echo "$(echo $header|sed 's/|.*$//')"
+	fi
+	pept=$(echo "$line" | cut -d',' -f2)
+	tax_id=$(echo "$line" | cut -d',' -f3) 
+	tax_rank=$(echo "$line" | cut -d',' -f5)
+	if [ "$tax_rank" = "no rank" ]
+	then
+		score=0.1
+	else
+		score=$(grep "$tax_rank" $taxScore | cut -d' ' -f2)
+	fi
+	length_score=0.1
+	if [ ${#pept} -gt 6 -a ${#pept} -le 16 ]
+	then
+		length_score=$(echo "scale=4;0.09 * ${#pept} - 0.44" | bc)
+	elif [ ${#pept} -gt 16 ]
+	then
+		length_score=1
+	fi
+	score=$(echo "scale=2; $score * $length_score" | bc 2>/dev/null)
+	echo -n "$tax_id=0$score "
+done 

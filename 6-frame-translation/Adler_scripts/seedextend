@@ -1,0 +1,20 @@
+#!/bin/bash
+usage(){ echo "Syntax: $(basename $0) name inputLocation seedSize gapSize gapPenalty" 1>&2; exit 1; }
+
+if [ $# -ne 5 ]
+then
+	usage
+fi
+name="$1"
+location="$2"
+seedSize="$3"
+gapSize="$4"
+gapPen="$5"
+
+cd SeedExtend
+mkdir classes
+javac -d classes -cp classes *.java
+
+	java -cp .:classes seedextend.SeedExtend 9 ../$location/$name.sixframe ../$location/$name.9mer.lca $seedSize $gapSize $gapPen
+
+exit 0
