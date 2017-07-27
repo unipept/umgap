@@ -18,7 +18,7 @@ fn build(csv_filename: &String, fst_filename: &String) -> Result<()> {
     let mut map = try!(fst::MapBuilder::new(writer));
 
     for record in reader.decode() {
-        let (_id, kmer, lca): (String, String, u64) = try!(record);
+        let (kmer, lca): (String, u64) = try!(record);
         try!(map.insert(kmer, lca));
     }
 
