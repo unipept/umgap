@@ -130,20 +130,29 @@ fn main_result(taxons: &str, method: &str, aggregation: &str, separator: Option<
     let parser = if scored { with_score } else { not_scored };
 
     let mut writer = fasta::Writer::new(io::stdout(), ",", false);
+
+    // Iterate over each read
     for record in fasta::Reader::new(io::stdin(), separator, true).records() {
+        // Parse the sequence of LCA's
         let record = try!(record.map_err(|err| err.to_string()));
         let taxons = record.sequence.iter()
                                     .map(parser)
                                     .collect::<Result<Vec<(TaxonId, f32)>,_>>();
         let taxons = try!(taxons.map_err(|err| format!("Error reading taxons ({:?}): {}", record, err)));
+
+        // Create a frequency table of taxons for this read (taking into account the lower bound)
         let counts = agg::count(taxons.into_iter());
         let counts = agg::filter(counts, lower_bound);
-        let aggregate = try!(aggregator.aggregate(&counts).map_err(|err| err.to_string()));
-        let taxon = by_id.get(snapping[aggregate].unwrap()).unwrap();
-        try!(writer.write_record(fasta::Record {
-            header: record.header,
-            sequence: vec![taxon.id.to_string(), taxon.name.to_string(), taxon.rank.to_string()],
-        }).map_err(|err| err.to_string()));
+
+        // If we don't have a consensus taxon, leave out the read (i.e. consider undetected)
+        if !counts.is_empty() {
+            let aggregate = try!(aggregator.aggregate(&counts).map_err(|err| err.to_string()));
+            let taxon = by_id.get(snapping[aggregate].unwrap()).unwrap();
+            try!(writer.write_record(fasta::Record {
+                header: record.header,
+                sequence: vec![taxon.id.to_string(), taxon.name.to_string(), taxon.rank.to_string()],
+            }).map_err(|err| err.to_string()));
+        }
     }
     Ok(())
 }
