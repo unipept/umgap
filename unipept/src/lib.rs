@@ -8,6 +8,9 @@
 #[macro_use]
 extern crate error_chain;
 
+#[macro_use]
+extern crate lazy_static;
+
 #[cfg(test)]
 #[macro_use]
 extern crate assert_matches;
@@ -20,6 +23,7 @@ pub mod rmq;
 pub mod tree;
 pub mod errors;
 pub mod io;
+pub mod translation;
 
 #[cfg(test)]
 pub mod fixtures;
