@@ -13,6 +13,7 @@ fst = "0.1"
 regex = "0.2"
 ordered-float = "0.5"
 error-chain = "0.10.0"
+lazy_static = "0.2"
 
 [dev-dependencies]
 assert_matches = "1.1"
