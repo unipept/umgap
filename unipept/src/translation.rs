@@ -14,6 +14,17 @@ const BASES: [u8; 4] = [b'T', b'C', b'A', b'G'];
 //     println!("{}", s);
 // }
 
+/// Invert the given nucleotide.
+pub fn invert(base: u8) -> u8 {
+    match base {
+        b'T' => b'A',
+        b'C' => b'G',
+        b'A' => b'T',
+        b'G' => b'C',
+        _    => unreachable!()
+    }
+}
+
 lazy_static! {
     static ref TABLES: [Option<TranslationTable>; 23] = [
         Some(TranslationTable::new("universal", 1,
