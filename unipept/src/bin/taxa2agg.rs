@@ -59,7 +59,7 @@ fn main() {
                                .long("separator")
                                .takes_value(true))
                       .arg(Arg::with_name("lower-bound")
-                               .help("The smallest frequency for an LCA to be included in the aggregation")
+                               .help("The smallest input frequency for a taxon to be included in the aggregation")
                                .short("l")
                                .long("lower-bound")
                                .takes_value(true))
