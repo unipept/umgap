@@ -23,7 +23,7 @@ pub mod rmq;
 pub mod tree;
 pub mod errors;
 pub mod io;
-pub mod translation;
+pub mod dna;
 
 #[cfg(test)]
 pub mod fixtures;

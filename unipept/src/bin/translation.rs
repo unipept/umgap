@@ -8,7 +8,8 @@ use clap::{App, Arg};
 
 extern crate unipept;
 use unipept::{PKG_NAME, PKG_VERSION, PKG_AUTHORS};
-use unipept::translation::{TranslationTable, Codon, invert};
+use unipept::dna::Strand;
+use unipept::dna::translation::TranslationTable;
 use unipept::io::fasta;
 
 
@@ -72,7 +73,6 @@ fn main_result(methionine: bool, table: &str, show_table: bool, frames: Vec<&str
 }
 
 fn translate(methionine: bool, table: &TranslationTable, frames: Vec<&str>) -> Result<(), String> {
-    let translator = |codon| table.translate(methionine, &codon);
     let mut writer = fasta::Writer::new(io::stdout(), "", false);
 
     // Parsing the frames
@@ -90,13 +90,13 @@ fn translate(methionine: bool, table: &TranslationTable, frames: Vec<&str>) -> R
     for record in fasta::Reader::new(io::stdin(), None, true).records() {
         let fasta::Record { header, sequence } = try!(record.map_err(|err| format!("Something went wrong during the reading: {}", err)));
 
-        let forward = sequence[0].as_bytes().iter().map(|b| *b).collect::<Vec<u8>>();
-        let reverse = forward.iter().map(|b| *b).map(invert).rev().collect::<Vec<u8>>();
+        let forward = Strand::from(sequence[0].as_bytes());
+        let reverse = forward.reversed();
         for &(name, frame, reversed) in &frames {
             let strand = if reversed { &reverse } else { &forward };
             try!(writer.write_record(fasta::Record {
                 header: if !append_name { header.clone() } else { header.clone() + "|" + name },
-                sequence: vec![String::from_utf8(strand[frame - 1..].chunks(3).filter(|t| t.len() == 3).map(Codon::from).map(&translator).collect()).unwrap()],
+                sequence: vec![String::from_utf8(table.translate_frame(methionine, strand.frame(frame))).unwrap()]
             }).map_err(|err| err.to_string()));
         }
     }
