@@ -58,6 +58,11 @@ fn main() {
                                .short("d")
                                .long("separator")
                                .takes_value(true))
+                      .arg(Arg::with_name("lower-bound")
+                               .help("The smallest input frequency for a taxon to be included in the aggregation")
+                               .short("l")
+                               .long("lower-bound")
+                               .takes_value(true))
                       .arg(Arg::with_name("taxon-file")
                                .help("The NCBI taxonomy tsv-file")
                                .index(1)
@@ -70,7 +75,8 @@ fn main() {
         matches.value_of("separator"),
         matches.is_present("ranked"),
         matches.value_of("factor").unwrap_or("0"),
-        matches.is_present("scored")
+        matches.is_present("scored"),
+        matches.value_of("lower-bound").unwrap_or("0")
     ).unwrap_or_else(|err| {
         writeln!(&mut io::stderr(), "{}", err).unwrap();
         process::exit(1);
@@ -88,12 +94,15 @@ fn not_scored(tid: &String) -> errors::Result<(TaxonId, f32)> {
     Ok((try!(tid.parse::<TaxonId>()), 1.0))
 }
 
-fn main_result(taxons: &str, method: &str, aggregation: &str, separator: Option<&str>, ranked_only: bool, factor: &str, scored: bool) -> Result<(), String> {
+fn main_result(taxons: &str, method: &str, aggregation: &str, separator: Option<&str>, ranked_only: bool, factor: &str, scored: bool, lower_bound: &str) -> Result<(), String> {
     // Parsing the Taxa file
     let taxons = try!(taxon::read_taxa_file(taxons).map_err(|err| err.to_string()));
 
     // Parsing the factor
     let factor = try!(factor.parse::<f32>().map_err(|err| err.to_string()));
+
+    // Parsing the factor
+    let lower_bound = try!(lower_bound.parse::<f32>().map_err(|err| err.to_string()));
 
     // Parsing the separator regex
     let separator = try!(Regex::new(separator.unwrap_or(r"\s+"))
@@ -121,19 +130,29 @@ fn main_result(taxons: &str, method: &str, aggregation: &str, separator: Option<
     let parser = if scored { with_score } else { not_scored };
 
     let mut writer = fasta::Writer::new(io::stdout(), ",", false);
+
+    // Iterate over each read
     for record in fasta::Reader::new(io::stdin(), separator, true).records() {
+        // Parse the sequence of LCA's
         let record = try!(record.map_err(|err| err.to_string()));
         let taxons = record.sequence.iter()
                                     .map(parser)
                                     .collect::<Result<Vec<(TaxonId, f32)>,_>>();
         let taxons = try!(taxons.map_err(|err| format!("Error reading taxons ({:?}): {}", record, err)));
+
+        // Create a frequency table of taxons for this read (taking into account the lower bound)
         let counts = agg::count(taxons.into_iter());
-        let aggregate = try!(aggregator.aggregate(&counts).map_err(|err| err.to_string()));
-        let taxon = by_id.get(snapping[aggregate].unwrap()).unwrap();
-        try!(writer.write_record(fasta::Record {
-            header: record.header,
-            sequence: vec![taxon.id.to_string(), taxon.name.to_string(), taxon.rank.to_string()],
-        }).map_err(|err| err.to_string()));
+        let counts = agg::filter(counts, lower_bound);
+
+        // If we don't have a consensus taxon, leave out the read (i.e. consider undetected)
+        if !counts.is_empty() {
+            let aggregate = try!(aggregator.aggregate(&counts).map_err(|err| err.to_string()));
+            let taxon = by_id.get(snapping[aggregate].unwrap()).unwrap();
+            try!(writer.write_record(fasta::Record {
+                header: record.header,
+                sequence: vec![taxon.id.to_string(), taxon.name.to_string(), taxon.rank.to_string()],
+            }).map_err(|err| err.to_string()));
+        }
     }
     Ok(())
 }
