@@ -274,20 +274,22 @@ fn pept2lca(fst: &str, taxons: Option<&str>, with_input: bool, one_on_one: bool)
         .map(|taxa| taxon::TaxonList::new_with_unknown(taxa, one_on_one));
     let default = if one_on_one { Some(0) } else { None };
     let stdin = io::stdin();
+    let stdout = io::stdout();
+    let mut stdout = stdout.lock();
     for line in stdin.lock().lines() {
         let line = line?;
         if line.starts_with('>') {
-            println!("{}", line);
+            writeln!(stdout, "{}", line)?;
         } else if let Some(lca) = fst.get(&line).map(Some).unwrap_or(default) {
             if with_input {
-                print!("{},", line);
+                write!(stdout, "{},", line)?;
             }
             if let Some(ref by_id) = by_id {
                 let taxon = by_id.get(lca as usize)
                                  .ok_or("LCA taxon id not in taxon list. Check compatibility with index.")?;
-                println!("{},{},{}", taxon.id, taxon.name, taxon.rank);
+                writeln!(stdout, "{},{},{}", taxon.id, taxon.name, taxon.rank)?;
             } else {
-                println!("{}", lca);
+                writeln!(stdout, "{}", lca)?;
             }
         }
     }
