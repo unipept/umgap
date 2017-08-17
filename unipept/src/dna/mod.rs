@@ -16,41 +16,24 @@ pub enum Nucleotide {
     /// Any Nucleotide or None
     N,
 }
+use self::Nucleotide::*;
 
 impl Nucleotide {
     /// Complement of the given nucleotide.
     pub fn complement(&self) -> Self {
-        match self {
-            &Nucleotide::A => Nucleotide::T,
-            &Nucleotide::C => Nucleotide::G,
-            &Nucleotide::G => Nucleotide::C,
-            &Nucleotide::T => Nucleotide::A,
-            &Nucleotide::N => Nucleotide::N,
-        }
+        match self { &A => T, &C => G, &G => C, &T => A, &N => N }
     }
 }
 
 impl From<u8> for Nucleotide {
     fn from(ch: u8) -> Self {
-        match ch {
-            b'A' => Nucleotide::A,
-            b'C' => Nucleotide::C,
-            b'G' => Nucleotide::G,
-            b'T' => Nucleotide::T,
-            _    => Nucleotide::N,
-        }
+        match ch { b'A' => A, b'C' => C, b'G' => G, b'T' => T, _ => N }
     }
 }
 
 impl Into<u8> for Nucleotide {
     fn into(self) -> u8 {
-        match self {
-            Nucleotide::A => b'A',
-            Nucleotide::C => b'C',
-            Nucleotide::G => b'G',
-            Nucleotide::T => b'T',
-            Nucleotide::N => b'N',
-        }
+        match self { A => b'A', C => b'C', G => b'G', T => b'T', N => b'N' }
     }
 }
 
@@ -61,10 +44,11 @@ impl<'a> From<&'a u8> for Nucleotide {
 }
 
 /// A reading frame of a DNA strand.
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Frame<'a>(&'a [Nucleotide]);
 
 /// A DNA strand, aka a sequence of nucleotides.
+#[derive(Debug, PartialEq)]
 pub struct Strand(Vec<Nucleotide>);
 
 impl<'a> From<&'a [u8]> for Strand {
@@ -82,5 +66,31 @@ impl Strand {
     /// The reverse strand of this one.
     pub fn reversed(&self) -> Strand {
         Strand(self.0.iter().rev().map(Nucleotide::complement).collect())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    macro_rules! strand {
+        ( $( $x:path )* ) => (Strand(vec![$($x),*]))
+    }
+
+    #[test]
+    fn test_strand_from() {
+        assert_eq!(strand![A C G T N T C G A], Strand::from("ACGT*TCGA".as_bytes()));
+    }
+
+    #[test]
+    fn test_strand_reversed() {
+        assert_eq!(strand![A C G T N T G C A], strand![T G C A N A C G T].reversed());
+    }
+
+    #[test]
+    fn test_strand_frames() {
+        assert_eq!(Frame(&[A, C, G, T]), strand![A C G T].frame(1));
+        assert_eq!(Frame(&[C, G, T]), strand![A C G T].frame(2));
+        assert_eq!(Frame(&[G, T]), strand![A C G T].frame(3));
     }
 }
