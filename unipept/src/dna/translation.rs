@@ -5,6 +5,7 @@ use std::str;
 use std::collections::HashMap;
 
 use dna::{Nucleotide, Frame};
+use dna::Nucleotide::*;
 
 /// Represents a DNA codon.
 #[derive(Debug, PartialEq, Eq, Hash)]
@@ -16,7 +17,7 @@ impl<'a> From<&'a [Nucleotide]> for Codon {
     }
 }
 
-const BASE_ORDER: [Nucleotide; 4] = [Nucleotide::T, Nucleotide::C, Nucleotide::A, Nucleotide::G];
+const BASE_ORDER: [Nucleotide; 4] = [T, C, A, G];
 
 struct CodonIterator(usize);
 
@@ -33,25 +34,6 @@ impl Iterator for CodonIterator {
         let next = Codon(BASE_ORDER[self.0 / 16], BASE_ORDER[(self.0 / 4) % 4], BASE_ORDER[self.0 % 4]);
         self.0 += 1;
         Some(next)
-    }
-}
-
-// TODO use a nucleotide enum instead of u8
-// #[derive(Debug)]
-// enum Nucleotide { T, C, A, G }
-// fn main() {
-//     let s: String = format!("{:?}", Nucleotide::T);
-//     println!("{}", s);
-// }
-
-/// Complement of the given nucleotide.
-pub fn complement(base: u8) -> u8 {
-    match base {
-        b'T' => b'A',
-        b'C' => b'G',
-        b'A' => b'T',
-        b'G' => b'C',
-        _    => b'N',
     }
 }
 
@@ -184,8 +166,9 @@ mod tests {
 
     #[test]
     fn test_translate() {
-        assert_eq!(b'L', TABLES[0].as_ref().unwrap().translate(false, &Codon(b'T', b'T', b'G')));
-        assert_eq!(b'M', TABLES[0].as_ref().unwrap().translate(true, &Codon(b'T', b'T', b'G')));
+        let codon = Codon(T, T, G);
+        assert_eq!(b'L', TABLES[0].as_ref().unwrap().translate(false, &codon));
+        assert_eq!(b'M', TABLES[0].as_ref().unwrap().translate(true, &codon));
     }
 
     #[test]
@@ -204,16 +187,6 @@ mod tests {
                 },
             }
         }
-    }
-
-    #[test]
-    fn test_codon_from_array() {
-        assert_eq!(Codon(b'A', b'A', b'A'), Codon::from(&[b'A', b'A', b'A']));
-    }
-
-    #[test]
-    fn test_codon_from_slice() {
-        assert_eq!(Codon(b'A', b'A', b'A'), Codon::from("AAA".as_bytes()));
     }
 
     #[test]
