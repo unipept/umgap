@@ -67,6 +67,8 @@ quick_main!(|| -> Result<()> {
                 "The NCBI taxonomy tsv-file")
             (@arg with_input: -i --("with-input")
                 "Print the identified peptide along with the output")
+            (@arg one_on_one: -o --("one-on-one")
+                "Map unknown sequences to 0 instead of ignoring them")
             (@arg fst_index: +required "An FST to query")
         )
         (@subcommand prot2kmer2lca =>
@@ -172,7 +174,8 @@ quick_main!(|| -> Result<()> {
         ("pept2lca", Some(matches)) => pept2lca(
             matches.value_of("fst_index").unwrap(), // required so safe
             matches.value_of("taxon_file"),
-            matches.is_present("with_input")),
+            matches.is_present("with_input"),
+            matches.is_present("one-on-one")),
         ("prot2kmer2lca", Some(matches)) => prot2kmer2lca(
             matches.value_of("fst_index").unwrap(), // required so safe
             matches.value_of("length").unwrap_or("9")),
@@ -252,11 +255,15 @@ fn translate(methionine: bool, table: &str, show_table: bool, frames: Vec<&str>)
     Ok(())
 }
 
-fn pept2lca(fst: &str, taxons: Option<&str>, with_input: bool) -> Result<()> {
+fn pept2lca(fst: &str, taxons: Option<&str>, with_input: bool, one_on_one: bool) -> Result<()> {
     let fst = fst::Map::from_path(fst)?;
     let by_id = taxons.map(|taxons| taxon::read_taxa_file(taxons))
                       .map(|res| res.map(Some)).unwrap_or(Ok(None))?
-        .map(|taxons| taxon::TaxonList::new(taxons));
+        .map(|mut taxa| {
+            if one_on_one { taxa.push(taxon::Taxon::from_static(0, "unknown", taxon::Rank::NoRank, 0, false)) }
+            taxa
+        })
+        .map(|taxa| taxon::TaxonList::new(taxa));
     let stdin = io::stdin();
     for line in stdin.lock().lines() {
         let line = line?;
