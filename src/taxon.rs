@@ -209,6 +209,15 @@ impl TaxonList {
         TaxonList(by_id)
     }
 
+    /// Returns an index of given taxa on their ID. The with_unknown flag allows the insertion of
+    /// an unknown taxon on index 0 if that position isn't taken.
+    pub fn new_with_unknown(taxa: Vec<Taxon>, with_unknown: bool) -> Self {
+        let mut new = TaxonList::new(taxa);
+        if with_unknown && new.0[0].is_none() {
+            new.0[0] = Some(Taxon::from_static(0, "unknown", Rank::NoRank, 0, false));
+        }
+        new
+    }
 
     /// Constructs a vector mapping a TaxonId to the id of its parent, if it has one.
     pub fn ancestry(&self) -> Vec<Option<TaxonId>> {
