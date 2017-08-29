@@ -259,11 +259,7 @@ fn pept2lca(fst: &str, taxons: Option<&str>, with_input: bool, one_on_one: bool)
     let fst = fst::Map::from_path(fst)?;
     let by_id = taxons.map(|taxons| taxon::read_taxa_file(taxons))
                       .map(|res| res.map(Some)).unwrap_or(Ok(None))?
-        .map(|mut taxa| {
-            if one_on_one { taxa.push(taxon::Taxon::from_static(0, "unknown", taxon::Rank::NoRank, 0, false)) }
-            taxa
-        })
-        .map(|taxa| taxon::TaxonList::new(taxa));
+        .map(|taxa| taxon::TaxonList::new_with_unknown(taxa, one_on_one));
     let stdin = io::stdin();
     for line in stdin.lock().lines() {
         let line = line?;
