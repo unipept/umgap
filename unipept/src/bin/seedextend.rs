@@ -2,6 +2,7 @@
 use std::process;
 use std::io;
 use std::io::Write;
+use std::cmp;
 
 extern crate clap;
 use clap::{Arg, App};
@@ -52,11 +53,10 @@ fn main() {
 fn main_result(min_seed_size: &str, max_gap_size: &str, taxon_file: &str) -> Result<(), String> {
     let min_seed_size = try!(min_seed_size.parse::<usize>().map_err(|err| err.to_string()));
     let max_gap_size = try!(max_gap_size.parse::<usize>().map_err(|err| err.to_string()));
-    let gap_penalty = 0.5; // TODO: move down
-    let taxa = try!(taxon::read_taxa_file(taxon_file).map_err(|err| err.to_string()));
+    let _gap_penalty = 0.5; // TODO: move down
+    let _taxa = try!(taxon::read_taxa_file(taxon_file).map_err(|err| err.to_string())); // TODO use it
 
-    let tree = taxon::TaxonTree::new(&taxa);
-    let by_id = taxon::TaxonList::new_with_unknown(taxa, true);
+    let mut writer = fasta::Writer::new(io::stdout(), ",", false);
 
     let separator = Some(try!(Regex::new(r"\s+").map_err(|err| err.to_string())));
     for record in fasta::Reader::new(io::stdin(), separator, false).records() {
@@ -65,6 +65,62 @@ fn main_result(min_seed_size: &str, max_gap_size: &str, taxon_file: &str) -> Res
                                          .map(|s| s.parse::<TaxonId>())
                                          .collect::<Result<Vec<TaxonId>,_>>()
                                          .map_err(|err| err.to_string()));
+        if taxons.len() == 0 {
+            return Err("Frame should contain at least one taxon".to_string());
+        }
+
+        let mut seeds = Vec::new();
+        let mut start = 0;
+        let mut end = 0;
+        let mut last_tid = 0;
+        let mut same_tid = 0;
+        let mut same_max = 0;
+        while end < taxons.len() {
+            // same tid as last, add to seed.
+            if last_tid == taxons[end] {
+                same_tid += 1;
+                end += 1;
+                continue;
+            }
+
+            // our gap just became to big
+            if last_tid == 0 && same_tid > max_gap_size {
+                // add extended seed
+                if same_max >= min_seed_size { seeds.push((start, end - same_tid)) }
+                start = end;
+                last_tid = taxons[end];
+                same_tid = 1;
+                same_max = 1;
+                end += 1;
+                continue;
+            }
+
+            // don't start with a missing taxon
+            if last_tid == 0 && (end - start) == same_tid {
+                end += 1;
+                start = end;
+                continue;
+            }
+
+            // another taxon
+            if last_tid != 0 { same_max = cmp::max(same_max, same_tid); }
+            last_tid = taxons[end];
+            same_tid = 1;
+            end += 1;
+        }
+        if same_max >= min_seed_size {
+            if last_tid == 0 { end -= same_tid }
+            seeds.push((start, end))
+        }
+
+        // write it
+        try!(writer.write_record(fasta::Record {
+            header: record.header,
+            sequence: seeds.into_iter()
+                           .flat_map(|(start, end)| taxons[start..end].into_iter())
+                           .map(|t| t.to_string())
+                           .collect()
+        }).map_err(|err| err.to_string()));
     }
     Ok(())
 }
