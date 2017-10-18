@@ -10,9 +10,9 @@ use clap::{Arg, App};
 extern crate fst;
 use fst::Map;
 
-extern crate unipept;
-use unipept::{PKG_NAME, PKG_VERSION, PKG_AUTHORS, taxon};
-use unipept::errors::Result;
+extern crate umgap;
+use umgap::{PKG_NAME, PKG_VERSION, PKG_AUTHORS, taxon};
+use umgap::errors::Result;
 
 const ABOUT: &'static str = "
 Looks up each line of input in a given FST index and outputs the result.

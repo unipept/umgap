@@ -4,9 +4,9 @@ extern crate fst;
 use std::io;
 use std::fs;
 
-extern crate unipept;
-use unipept::errors::Result;
-use unipept::io::fasta;
+extern crate umgap;
+use umgap::errors::Result;
+use umgap::io::fasta;
 
 /// Reads all the records in a specified FASTA file and queries each in an FST for the LCA's.
 /// The result is printed to standard output.

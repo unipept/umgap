@@ -9,15 +9,15 @@ use clap::{Arg, App};
 extern crate regex;
 use regex::Regex;
 
-extern crate unipept;
-use unipept::{PKG_NAME, PKG_VERSION, PKG_AUTHORS, taxon};
-use unipept::taxon::TaxonId;
-use unipept::agg::Aggregator;
-use unipept::rmq;
-use unipept::tree;
-use unipept::io::fasta;
-use unipept::agg;
-use unipept::errors;
+extern crate umgap;
+use umgap::{PKG_NAME, PKG_VERSION, PKG_AUTHORS, taxon};
+use umgap::taxon::TaxonId;
+use umgap::agg::Aggregator;
+use umgap::rmq;
+use umgap::tree;
+use umgap::io::fasta;
+use umgap::agg;
+use umgap::errors;
 
 const ABOUT: &'static str = "
 Aggregates taxa to a single taxon.

@@ -4,8 +4,8 @@ extern crate fst;
 use std::fs::File;
 use std::io;
 
-extern crate unipept;
-use unipept::errors::Result;
+extern crate umgap;
+use umgap::errors::Result;
 
 
 fn build(csv_filename: &String, fst_filename: &String) -> Result<()> {
