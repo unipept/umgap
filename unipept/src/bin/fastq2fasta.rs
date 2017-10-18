@@ -6,11 +6,11 @@ use std::process;
 extern crate clap;
 use clap::{Arg, App};
 
-extern crate unipept;
-use unipept::{PKG_NAME, PKG_VERSION, PKG_AUTHORS};
-use unipept::io::fasta;
-use unipept::io::fastq;
-use unipept::errors::Result;
+extern crate umgap;
+use umgap::{PKG_NAME, PKG_VERSION, PKG_AUTHORS};
+use umgap::io::fasta;
+use umgap::io::fastq;
+use umgap::errors::Result;
 
 const ABOUT: &'static str = "
 Interleaves a number of FASTQ files into a single FASTA file.

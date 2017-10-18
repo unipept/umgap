@@ -9,9 +9,9 @@ use clap::{App, Arg};
 extern crate regex;
 use regex::Regex;
 
-extern crate unipept;
-use unipept::{PKG_NAME, PKG_VERSION, PKG_AUTHORS};
-use unipept::io::fasta;
+extern crate umgap;
+use umgap::{PKG_NAME, PKG_VERSION, PKG_AUTHORS};
+use umgap::io::fasta;
 
 const ABOUT: &'static str = "
 Concatenates the data strings of all consecutive entries with the same header.

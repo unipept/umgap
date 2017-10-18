@@ -7,10 +7,10 @@ use std::borrow::Cow;
 extern crate clap;
 use clap::{Arg, App};
 
-extern crate unipept;
-use unipept::{PKG_NAME, PKG_VERSION, PKG_AUTHORS};
-use unipept::io::fasta;
-use unipept::errors::Result;
+extern crate umgap;
+use umgap::{PKG_NAME, PKG_VERSION, PKG_AUTHORS};
+use umgap::io::fasta;
+use umgap::errors::Result;
 
 const ABOUT: &'static str = "
 Splits each protein sequence in a FASTA format into a list of kmers.
