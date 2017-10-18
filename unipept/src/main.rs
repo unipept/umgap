@@ -49,6 +49,13 @@ fn main() {
                 "Print the identified peptide along with the output")
             (@arg FST_INDEX: +required "An FST to query")
         )
+        (@subcommand prot2kmer2lca =>
+            (about: "Reads all the records in a specified FASTA file and \
+                     queries the k-mers in an FST for the LCA's.")
+            (@arg LENGTH: -k --length +required
+                "The length of the k-mers in the FST")
+            (@arg FST_INDEX: +required "An FST to query")
+        )
     ).get_matches();
 
     match matches.subcommand() {
@@ -60,9 +67,12 @@ fn main() {
                 if matches.is_present("all-frames") { vec!["1", "2", "3", "1R", "2R", "3R"] } else { vec!["1"] }
             )),
         ("pept2lca", Some(matches)) => pept2lca(
-            matches.value_of("FST index").unwrap(), // required so safe
+            matches.value_of("fst-index").unwrap(), // required so safe
             matches.value_of("taxon-file"),
             matches.is_present("with-input")),
+        ("prot2kmer2lca", Some(matches)) => prot2kmer2lca(
+            matches.value_of("fst-index").unwrap(), // required so safe
+            matches.value_of("length").unwrap_or("9")),
         _  => { println!("{}", matches.usage()); Ok(()) }
     }.unwrap_or_else(|err| {
         writeln!(&mut io::stderr(), "{}", err).unwrap();
@@ -133,5 +143,34 @@ fn pept2lca(fst: &str, taxons: Option<&str>, with_input: bool) -> Result<()> {
             }
         }
     }
+    Ok(())
+}
+
+fn prot2kmer2lca(fst: &str, k: &str) -> Result<()> {
+    let map = try!(fst::Map::from_path(fst));
+    let mut writer = fasta::Writer::new(io::stdout(), " ", false);
+    let k = try!(k.parse::<usize>());
+
+    for prot in fasta::Reader::new(io::stdin(), None, true).records() {
+        let prot = try!(prot);
+
+        if prot.sequence[0].len() < k {
+            continue
+        }
+
+        let lcas = (0..(prot.sequence[0].len() - k + 1))
+            .map(|i| &prot.sequence[0][i..i + k])
+            .filter_map(|kmer| map.get(kmer))
+            .map(|lca| lca.to_string())
+            .collect::<Vec<_>>();
+
+        if ! lcas.is_empty() {
+            try!(writer.write_record(fasta::Record {
+                header: prot.header,
+                sequence: lcas
+            }));
+        }
+    }
+
     Ok(())
 }
