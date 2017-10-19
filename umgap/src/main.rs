@@ -3,6 +3,7 @@ use std::io;
 use std::process;
 use std::io::Write;
 use std::io::BufRead;
+use std::borrow::Cow;
 
 #[macro_use(clap_app, crate_version, crate_authors)]
 extern crate clap;
@@ -81,6 +82,12 @@ fn main() {
                  the aggregation")
             (@arg taxon_file: +required "The NCBI taxonomy tsv-file")
         )
+        (@subcommand prot2kmer =>
+            (about: "Splits each protein sequence in a FASTA format into a \
+                     list of kmers.")
+            (@arg length: -k --length <INT>
+                "The K in K-mers")
+        )
     ).get_matches();
 
     match matches.subcommand() {
@@ -107,6 +114,8 @@ fn main() {
             matches.value_of("factor").unwrap_or("0"),
             matches.is_present("scored"),
             matches.value_of("lower_bound").unwrap_or("0")),
+        ("prot2kmer", Some(matches)) => prot2kmer(
+            matches.value_of("length").unwrap()),
         _  => { println!("{}", matches.usage()); Ok(()) }
     }.unwrap_or_else(|err| {
         writeln!(&mut io::stderr(), "{}", err).unwrap();
@@ -282,3 +291,19 @@ fn taxa2agg(taxons: &str, method: &str, aggregation: &str, delimiter: Option<&st
     Ok(())
 }
 
+fn prot2kmer(k: &str) -> Result<()> {
+    let k = try!(k.parse::<usize>().map_err(|_| "Couldn't parse kmer length"));
+
+    let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
+    for record in fasta::Reader::new(io::stdin(), None, true).records() {
+        let fasta::Record { header, sequence } = try!(record);
+        if sequence[0].len() < k { continue }
+        try!(writer.write_record(fasta::Record {
+            header: header,
+            sequence: sequence[0].as_bytes().windows(k)
+                                 .map(String::from_utf8_lossy).map(Cow::into_owned)
+                                 .collect(),
+        }));
+    }
+    Ok(())
+}
