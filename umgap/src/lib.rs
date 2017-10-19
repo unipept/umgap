@@ -5,6 +5,8 @@
        html_favicon_url = "http://unipept.ugent.be/favicon.ico")]
 #![deny(missing_docs)]
 
+#![recursion_limit="128"]
+
 #[macro_use]
 extern crate error_chain;
 
@@ -24,6 +26,7 @@ pub mod tree;
 pub mod errors;
 pub mod io;
 pub mod dna;
+pub mod utils;
 
 #[cfg(test)]
 pub mod fixtures;
