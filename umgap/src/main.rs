@@ -4,6 +4,7 @@ use std::process;
 use std::io::Write;
 use std::io::BufRead;
 use std::borrow::Cow;
+use std::fs;
 
 #[macro_use(clap_app, crate_version, crate_authors)]
 extern crate clap;
@@ -16,6 +17,7 @@ extern crate umgap;
 use umgap::dna::Strand;
 use umgap::dna::translation::TranslationTable;
 use umgap::io::fasta;
+use umgap::io::fastq;
 use umgap::taxon;
 use umgap::errors::{Result, ErrorKind};
 use umgap::taxon::TaxonId;
@@ -100,6 +102,11 @@ fn main() {
             (@arg wrap: -w --wrap
                 "Wrap the output sequences")
         )
+        (@subcommand fastq2fasta =>
+            (about: "Interleaves a number of FASTQ files into a single FASTA \
+                     output.")
+            (@arg input: ... #{1,10} "The input files")
+        )
     ).get_matches();
 
     match matches.subcommand() {
@@ -129,10 +136,12 @@ fn main() {
         ("prot2kmer", Some(matches)) => prot2kmer(
             matches.value_of("length").unwrap()),
         ("uniq", Some(matches)) => uniq(
-            matches.value_of("separator").unwrap_or(""),
-            matches.value_of("input-separator"),
+            matches.value_of("output").unwrap_or(""),
+            matches.value_of("input"),
             matches.is_present("keep"),
             matches.is_present("wrap")),
+        ("fastq2fasta", Some(matches)) => fastq2fasta(
+            matches.values_of("input").unwrap().collect()), // required so safe
         _  => { println!("{}", matches.usage()); Ok(()) }
     }.unwrap_or_else(|err| {
         writeln!(&mut io::stderr(), "{}", err).unwrap();
@@ -347,3 +356,44 @@ fn uniq(separator: &str, input_separator: Option<&str>, keep: bool, wrap: bool) 
     }
     Ok(())
 }
+
+struct Zip<E, I: Iterator<Item=E>> {
+    parts: Vec<I>,
+}
+
+impl<E, I: Iterator<Item=E>> Zip<E, I> {
+    fn new(parts: Vec<I>) -> Self {
+        Zip { parts: parts }
+    }
+}
+
+impl<E, I: Iterator<Item=E>> Iterator for Zip<E, I> {
+    type Item = Vec<E>;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.parts.iter_mut()
+            .map(|part| part.next())
+            .collect()
+    }
+}
+
+fn fastq2fasta(input: Vec<&str>) -> Result<()> {
+    let handles = try!(input.iter()
+                            .map(fs::File::open)
+                            .collect::<io::Result<Vec<fs::File>>>());
+    let readers = handles.iter()
+                         .map(fastq::Reader::new)
+                         .map(fastq::Reader::records)
+                         .collect();
+    let mut writer = fasta::Writer::new(io::stdout(), "", false);
+    for recordzip in Zip::new(readers) {
+        for record in recordzip {
+            let record = try!(record);
+            try!(writer.write_record(fasta::Record {
+                header: record.header,
+                sequence: vec![record.sequence],
+            }));
+        }
+    }
+    Ok(())
+}
+
