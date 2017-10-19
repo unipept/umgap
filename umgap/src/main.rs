@@ -24,6 +24,7 @@ use umgap::taxon::TaxonId;
 use umgap::agg;
 use umgap::rmq;
 use umgap::tree;
+use umgap::utils;
 
 fn main() {
     let matches = clap_app!(umgap =>
@@ -357,25 +358,6 @@ fn uniq(separator: &str, input_separator: Option<&str>, keep: bool, wrap: bool) 
     Ok(())
 }
 
-struct Zip<E, I: Iterator<Item=E>> {
-    parts: Vec<I>,
-}
-
-impl<E, I: Iterator<Item=E>> Zip<E, I> {
-    fn new(parts: Vec<I>) -> Self {
-        Zip { parts: parts }
-    }
-}
-
-impl<E, I: Iterator<Item=E>> Iterator for Zip<E, I> {
-    type Item = Vec<E>;
-    fn next(&mut self) -> Option<Self::Item> {
-        self.parts.iter_mut()
-            .map(|part| part.next())
-            .collect()
-    }
-}
-
 fn fastq2fasta(input: Vec<&str>) -> Result<()> {
     let handles = try!(input.iter()
                             .map(fs::File::open)
@@ -385,7 +367,7 @@ fn fastq2fasta(input: Vec<&str>) -> Result<()> {
                          .map(fastq::Reader::records)
                          .collect();
     let mut writer = fasta::Writer::new(io::stdout(), "", false);
-    for recordzip in Zip::new(readers) {
+    for recordzip in utils::Zip::new(readers) {
         for record in recordzip {
             let record = try!(record);
             try!(writer.write_record(fasta::Record {
