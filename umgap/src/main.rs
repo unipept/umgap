@@ -13,6 +13,8 @@ extern crate fst;
 
 extern crate regex;
 
+extern crate csv;
+
 extern crate umgap;
 use umgap::dna::Strand;
 use umgap::dna::translation::TranslationTable;
@@ -108,6 +110,9 @@ fn main() {
                      output.")
             (@arg input: ... #{1,10} "The input files")
         )
+        (@subcommand buildindex =>
+            (about: "Write an FST index of stdin on stdout")
+        )
     ).get_matches();
 
     match matches.subcommand() {
@@ -143,6 +148,7 @@ fn main() {
             matches.is_present("wrap")),
         ("fastq2fasta", Some(matches)) => fastq2fasta(
             matches.values_of("input").unwrap().collect()), // required so safe
+        ("buildindex", Some(_)) => buildindex(),
         _  => { println!("{}", matches.usage()); Ok(()) }
     }.unwrap_or_else(|err| {
         writeln!(&mut io::stderr(), "{}", err).unwrap();
@@ -379,3 +385,19 @@ fn fastq2fasta(input: Vec<&str>) -> Result<()> {
     Ok(())
 }
 
+fn buildindex() -> Result<()> {
+    let mut reader = csv::Reader::from_reader(io::stdin())
+                                 .has_headers(false)
+                                 .delimiter(b'\t');
+
+    let mut index = try!(fst::MapBuilder::new(io::stdout()));
+
+    for record in reader.decode() {
+        let (kmer, lca): (String, u64) = try!(record);
+        try!(index.insert(kmer, lca));
+    }
+
+    try!(index.finish());
+
+    Ok(())
+}
