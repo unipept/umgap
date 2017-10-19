@@ -26,6 +26,7 @@ pub mod tree;
 pub mod errors;
 pub mod io;
 pub mod dna;
+pub mod utils;
 
 #[cfg(test)]
 pub mod fixtures;
