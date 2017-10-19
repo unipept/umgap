@@ -88,6 +88,18 @@ fn main() {
             (@arg length: -k --length <INT>
                 "The K in K-mers")
         )
+        (@subcommand uniq =>
+            (about: "Concatenates the data strings of all consecutive FASTA \
+                     entries with the same header.")
+            (@arg output: -s --separator [INT]
+                "Separator between output items (default the empty string)")
+            (@arg input: -i --("input-separator") [INT]
+                "Separator regex input items (default same as separator)")
+            (@arg keep: -k --keep
+                "Keep newline in the input sequence")
+            (@arg wrap: -w --wrap
+                "Wrap the output sequences")
+        )
     ).get_matches();
 
     match matches.subcommand() {
@@ -116,6 +128,11 @@ fn main() {
             matches.value_of("lower_bound").unwrap_or("0")),
         ("prot2kmer", Some(matches)) => prot2kmer(
             matches.value_of("length").unwrap()),
+        ("uniq", Some(matches)) => uniq(
+            matches.value_of("separator").unwrap_or(""),
+            matches.value_of("input-separator"),
+            matches.is_present("keep"),
+            matches.is_present("wrap")),
         _  => { println!("{}", matches.usage()); Ok(()) }
     }.unwrap_or_else(|err| {
         writeln!(&mut io::stderr(), "{}", err).unwrap();
@@ -125,7 +142,7 @@ fn main() {
 
 fn translate(methionine: bool, table: &str, show_table: bool, frames: Vec<&str>) -> Result<()> {
     // Parsing the table
-    let table = try!(table.parse::<&TranslationTable>().map_err(|err| err.to_string()));
+    let table = try!(table.parse::<&TranslationTable>());
 
     // Split on show_tables
     if show_table {
@@ -146,7 +163,7 @@ fn translate(methionine: bool, table: &str, show_table: bool, frames: Vec<&str>)
         let append_name = frames.len() > 1;
 
         for record in fasta::Reader::new(io::stdin(), None, true).records() {
-            let fasta::Record { header, sequence } = try!(record.map_err(|err| format!("Something went wrong during the reading: {}", err)));
+            let fasta::Record { header, sequence } = try!(record);
 
             let forward = Strand::from(sequence[0].as_bytes());
             let reverse = forward.reversed();
@@ -155,7 +172,7 @@ fn translate(methionine: bool, table: &str, show_table: bool, frames: Vec<&str>)
                 try!(writer.write_record(fasta::Record {
                     header: if !append_name { header.clone() } else { header.clone() + "|" + name },
                     sequence: vec![String::from_utf8(table.translate_frame(methionine, strand.frame(frame))).unwrap()]
-                }).map_err(|err| err.to_string()));
+                }));
             }
         }
     }
@@ -220,18 +237,17 @@ fn prot2kmer2lca(fst: &str, k: &str) -> Result<()> {
 
 fn taxa2agg(taxons: &str, method: &str, aggregation: &str, delimiter: Option<&str>, ranked_only: bool, factor: &str, scored: bool, lower_bound: &str) -> Result<()> {
     // Parsing the Taxa file
-    let taxons = try!(taxon::read_taxa_file(taxons).map_err(|err| err.to_string()));
+    let taxons = try!(taxon::read_taxa_file(taxons));
 
     // Parsing the factor
-    let factor = try!(factor.parse::<f32>().map_err(|err| err.to_string()));
+    let factor = try!(factor.parse::<f32>());
 
     // Parsing the factor
-    let lower_bound = try!(lower_bound.parse::<f32>().map_err(|err| err.to_string()));
+    let lower_bound = try!(lower_bound.parse::<f32>());
 
     // Parsing the delimiter regex
     let delimiter = try!(regex::Regex::new(delimiter.unwrap_or(r"\s+"))
-                                      .map(Some)
-                                      .map_err(|err| err.to_string()));
+                                      .map(Some));
 
     // Parsing the taxons
     let tree     = taxon::TaxonTree::new(&taxons);
@@ -268,11 +284,10 @@ fn taxa2agg(taxons: &str, method: &str, aggregation: &str, delimiter: Option<&st
     // Iterate over each read
     for record in fasta::Reader::new(io::stdin(), delimiter, true).records() {
         // Parse the sequence of LCA's
-        let record = try!(record.map_err(|err| err.to_string()));
-        let taxons = record.sequence.iter()
-                                    .map(parser)
-                                    .collect::<Result<Vec<(TaxonId, f32)>>>();
-        let taxons = try!(taxons.map_err(|err| format!("Error reading taxons ({:?}): {}", record, err)));
+        let record = try!(record);
+        let taxons = try!(record.sequence.iter()
+                                .map(parser)
+                                .collect::<Result<Vec<(TaxonId, f32)>>>());
 
         // Create a frequency table of taxons for this read (taking into account the lower bound)
         let counts = agg::count(taxons.into_iter());
@@ -280,19 +295,19 @@ fn taxa2agg(taxons: &str, method: &str, aggregation: &str, delimiter: Option<&st
 
         // If we don't have a consensus taxon, leave out the read (i.e. consider undetected)
         if !counts.is_empty() {
-            let aggregate = try!(aggregator.aggregate(&counts).map_err(|err| err.to_string()));
+            let aggregate = try!(aggregator.aggregate(&counts));
             let taxon = by_id.get(snapping[aggregate].unwrap()).unwrap();
             try!(writer.write_record(fasta::Record {
                 header: record.header,
                 sequence: vec![taxon.id.to_string(), taxon.name.to_string(), taxon.rank.to_string()],
-            }).map_err(|err| err.to_string()));
+            }));
         }
     }
     Ok(())
 }
 
 fn prot2kmer(k: &str) -> Result<()> {
-    let k = try!(k.parse::<usize>().map_err(|_| "Couldn't parse kmer length"));
+    let k = try!(k.parse::<usize>());
 
     let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
     for record in fasta::Reader::new(io::stdin(), None, true).records() {
@@ -304,6 +319,31 @@ fn prot2kmer(k: &str) -> Result<()> {
                                  .map(String::from_utf8_lossy).map(Cow::into_owned)
                                  .collect(),
         }));
+    }
+    Ok(())
+}
+
+fn uniq(separator: &str, input_separator: Option<&str>, keep: bool, wrap: bool) -> Result<()> {
+    // Parsing the input separator regex
+    let input_separator = try!(regex::Regex::new(input_separator.unwrap_or(&regex::escape(separator))));
+
+    let mut last   = None::<fasta::Record>;
+    let mut writer = fasta::Writer::new(io::stdout(), separator, wrap);
+    for record in fasta::Reader::new(io::stdin(), Some(input_separator), !keep).records() {
+        let record = try!(record);
+        if let Some(ref mut rec) = last {
+            if rec.header == record.header {
+                rec.sequence.extend(record.sequence);
+            } else {
+                try!(writer.write_record_ref(rec));
+                *rec = record;
+            }
+        } else {
+            last = Some(record);
+        }
+    }
+    if let Some(rec) = last {
+        try!(writer.write_record(rec));
     }
     Ok(())
 }

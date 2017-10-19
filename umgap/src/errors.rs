@@ -7,11 +7,17 @@ extern crate csv;
 
 extern crate fst;
 
+extern crate regex;
+
 use taxon;
+use dna::translation;
+use agg;
 
 error_chain! {
     links {
         Taxon(taxon::Error, taxon::ErrorKind) #[doc = "Error propagated from Taxon"];
+        Translation(translation::Error, translation::ErrorKind) #[doc = "Error propagated from Translation"];
+        Aggregation(agg::Error, agg::ErrorKind) #[doc = "Error propagated from Aggregation"];
     }
     foreign_links {
         Csv(csv::Error) #[doc = "CSV"];
@@ -19,6 +25,7 @@ error_chain! {
         Io(io::Error) #[doc = "IO"];
         ParseI(num::ParseIntError) #[doc = "Parse Integer"];
         ParseF(num::ParseFloatError) #[doc = "Parse Float"];
+        Regex(regex::Error) #[doc = "Regex"];
     }
     errors {
         /// Invalid invocation
