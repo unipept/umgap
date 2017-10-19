@@ -21,10 +21,10 @@ error_chain! {
         ParseF(num::ParseFloatError) #[doc = "Parse Float"];
     }
     errors {
-        /// Invalid Frame TODO move this
-        UnknownFrame(frame: String) {
-            description("Couldn't parse a frame")
-            display("Invalid frame: {}", frame)
+        /// Invalid invocation
+        InvalidInvocation(message: String) {
+            description("Invalid invocation")
+            display("Invalid invocation: {}", message)
         }
     }
 }
