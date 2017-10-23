@@ -65,7 +65,7 @@ impl agg::Aggregator for MixCalculator {
         while let Some(left) = queue.pop_front() {
             if weights.contains_key(&left) { continue; }
             for (&right, &count) in taxons.iter() {
-                let lca = try!(self.lca_aggregator.lca(left, right));
+                let lca = self.lca_aggregator.lca(left, right)?;
                 if lca == left || lca == right {
                     let mut weight = weights.entry(left).or_insert(Weights::new());
                     if lca == left  { weight.lca += count; }

@@ -18,7 +18,7 @@ impl<T: Default + Copy> SubTree<T> {
         let mut tree: HashMap<TaxonId, HashSet<TaxonId>> = HashMap::with_capacity(taxons.len());
         let mut queue: VecDeque<TaxonId> = taxons.keys().map(|t| *t).collect();
         while let Some(id) = queue.pop_front() {
-            let parent = try!(parents[id].ok_or(taxon::ErrorKind::UnknownTaxon(id)));
+            let parent = parents[id].ok_or(taxon::ErrorKind::UnknownTaxon(id))?;
             if id == parent { continue; }
             if !tree.contains_key(&parent) { queue.push_back(parent); }
             let siblings = tree.entry(parent).or_insert(HashSet::new());
