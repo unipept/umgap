@@ -39,7 +39,7 @@ impl MixCalculator {
 impl agg::Aggregator for MixCalculator {
     fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> agg::Result<TaxonId> {
         if taxons.len() == 0 { bail!(agg::ErrorKind::EmptyInput); }
-        let subtree = try!(SubTree::new(self.root, &self.parents, taxons))
+        let subtree = SubTree::new(self.root, &self.parents, taxons)?
             .collapse(&Add::add)
             .aggregate(&Add::add);
 

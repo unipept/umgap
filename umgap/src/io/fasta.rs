@@ -40,7 +40,7 @@ impl<R: Read> Reader<R> {
     pub fn read_record(&mut self) -> Result<Option<Record>> {
         let mut header = match self.lines.next() {
             None         => return Ok(None),
-            Some(header) => try!(header),
+            Some(header) => header?,
         };
 
         if !header.starts_with('>') {
@@ -55,7 +55,7 @@ impl<R: Read> Reader<R> {
                         .and_then(|line| line.as_ref().ok())
                         .map(|line| !line.starts_with('>'))
                         .unwrap_or(false) {
-            sequence.push_str(&try!(self.lines.next().unwrap()));
+            sequence.push_str(&self.lines.next().unwrap()?);
             if !self.wrapped { sequence.push('\n') }
         }
 
@@ -128,15 +128,15 @@ impl<'a, W: Write> Writer<'a, W> {
 
     /// Writes a Record to the Write, in FASTA format
     pub fn write_record_ref(&mut self, record: &Record) -> Result<()> {
-        try!(write!(self.buffer, ">{}\n", record.header));
+        write!(self.buffer, ">{}\n", record.header)?;
         let sequence = record.sequence.join(self.separator);
         if !self.wrap {
-            try!(self.buffer.write(sequence.as_bytes()));
-            try!(self.buffer.write_all(&[b'\n']));
+            self.buffer.write(sequence.as_bytes())?;
+            self.buffer.write_all(&[b'\n'])?;
         } else {
             for subseq in sequence.as_bytes().chunks(FASTA_WIDTH) {
-                try!(self.buffer.write_all(subseq));
-                try!(self.buffer.write_all(&[b'\n']));
+                self.buffer.write_all(subseq)?;
+                self.buffer.write_all(&[b'\n'])?;
             }
         }
         Ok(())

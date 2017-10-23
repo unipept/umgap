@@ -32,7 +32,7 @@ impl LCACalculator {
 impl agg::Aggregator for LCACalculator {
     fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> Result<TaxonId, agg::Error> {
         if taxons.len() == 0 { bail!(agg::ErrorKind::EmptyInput); }
-        let subtree = try!(SubTree::new(self.root, &self.parents, taxons)).collapse(&Add::add);
+        let subtree = SubTree::new(self.root, &self.parents, taxons)?.collapse(&Add::add);
         Ok(subtree.root)
     }
 }

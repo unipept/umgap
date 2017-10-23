@@ -142,7 +142,7 @@ impl TranslationTable {
 impl str::FromStr for &'static TranslationTable {
     type Err = Error;
     fn from_str(s: &str) -> Result<Self> {
-        let id = try!(s.parse::<usize>());
+        let id = s.parse::<usize>()?;
         TABLES[id - 1].as_ref().ok_or(ErrorKind::UnknownTable(id).into())
     }
 }
