@@ -163,8 +163,8 @@ fn main() {
         ("filter", Some(matches)) => filter(
             matches.value_of("min_length").unwrap_or("5"),
             matches.value_of("max_length").unwrap_or("50"),
-            matches.value_of("contains"),
-            matches.value_of("lacks")),
+            matches.value_of("contains").unwrap_or(""),
+            matches.value_of("lacks").unwrap_or("")),
         ("fastq2fasta", Some(matches)) => fastq2fasta(
             matches.values_of("input").unwrap().collect()), // required so safe
         ("buildindex", Some(_)) => buildindex(),
@@ -356,8 +356,7 @@ fn prot2kmer(k: &str) -> Result<()> {
     Ok(())
 }
 
-
-fn filter(min_length: &str, max_length: &str, contains: Option<&str>, lacks: Option<&str>) -> Result<()> {
+fn filter(min_length: &str, max_length: &str, contains: &str, lacks: &str) -> Result<()> {
     let min = min_length.parse::<usize>()?;
     let max = max_length.parse::<usize>()?;
 
@@ -376,14 +375,10 @@ fn filter(min_length: &str, max_length: &str, contains: Option<&str>, lacks: Opt
                                   length >= min && length <= max
                               })
                               .filter(|&seq| {
-                                  contains.map_or(true,
-                                      |s| s.chars().all(|c| seq.contains(c))
-                                  )
+                                  contains.chars().all(|c| seq.contains(c))
                               })
                               .filter(|&seq| {
-                                  lacks.map_or(true,
-                                      |s| !(s.chars().any(|c| seq.contains(c)))
-                                  )
+                                  ! lacks.chars().any(|c| seq.contains(c))
                               })
                               .map(ToOwned::to_owned)
                               .collect(),
