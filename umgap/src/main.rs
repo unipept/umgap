@@ -148,7 +148,7 @@ fn main() {
             matches.is_present("scored"),
             matches.value_of("lower_bound").unwrap_or("0")),
         ("prot2pept", Some(matches)) => prot2pept(
-            matches.value_of("pattern")),
+            matches.value_of("pattern").unwrap_or("([KR])([^P])")),
         ("prot2kmer", Some(matches)) => prot2kmer(
             matches.value_of("length").unwrap()),
         ("uniq", Some(matches)) => uniq(
@@ -330,8 +330,8 @@ fn taxa2agg(taxons: &str, method: &str, aggregation: &str, delimiter: Option<&st
     Ok(())
 }
 
-fn prot2pept(pattern: Option<&str>) -> Result<()> {
-    let pattern = regex::Regex::new(pattern.unwrap_or(r"([KR])([^P])"))?;
+fn prot2pept(pattern: &str) -> Result<()> {
+    let pattern = regex::Regex::new(pattern)?;
 
     let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
     for record in fasta::Reader::new(io::stdin(), None, true).records() {
