@@ -87,6 +87,14 @@ fn main() {
                  the aggregation")
             (@arg taxon_file: +required "The NCBI taxonomy tsv-file")
         )
+        (@subcommand prot2pept =>
+            (about: "Splits each protein sequence in a FASTA format into a \
+                     list of (tryptic) peptides.")
+            (@arg pattern: -p --("pattern") <REGEX> !required
+                "The cleavage-pattern (regex), i.e. the pattern after which \
+                 the next peptide will be cleaved (default: ([KR])([^P]) for \
+                 tryptic peptides).")
+        )
         (@subcommand prot2kmer =>
             (about: "Splits each protein sequence in a FASTA format into a \
                      list of kmers.")
@@ -139,6 +147,8 @@ fn main() {
             matches.value_of("factor").unwrap_or("0"),
             matches.is_present("scored"),
             matches.value_of("lower_bound").unwrap_or("0")),
+        ("prot2pept", Some(matches)) => prot2pept(
+            matches.value_of("pattern")),
         ("prot2kmer", Some(matches)) => prot2kmer(
             matches.value_of("length").unwrap()),
         ("uniq", Some(matches)) => uniq(
@@ -316,6 +326,30 @@ fn taxa2agg(taxons: &str, method: &str, aggregation: &str, delimiter: Option<&st
                 sequence: vec![taxon.id.to_string(), taxon.name.to_string(), taxon.rank.to_string()],
             })?;
         }
+    }
+    Ok(())
+}
+
+fn prot2pept(pattern: Option<&str>) -> Result<()> {
+    let pattern = regex::Regex::new(pattern.unwrap_or(r"([KR])([^P])"))?;
+
+    let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
+    for record in fasta::Reader::new(io::stdin(), None, true).records() {
+        let fasta::Record { header, sequence } = record?;
+
+        // We will run the regex replacement twice, since a letter can be
+        // matched twice (i.e. once after and once before the split).
+        let first_run = pattern.replace_all(&sequence[0], "$1\n$2");
+
+        writer.write_record(fasta::Record {
+            header: header,
+            sequence: pattern.replace_all(&first_run, "$1\n$2")
+                             .replace("*", "\n")
+                             .lines()
+                             .filter(|x| !x.is_empty())
+                             .map(ToOwned::to_owned)
+                             .collect(),
+        })?;
     }
     Ok(())
 }
