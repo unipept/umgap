@@ -90,7 +90,7 @@ fn main() {
         (@subcommand prot2pept =>
             (about: "Splits each protein sequence in a FASTA format into a \
                      list of (tryptic) peptides.")
-            (@arg pattern: -p --("pattern") <REGEX> !required
+            (@arg pattern: -p --("pattern") [REGEX]
                 "The cleavage-pattern (regex), i.e. the pattern after which \
                  the next peptide will be cleaved (default: ([KR])([^P]) for \
                  tryptic peptides).")
