@@ -6,6 +6,8 @@ use std::io::BufRead;
 use std::borrow::Cow;
 use std::fs;
 use std::collections::HashSet;
+use std::collections::HashMap;
+use std::ops;
 
 #[macro_use(clap_app, crate_version, crate_authors)]
 extern crate clap;
@@ -15,6 +17,10 @@ extern crate fst;
 extern crate regex;
 
 extern crate csv;
+
+#[macro_use(json, json_internal)]
+extern crate serde_json;
+use serde_json::value;
 
 extern crate umgap;
 use umgap::dna::Strand;
@@ -134,7 +140,22 @@ fn main() {
             (@arg input: ... #{1,10} "The input files")
         )
         (@subcommand buildindex =>
-            (about: "Write an FST index of stdin on stdout")
+            (about: "Write an FST index of stdin on stdout.")
+        )
+        (@subcommand snaprank =>
+            (about: "Show counts of taxa on a specified rank.")
+            (@arg rank: -r --rank [RANK]
+                "The rank (default: species) to show.")
+            (@arg with_info: -i --("with-info")
+                "Print additional information about the taxa.")
+            (@arg taxon_file: +required "The NCBI taxonomy tsv-file")
+        )
+        (@subcommand jsontree =>
+            (about: "Aggregates taxa to a JSON tree for usage in the \
+                     unipept visualisations.")
+            (@arg ranked: -r --ranked
+                "Restrict to taxa with a taxonomic rank")
+            (@arg taxon_file: +required "The NCBI taxonomy tsv-file")
         )
     ).get_matches();
 
@@ -154,7 +175,7 @@ fn main() {
             matches.value_of("fst_index").unwrap(), // required so safe
             matches.value_of("length").unwrap_or("9")),
         ("taxa2agg", Some(matches)) => taxa2agg(
-            matches.value_of("taxon_file").unwrap(), // required argument, so safe
+            matches.value_of("taxon_file").unwrap(), // required so safe
             matches.value_of("method").unwrap_or("RMQ"),
             matches.value_of("aggregate").unwrap_or("LCA*"),
             matches.value_of("delimiter"),
@@ -179,6 +200,13 @@ fn main() {
         ("fastq2fasta", Some(matches)) => fastq2fasta(
             matches.values_of("input").unwrap().collect()), // required so safe
         ("buildindex", Some(_)) => buildindex(),
+        ("snaprank", Some(matches)) => snaprank(
+            matches.value_of("taxon_file").unwrap(), // required so safe
+            matches.value_of("rank").unwrap_or("species"),
+            matches.is_present("with_info")),
+        ("jsontree", Some(matches)) => jsontree(
+            matches.value_of("taxon_file").unwrap(), // required so safe
+            matches.is_present("ranked")),
         _  => { println!("{}", matches.usage()); Ok(()) }
     }.unwrap_or_else(|err| {
         writeln!(&mut io::stderr(), "{}", err).unwrap();
@@ -481,6 +509,88 @@ fn buildindex() -> Result<()> {
     }
 
     index.finish()?;
+
+    Ok(())
+}
+
+fn snaprank(taxons: &str, rank: &str, with_info: bool) -> Result<()> {
+    let taxons = taxon::read_taxa_file(taxons)?;
+    let rank = rank.parse::<taxon::Rank>()?;
+    if rank == taxon::Rank::NoRank {
+        return Err(ErrorKind::InvalidInvocation("Snap to an actual rank.".into()).into());
+    }
+
+    // Parsing the taxons
+    let tree     = taxon::TaxonTree::new(&taxons);
+    let by_id    = taxon::TaxonList::new(taxons);
+    let snapping = tree.filter_ancestors(|tid|
+        by_id.get(tid).map(|t| t.rank == rank).unwrap_or(false)
+    );
+
+    // Read and count taxon ranks
+    let mut counts = HashMap::new();
+    let stdin = io::stdin();
+    for line in stdin.lock().lines() {
+        let taxon = line?.parse::<taxon::TaxonId>()?;
+        *counts.entry(snapping[taxon].unwrap_or(0)).or_insert(0) += 1;
+    }
+
+    // Sorting
+    let mut counts = counts.iter().collect::<Vec<_>>();
+    counts.sort_by_key(|p| p.1);
+
+    // Printing
+    let stdout = io::stdout();
+    let mut handle = stdout.lock();
+    for (tid, count) in counts.into_iter() {
+        if with_info {
+            let taxon = by_id.get(*tid).ok_or("Missing taxon id".to_string())?;
+            handle.write_fmt(format_args!("{},{},{},{}\n", tid, taxon.name, taxon.rank, count))?;
+        } else {
+            handle.write_fmt(format_args!("{},{}\n", tid, count))?
+        }
+    }
+
+    Ok(())
+}
+
+fn jsontree(taxons: &str, ranked_only: bool) -> Result<()> {
+    let taxons = taxon::read_taxa_file(taxons)?;
+
+    // Parsing the taxons
+    let tree     = taxon::TaxonTree::new(&taxons);
+    let by_id    = taxon::TaxonList::new(taxons);
+    let snapping = tree.snapping(&by_id, ranked_only);
+
+    // Read and count taxon ranks
+    let mut counts = HashMap::new();
+    let stdin = io::stdin();
+    for line in stdin.lock().lines() {
+        let taxon = line?.parse::<taxon::TaxonId>()?;
+        *counts.entry(snapping[taxon].unwrap_or(0)).or_insert(0) += 1;
+    }
+
+    // Recursive json transformation
+    fn to_json(node: &tree::tree::Tree<usize>, aggnode: &tree::tree::Tree<usize>, by_id: &taxon::TaxonList) -> value::Value {
+        let root = by_id.get(node.root).unwrap();
+        json!({
+            "name": root.name,
+            "id": node.root,
+            "data": {
+                "count": aggnode.value,
+                "valid_taxon": if root.valid { "1" } else { "0" },
+                "rank": format!("{}", root.rank),
+                "self_count": node.value
+            },
+            "children": node.children.iter().zip(aggnode.children.iter())
+                                     .map(|(n, s)| to_json(n, s, by_id))
+                                     .collect::<Vec<_>>()
+        })
+    }
+
+    let tree = tree::tree::Tree::new(1, &by_id.ancestry(), &counts)?;
+    let aggtree = tree.aggregate(&ops::Add::add);
+    print!("{}", to_json(&tree, &aggtree, &by_id));
 
     Ok(())
 }
