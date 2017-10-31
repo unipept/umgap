@@ -8,7 +8,7 @@ use self::ordered_float::NotNaN;
 
 use agg;
 use taxon::{TaxonId, TaxonList};
-use tree::tree::SubTree;
+use tree::tree::Tree;
 use tree::lca::LCACalculator;
 
 
@@ -39,7 +39,7 @@ impl MixCalculator {
 impl agg::Aggregator for MixCalculator {
     fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> agg::Result<TaxonId> {
         if taxons.len() == 0 { bail!(agg::ErrorKind::EmptyInput); }
-        let subtree = SubTree::new(self.root, &self.parents, taxons)?
+        let subtree = Tree::new(self.root, &self.parents, taxons)?
             .collapse(&Add::add)
             .aggregate(&Add::add);
 
