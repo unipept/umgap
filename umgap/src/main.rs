@@ -108,15 +108,15 @@ fn main() {
         (@subcommand filter =>
             (about: "Filter peptides in a FASTA format based on specific \
                      criteria.")
-            (@arg min_length: -m --minlen <INT> !required
+            (@arg min_length: -m --minlen [INT]
                 "Only retain tryptic peptides that have at least min \
                  (default: 5) amino acids.")
-            (@arg max_length: -M --maxlen <INT> !required
+            (@arg max_length: -M --maxlen [INT]
                 "Only retain tryptic peptides that have at most max \
                  (default: 50) amino acids.")
-            (@arg contains: -c --contains <STRING> !required
+            (@arg contains: -c --contains [STRING]
                 "The letters that a sequence must contain.")
-            (@arg lacks: -l --lacks <STRING> !required
+            (@arg lacks: -l --lacks [STRING]
                 "The letters that a sequence cannot contain.")
         )
         (@subcommand fastq2fasta =>
