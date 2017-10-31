@@ -5,6 +5,7 @@ use std::io::Write;
 use std::io::BufRead;
 use std::borrow::Cow;
 use std::fs;
+use std::collections::HashSet;
 
 #[macro_use(clap_app, crate_version, crate_authors)]
 extern crate clap;
@@ -357,8 +358,10 @@ fn prot2kmer(k: &str) -> Result<()> {
 }
 
 fn filter(min_length: &str, max_length: &str, contains: &str, lacks: &str) -> Result<()> {
-    let min = min_length.parse::<usize>()?;
-    let max = max_length.parse::<usize>()?;
+    let min      = min_length.parse::<usize>()?;
+    let max      = max_length.parse::<usize>()?;
+    let contains = contains.chars().collect::<HashSet<char>>();
+    let lacks    = lacks.chars().collect::<HashSet<char>>();
 
     // Each peptide/nucleotide sequence is assumed to be on its own line
     let delimiter = regex::Regex::new(r"\n").map(Some)?;
@@ -369,18 +372,16 @@ fn filter(min_length: &str, max_length: &str, contains: &str, lacks: &str) -> Re
 
         writer.write_record(fasta::Record {
             header: header,
-            sequence: sequence.iter()
-                              .filter(|&seq| {
+            sequence: sequence.into_iter()
+                              .filter(|seq| {
                                   let length = seq.len();
                                   length >= min && length <= max
                               })
-                              .filter(|&seq| {
-                                  contains.chars().all(|c| seq.contains(c))
+                              .filter(|seq| {
+                                  let set = seq.chars().collect::<HashSet<char>>();
+                                  contains.intersection(&set).count() == contains.len()
+                                    && lacks.intersection(&set).count() == 0
                               })
-                              .filter(|&seq| {
-                                  ! lacks.chars().any(|c| seq.contains(c))
-                              })
-                              .map(ToOwned::to_owned)
                               .collect(),
         })?;
     }
