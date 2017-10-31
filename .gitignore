@@ -1,3 +1,2 @@
-# Python
-*.pyc
-__pycache__
+target
+Cargo.lock
