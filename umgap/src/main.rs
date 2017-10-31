@@ -5,6 +5,7 @@ use std::io::Write;
 use std::io::BufRead;
 use std::borrow::Cow;
 use std::fs;
+use std::collections::HashSet;
 
 #[macro_use(clap_app, crate_version, crate_authors)]
 extern crate clap;
@@ -113,6 +114,20 @@ fn main() {
             (@arg wrap: -w --wrap
                 "Wrap the output sequences")
         )
+        (@subcommand filter =>
+            (about: "Filter peptides in a FASTA format based on specific \
+                     criteria.")
+            (@arg min_length: -m --minlen [INT]
+                "Only retain tryptic peptides that have at least min \
+                 (default: 5) amino acids.")
+            (@arg max_length: -M --maxlen [INT]
+                "Only retain tryptic peptides that have at most max \
+                 (default: 50) amino acids.")
+            (@arg contains: -c --contains [STRING]
+                "The letters that a sequence must contain.")
+            (@arg lacks: -l --lacks [STRING]
+                "The letters that a sequence cannot contain.")
+        )
         (@subcommand fastq2fasta =>
             (about: "Interleaves a number of FASTQ files into a single FASTA \
                      output.")
@@ -156,6 +171,11 @@ fn main() {
             matches.value_of("input"),
             matches.is_present("keep"),
             matches.is_present("wrap")),
+        ("filter", Some(matches)) => filter(
+            matches.value_of("min_length").unwrap_or("5"),
+            matches.value_of("max_length").unwrap_or("50"),
+            matches.value_of("contains").unwrap_or(""),
+            matches.value_of("lacks").unwrap_or("")),
         ("fastq2fasta", Some(matches)) => fastq2fasta(
             matches.values_of("input").unwrap().collect()), // required so safe
         ("buildindex", Some(_)) => buildindex(),
@@ -366,6 +386,37 @@ fn prot2kmer(k: &str) -> Result<()> {
             sequence: sequence[0].as_bytes().windows(k)
                                  .map(String::from_utf8_lossy).map(Cow::into_owned)
                                  .collect(),
+        })?;
+    }
+    Ok(())
+}
+
+fn filter(min_length: &str, max_length: &str, contains: &str, lacks: &str) -> Result<()> {
+    let min      = min_length.parse::<usize>()?;
+    let max      = max_length.parse::<usize>()?;
+    let contains = contains.chars().collect::<HashSet<char>>();
+    let lacks    = lacks.chars().collect::<HashSet<char>>();
+
+    // Each peptide/nucleotide sequence is assumed to be on its own line
+    let delimiter = regex::Regex::new(r"\n").map(Some)?;
+
+    let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
+    for record in fasta::Reader::new(io::stdin(), delimiter, false).records() {
+        let fasta::Record { header, sequence } = record?;
+
+        writer.write_record(fasta::Record {
+            header: header,
+            sequence: sequence.into_iter()
+                              .filter(|seq| {
+                                  let length = seq.len();
+                                  length >= min && length <= max
+                              })
+                              .filter(|seq| {
+                                  let set = seq.chars().collect::<HashSet<char>>();
+                                  contains.intersection(&set).count() == contains.len()
+                                    && lacks.intersection(&set).count() == 0
+                              })
+                              .collect(),
         })?;
     }
     Ok(())
