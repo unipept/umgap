@@ -7,6 +7,7 @@ use std::borrow::Cow;
 use std::fs;
 use std::collections::HashSet;
 use std::collections::HashMap;
+use std::ops;
 
 #[macro_use(clap_app, crate_version, crate_authors)]
 extern crate clap;
@@ -16,6 +17,10 @@ extern crate fst;
 extern crate regex;
 
 extern crate csv;
+
+#[macro_use(json, json_internal)]
+extern crate serde_json;
+use serde_json::value;
 
 extern crate umgap;
 use umgap::dna::Strand;
@@ -145,6 +150,13 @@ fn main() {
                 "Print additional information about the taxa.")
             (@arg taxon_file: +required "The NCBI taxonomy tsv-file")
         )
+        (@subcommand jsontree =>
+            (about: "Aggregates taxa to a JSON tree for usage in the \
+                     unipept visualisations.")
+            (@arg ranked: -r --ranked
+                "Restrict to taxa with a taxonomic rank")
+            (@arg taxon_file: +required "The NCBI taxonomy tsv-file")
+        )
     ).get_matches();
 
     match matches.subcommand() {
@@ -192,6 +204,9 @@ fn main() {
             matches.value_of("taxon_file").unwrap(), // required so safe
             matches.value_of("rank").unwrap_or("species"),
             matches.is_present("with_info")),
+        ("jsontree", Some(matches)) => jsontree(
+            matches.value_of("taxon_file").unwrap(), // required so safe
+            matches.is_present("ranked")),
         _  => { println!("{}", matches.usage()); Ok(()) }
     }.unwrap_or_else(|err| {
         writeln!(&mut io::stderr(), "{}", err).unwrap();
@@ -535,6 +550,47 @@ fn snaprank(taxons: &str, rank: &str, with_info: bool) -> Result<()> {
             handle.write_fmt(format_args!("{},{}\n", tid, count))?
         }
     }
+
+    Ok(())
+}
+
+fn jsontree(taxons: &str, ranked_only: bool) -> Result<()> {
+    let taxons = taxon::read_taxa_file(taxons)?;
+
+    // Parsing the taxons
+    let tree     = taxon::TaxonTree::new(&taxons);
+    let by_id    = taxon::TaxonList::new(taxons);
+    let snapping = tree.snapping(&by_id, ranked_only);
+
+    // Read and count taxon ranks
+    let mut counts = HashMap::new();
+    let stdin = io::stdin();
+    for line in stdin.lock().lines() {
+        let taxon = line?.parse::<taxon::TaxonId>()?;
+        *counts.entry(snapping[taxon].unwrap_or(0)).or_insert(0) += 1;
+    }
+
+    // Recursive json transformation
+    fn to_json(node: &tree::tree::Tree<usize>, aggnode: &tree::tree::Tree<usize>, by_id: &taxon::TaxonList) -> value::Value {
+        let root = by_id.get(node.root).unwrap();
+        json!({
+            "name": root.name,
+            "id": node.root,
+            "data": {
+                "count": aggnode.value,
+                "valid_taxon": if root.valid { "1" } else { "0" },
+                "rank": format!("{}", root.rank),
+                "self_count": node.value
+            },
+            "children": node.children.iter().zip(aggnode.children.iter())
+                                     .map(|(n, s)| to_json(n, s, by_id))
+                                     .collect::<Vec<_>>()
+        })
+    }
+
+    let tree = tree::tree::Tree::new(1, &by_id.ancestry(), &counts)?;
+    let aggtree = tree.aggregate(&ops::Add::add);
+    print!("{}", to_json(&tree, &aggtree, &by_id));
 
     Ok(())
 }
