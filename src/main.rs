@@ -7,6 +7,7 @@ use std::fs;
 use std::collections::HashSet;
 use std::collections::HashMap;
 use std::ops;
+use std::cmp;
 
 #[macro_use(clap_app, crate_version, crate_authors)]
 extern crate clap;
@@ -161,6 +162,16 @@ quick_main!(|| -> Result<()> {
                 "Restrict to taxa with a taxonomic rank")
             (@arg taxon_file: +required "The NCBI taxonomy tsv-file")
         )
+        (@subcommand seedextend =>
+            (about: "Seed and extend.")
+            (@arg min_seed_size: -s --("min-seed-size") [INT]
+                "The minimum length of equal taxa to count as seed \
+                 (default 4)")
+            (@arg max_gap_size: -g --("max-gap-size") [INT]
+                "The maximum length of a gap between seeds in an extension \
+                 (default 0)")
+            (@arg taxon_file: +required "The NCBI taxonomy tsv-file")
+        )
     ).get_matches();
 
     match matches.subcommand() {
@@ -212,6 +223,10 @@ quick_main!(|| -> Result<()> {
         ("jsontree", Some(matches)) => jsontree(
             matches.value_of("taxon_file").unwrap(), // required so safe
             matches.is_present("ranked")),
+        ("seedextend", Some(matches)) => seedextend(
+            matches.value_of("min_seed_size").unwrap_or("4"),
+            matches.value_of("max_gap_size").unwrap_or("0"),
+            matches.value_of("taxon_file").unwrap()), // required so safe
         _  => { println!("{}", matches.usage()); Ok(()) }
     }
 });
@@ -594,5 +609,79 @@ fn jsontree(taxons: &str, ranked_only: bool) -> Result<()> {
     let aggtree = tree.aggregate(&ops::Add::add);
     print!("{}", to_json(&tree, &aggtree, &by_id));
 
+    Ok(())
+}
+
+fn seedextend(min_seed_size: &str, max_gap_size: &str, _taxon_file: &str) -> Result<()> {
+    let min_seed_size = min_seed_size.parse::<usize>()?;
+    let max_gap_size = max_gap_size.parse::<usize>()?;
+    let _gap_penalty = 0.5; // TODO: move down
+    // let _taxa = taxon::read_taxa_file(taxon_file)?; // TODO use it
+
+    let mut writer = fasta::Writer::new(io::stdout(), ",", false);
+
+    let separator = Some(try!(regex::Regex::new(r"\s+").map_err(|err| err.to_string())));
+    for record in fasta::Reader::new(io::stdin(), separator, false).records() {
+        let record = record?;
+        let taxons = record.sequence.iter()
+                                    .map(|s| s.parse::<TaxonId>())
+                                    .collect::<std::result::Result<Vec<TaxonId>,_>>()?;
+        if taxons.len() == 0 {
+            return Err(ErrorKind::InvalidInvocation("Frame should contain at least one taxons.".into()).into());
+        }
+
+        let mut seeds = Vec::new();
+        let mut start = 0;
+        let mut end = 0;
+        let mut last_tid = 0;
+        let mut same_tid = 0;
+        let mut same_max = 0;
+        while end < taxons.len() {
+            // same tid as last, add to seed.
+            if last_tid == taxons[end] {
+                same_tid += 1;
+                end += 1;
+                continue;
+            }
+
+            // our gap just became to big
+            if last_tid == 0 && same_tid > max_gap_size {
+                // add extended seed
+                if same_max >= min_seed_size { seeds.push((start, end - same_tid)) }
+                start = end;
+                last_tid = taxons[end];
+                same_tid = 1;
+                same_max = 1;
+                end += 1;
+                continue;
+            }
+
+            // don't start with a missing taxon
+            if last_tid == 0 && (end - start) == same_tid {
+                end += 1;
+                start = end;
+                continue;
+            }
+
+            // another taxon
+            if last_tid != 0 { same_max = cmp::max(same_max, same_tid); }
+            last_tid = taxons[end];
+            same_tid = 1;
+            end += 1;
+        }
+        if same_max >= min_seed_size {
+            if last_tid == 0 { end -= same_tid }
+            seeds.push((start, end))
+        }
+
+        // write it
+        try!(writer.write_record(fasta::Record {
+            header: record.header,
+            sequence: seeds.into_iter()
+                           .flat_map(|(start, end)| taxons[start..end].into_iter())
+                           .map(|t| t.to_string())
+                           .collect()
+        }).map_err(|err| err.to_string()));
+    }
     Ok(())
 }
