@@ -146,7 +146,7 @@ impl FromStr for Taxon {
     ///
     /// # Examples
     /// ```
-    /// use unipept::taxon::Taxon;
+    /// use umgap::taxon::Taxon;
     /// let taxon = "1\tFelis catus\tspecies\t4\t\x01".parse::<Taxon>();
     /// // Will return: Taxon {
     /// //                  id: 1,
