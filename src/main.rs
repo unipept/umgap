@@ -1,6 +1,5 @@
 
 use std::io;
-use std::process;
 use std::io::Write;
 use std::io::BufRead;
 use std::borrow::Cow;
@@ -17,6 +16,9 @@ extern crate fst;
 extern crate regex;
 
 extern crate csv;
+
+#[macro_use(quick_main)]
+extern crate error_chain;
 
 #[macro_use(json, json_internal)]
 extern crate serde_json;
@@ -35,7 +37,7 @@ use umgap::rmq;
 use umgap::tree;
 use umgap::utils;
 
-fn main() {
+quick_main!(|| -> Result<()> {
     let matches = clap_app!(umgap =>
         (version: crate_version!())
         (author: crate_authors!("\n"))
@@ -208,11 +210,8 @@ fn main() {
             matches.value_of("taxon_file").unwrap(), // required so safe
             matches.is_present("ranked")),
         _  => { println!("{}", matches.usage()); Ok(()) }
-    }.unwrap_or_else(|err| {
-        writeln!(&mut io::stderr(), "{}", err).unwrap();
-        process::exit(1);
-    });
-}
+    }
+});
 
 fn translate(methionine: bool, table: &str, show_table: bool, frames: Vec<&str>) -> Result<()> {
     // Parsing the table
