@@ -18,7 +18,7 @@ To download and build the pipeline, you will need the following programs:
 If you have these programs installed, you can build the pipeline by issuing the
 following commands:
 
-```
+```sh
 git clone 'git@github.ugent.be:unipept/unipept-metagenomics-scripts.git' umgap
 cd umgap
 meson build
