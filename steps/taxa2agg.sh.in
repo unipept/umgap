@@ -1,0 +1,66 @@
+@HASHBANG@
+#
+# Takes a FASTQ file as input and runs the Unipept pipeline to find
+# out the species in this sample.
+# Outputs an list of "frequency species-name" lines, ordered per frequency.
+
+set -euo pipefail
+
+dir="$(dirname "$0")"
+
+# Defaults
+DEFAULT_AGGREGATION='LCA*'
+DEFAULT_AGGREGATION_METHOD='RMQ'
+
+function usage() {
+    echo "Usage: $(basename $0) [options]" >&2
+    echo >&2
+    echo "Options:" >&2
+    echo "  -h, --help            Display this message." >&2
+    echo >&2
+}
+
+function parse_arguments() {
+    local OPTIONS_SHORT='h'
+    local OPTIONS_LONG='help'
+
+    local options=$(getopt -n "$0" -o "$OPTIONS_SHORT" --long "$OPTIONS_LONG"  -- "$@")
+    eval set -- $options
+    while true; do
+        case "$1" in
+            -h|--help)
+                usage
+                exit ;;
+            --)
+                shift
+                break ;;
+            *)
+                break ;;
+        esac
+        shift
+    done
+
+    # Check the validity and whether required options are specified
+    if [[ "$UMGAP_TAXA2AGG_METHOD" == "both" && -z "$UMGAP_TAXA2AGG_HYBRID_FACTOR" ]]; then
+        echo "When using hybrid aggregation, a complementary factor is mandatory." >&2
+    fi
+
+    # Parse the arguments
+    if [[ $# -ne 0 ]]; then
+        echo "Please supply the input through stdin. No arguments allowed." >&2
+        echo >&2
+        usage
+        exit 1
+    fi
+}
+
+parse_arguments "$@"
+
+
+# Remove FASTA records with empty sequences, as they crash taxa2agg
+@SED@ 'N;/^>.*\n$/d' | \
+
+    @UMGAP@ taxa2agg -r -a "$UMGAP_TAXA2AGG_TYPE" \
+                     -m "$UMGAP_TAXA2AGG_METHOD" \
+                     -f "$UMGAP_TAXA2AGG_HYBRID_FACTOR" \
+                     "$UMGAP_TAXONS_TSV"
