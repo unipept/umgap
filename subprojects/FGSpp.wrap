@@ -1,0 +1,4 @@
+[wrap-git]
+directory=FGSpp
+url=git@github.ugent.be:unipept/FragGeneScanPlusPlus.git
+revision=head
