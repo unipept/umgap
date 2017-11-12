@@ -1,0 +1,173 @@
+@HASHBANG@
+#
+# Takes a FASTQ or a FASTA file as input and runs the UMgAP pipeline to find
+# out the species in this sample.
+# Outputs an list of "frequency species-name" lines, ordered per frequency.
+
+# We're explicitly not setting the -e option, so we can catch and report a
+# failing step in the pipeline.
+set -uo pipefail
+
+dir="$(dirname "$BASH_SOURCE")"
+
+# DEFAULTS
+DEFAULT_CONFIG_FILE="@CONFIG_DIR@/default.config"
+DEFAULT_STEPS='all'
+
+# other
+PRETTY_PREFIX="\0342\0224\0234\0342\0224\0200\0342\0224\0200"
+
+function usage() {
+    echo "Usage: $(basename $0) [options] INPUT_FILE ..." >&2
+    echo >&2
+    echo "General options:" >&2
+    echo "  -h, --help        Display this message." >&2
+    echo >&2
+    echo "  -c, --config      The config file to use." >&2
+    echo >&2
+}
+
+function parse_arguments() {
+    local OPTIONS_SHORT='c:h'
+    local OPTIONS_LONG='config:,help,steps:'
+
+    local options=$(getopt -n "$0" -o "$OPTIONS_SHORT" --long "$OPTIONS_LONG"  -- "$@")
+    eval set -- $options
+    while true; do
+        case "$1" in
+            -c|--config)
+                config_file="$2"
+                shift ;;
+            -h|--help)
+                usage
+                exit ;;
+            --steps)
+                steps="$2"
+                shift ;;
+            --)
+                shift
+                break ;;
+            *)
+                break ;;
+        esac
+        shift
+    done
+
+    # General options
+    steps="${steps:-}"
+
+    # Parse the *actual* arguments
+    if [[ $# -lt 1 ]]; then
+        echo "Please supply one or more input files." >&2
+        echo >&2
+        usage
+        exit 1
+    fi
+    input_files="$@"
+}
+
+# Checks which steps we should take/skip.
+function parse_steps() {
+    if [[ -z "$steps" ]] || [[ "$steps" == "all" ]];then
+        steps="preprocess,gene_prediction,prot2pept,pept2lca,taxa2agg,agg2freq"
+    fi
+}
+
+# Parses a config file and exports the variables
+#
+# Arguments:
+# $1 - The path to the config file
+function read_config_file() {
+    local config_file="$1"
+
+    if [[ ! -f "$config_file" ]]; then
+        echo "Default configuration file not found!" &>2
+        exit 1;
+    fi
+
+    while IFS='=' read -r key value; do
+        # Canonicalize the key string:
+        # -> convert dots into underscores
+        # -> convert to uppercase
+        # -> prefox with UMGAP_ to prevent clashing with other variables
+        key="UMGAP_$(echo $key | tr '.' '_' | tr '[:lower:]' '[:upper:]')"
+
+        eval "export ${key}=\"${value}\""
+    done < <(cat "$config_file" | grep -v '^#' | grep -v '^$')
+}
+
+# Executes and times a given step in the pipeline.
+# It does so without interfering with stdin/stdout, so you can still use your
+# commands in a pipeline.
+#
+# Arguments:
+# $1: The name of the stpe
+# $2: A description of the step
+# ...: the command to execute (and measured, if specified by the config).
+function step() {
+    local step_name="$1"
+    local step_description="$2"
+    shift;shift
+    local step_command="\"$dir/steps/$step_name.sh\" $*"
+
+    if [[ "$steps" != *"$step_name"* ]]; then
+        cat
+    else
+        # Show the description
+        echo -e "$PRETTY_PREFIX $step_description" >&2
+
+        if [[ "${UMGAP_MEASUREMENTS_ENABLED,,}" == "true" ]]; then
+            # Don't use `time` directly, or it will use the time-builtin from
+            # bash, rather than the executable GNU time.
+            $(which time) -a -o "$UMGAP_MEASUREMENTS_LOG_FILE" -v bash -c "$step_command"
+        else
+            bash -c "$step_command"
+        fi
+
+        if [[ $? != 0 ]]; then
+            echo "ERROR: step '$step_name' failed" >&2
+            exit 1
+        fi
+    fi
+}
+
+
+# Parse the arguments
+parse_arguments "$@"
+
+# Load the default config file, and the user's config file if specified
+read_config_file "$DEFAULT_CONFIG_FILE"
+[[ -z "${config_file+x}" ]] || read_config_file "$config_file"
+
+# Private API - check if we only need to perform a subset of the given steps.
+parse_steps
+
+
+# Now execute the UMgAP pipeline step by step
+echo "Executing the Unipept Metagenomics Analysis Pipeline" >&2
+start=$(date +%s)
+
+step "preprocess" \
+     "Preprocessing the input files" \
+     $input_files | \
+
+step "gene_prediction" \
+     "Performing gene prediction and translating into proteins" | \
+
+step "prot2pept" \
+     "Splitting proteins in k-mers/peptides" | \
+
+step "pept2lca" \
+     "Calculating LCA for each protein" | \
+
+step "taxa2agg" \
+     "Aggregating LCA's per read" | \
+
+step "agg2freq" \
+     "Calculating frequency table"
+
+# Done! Now show the user how long it took in total
+end=$(date +%s)
+runtime=$((end-start))
+
+echo "Finished after $runtime seconds." >&2
