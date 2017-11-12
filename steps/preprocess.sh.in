@@ -1,0 +1,98 @@
+@HASHBANG@
+#
+# Takes a FASTQ file as input and runs the Unipept pipeline to find
+# out the species in this sample.
+# Outputs an list of "frequency species-name" lines, ordered per frequency.
+
+set -euo pipefail
+
+dir="$(dirname "$0")"
+
+function usage() {
+    echo "Usage: $(basename $0) [options]" >&2
+    echo >&2
+}
+
+function parse_arguments() {
+    local OPTIONS_SHORT='h'
+    local OPTIONS_LONG='help'
+
+    local options=$(getopt -n "$0" -o "$OPTIONS_SHORT" --long "$OPTIONS_LONG"  -- "$@")
+    eval set -- $options
+    while true; do
+        case "$1" in
+            -h|--help)
+                usage
+                exit ;;
+            --)
+                shift
+                break ;;
+            *)
+                break ;;
+        esac
+        shift
+    done
+
+    # Parse the arguments
+    if [[ $# -lt 1 ]]; then
+        echo "Please supply at least one input file." >&2
+        echo >&2
+        usage
+        exit 1
+    fi
+}
+
+parse_arguments "$@"
+
+
+# Whether we're dealing with fastq_files
+FASTQ_FILES=false
+# An array in which the resulting files will be piped
+file_pipes=()
+
+for file in "$@"; do
+
+    # Create a temporary pipe and make sure it gets deleted
+    tmp_pipe="$(mktemp -u --tmpdir="$UMGAP_TMP_DIR")"
+    mkfifo -m 600 "$tmp_pipe"
+    # Add it to the pipes array
+    file_pipes+=("$tmp_pipe")
+    # Make sure it gets deleted
+    trap "rm -f '$tmp_pipe'" EXIT INT TERM HUP
+
+    if [[ "$(file -b "$file")" == *"gzip"* ]]; then
+      # Decompress gzipped files (and check for FASTQ files)
+        if [[ "$(@ZCAT@ "$file" | head -c 1)" == "@" ]]; then
+            FASTQ_FILES=true
+        fi
+        @GUNZIP@ -c "$file" >"$tmp_pipe" &
+
+    else
+        # No decompression needed, still check for FASTQ however
+        if [[ "$(head -c 1 "$file")" == "@" ]]; then
+            FASTQ_FILES=true
+        fi
+        cat "$file" >"$tmp_pipe" &
+    fi
+
+done
+
+# Convert FASTQ to FASTA if necessary
+if $FASTQ_FILES; then
+    # NOTE: fastq2fasta will also interleave record by record, so paired-end reads
+    # spread out over different files will end up together
+    @UMGAP@ fastq2fasta "${file_pipes[@]}"
+else
+    # Manually handle 2 files, which we will assume have paired-end reads
+    if [[ ${#file_pipes[@]} == 2 ]]; then
+        # Merge two FASTA files to a single FASTA format by interleaving the lines
+        @AWK@ 'BEGIN { f2="'"${file_pipes[0]}"'" }
+        {
+          print; getline; print;
+          getline <f2; print; getline <f2; print;
+        }' "${file_pipes[1]}"
+    else
+        # If one file (or multiple files), just concatenate everything and print
+        cat "${file_pipes[@]}"
+    fi
+fi
