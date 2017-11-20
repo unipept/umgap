@@ -3,7 +3,7 @@ project('UMGAP', [ 'rust' ],
 )
 
 # Makes all bash-script verbose
-debug = true
+debug = false
 
 #─────────────────────────────────────────────────────────────────────────────┐
 # DEPENDENCIES                                                                │
