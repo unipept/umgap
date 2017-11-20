@@ -53,8 +53,8 @@ if [[ "${UMGAP_KMERS_ENABLED,,}" == "true" ]]; then
     @UMGAP@ prot2kmer -k "$UMGAP_KMERS_LENGTH"
 else
     # Split protein fragments into tryptic peptides
-    @PROT2PEPT@ | \
+    @UMGAP@ prot2pept | \
 
     # Filter very small and very large peptides (they aren't indexed in Unipept anyway)
-    @PEPTFILTER@
+    @UMGAP@ filter
 fi
