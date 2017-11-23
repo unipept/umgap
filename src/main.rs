@@ -627,7 +627,11 @@ fn seedextend(min_seed_size: &str, max_gap_size: &str, _taxon_file: &str) -> Res
                                     .map(|s| s.parse::<TaxonId>())
                                     .collect::<std::result::Result<Vec<TaxonId>,_>>()?;
         if taxons.len() == 0 {
-            return Err(ErrorKind::InvalidInvocation("Frame should contain at least one taxons.".into()).into());
+            writer.write_record(fasta::Record {
+                header: record.header,
+                sequence: vec![]
+            })?;
+            continue;
         }
 
         let mut seeds = Vec::new();
