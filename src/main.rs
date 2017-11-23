@@ -186,7 +186,7 @@ quick_main!(|| -> Result<()> {
             matches.value_of("fst_index").unwrap(), // required so safe
             matches.value_of("taxon_file"),
             matches.is_present("with_input"),
-            matches.is_present("one-on-one")),
+            matches.is_present("one_on_one")),
         ("prot2kmer2lca", Some(matches)) => prot2kmer2lca(
             matches.value_of("fst_index").unwrap(), // required so safe
             matches.value_of("length").unwrap_or("9")),
@@ -275,12 +275,13 @@ fn pept2lca(fst: &str, taxons: Option<&str>, with_input: bool, one_on_one: bool)
     let by_id = taxons.map(|taxons| taxon::read_taxa_file(taxons))
                       .map(|res| res.map(Some)).unwrap_or(Ok(None))?
         .map(|taxa| taxon::TaxonList::new_with_unknown(taxa, one_on_one));
+    let default = if one_on_one { Some(0) } else { None };
     let stdin = io::stdin();
     for line in stdin.lock().lines() {
         let line = line?;
         if line.starts_with('>') {
             println!("{}", line);
-        } else if let Some(lca) = fst.get(&line) {
+        } else if let Some(lca) = fst.get(&line).map(Some).unwrap_or(default) {
             if with_input {
                 print!("{},", line);
             }
