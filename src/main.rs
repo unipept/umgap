@@ -148,11 +148,9 @@ quick_main!(|| -> Result<()> {
             (about: "Write an FST index of stdin on stdout.")
         )
         (@subcommand snaprank =>
-            (about: "Show counts of taxa on a specified rank.")
+            (about: "Snap taxa to a specified rank.")
             (@arg rank: -r --rank [RANK]
                 "The rank (default: species) to show.")
-            (@arg with_info: -i --("with-info")
-                "Print additional information about the taxa.")
             (@arg taxon_file: +required "The NCBI taxonomy tsv-file")
         )
         (@subcommand jsontree =>
@@ -218,8 +216,7 @@ quick_main!(|| -> Result<()> {
         ("buildindex", Some(_)) => buildindex(),
         ("snaprank", Some(matches)) => snaprank(
             matches.value_of("taxon_file").unwrap(), // required so safe
-            matches.value_of("rank").unwrap_or("species"),
-            matches.is_present("with_info")),
+            matches.value_of("rank").unwrap_or("species")),
         ("jsontree", Some(matches)) => jsontree(
             matches.value_of("taxon_file").unwrap(), // required so safe
             matches.is_present("ranked")),
@@ -531,7 +528,7 @@ fn buildindex() -> Result<()> {
     Ok(())
 }
 
-fn snaprank(taxons: &str, rank: &str, with_info: bool) -> Result<()> {
+fn snaprank(taxons: &str, rank: &str) -> Result<()> {
     let taxons = taxon::read_taxa_file(taxons)?;
     let rank = rank.parse::<taxon::Rank>()?;
     if rank == taxon::Rank::NoRank {
@@ -546,26 +543,17 @@ fn snaprank(taxons: &str, rank: &str, with_info: bool) -> Result<()> {
     );
 
     // Read and count taxon ranks
-    let mut counts = HashMap::new();
     let stdin = io::stdin();
-    for line in stdin.lock().lines() {
-        let taxon = line?.parse::<taxon::TaxonId>()?;
-        *counts.entry(snapping[taxon].unwrap_or(0)).or_insert(0) += 1;
-    }
-
-    // Sorting
-    let mut counts = counts.iter().collect::<Vec<_>>();
-    counts.sort_by_key(|p| p.1);
-
-    // Printing
     let stdout = io::stdout();
     let mut handle = stdout.lock();
-    for (tid, count) in counts.into_iter() {
-        if with_info {
-            let taxon = by_id.get(*tid).ok_or("Missing taxon id".to_string())?;
-            handle.write_fmt(format_args!("{},{},{},{}\n", tid, taxon.name, taxon.rank, count))?;
+    for line in stdin.lock().lines() {
+        let line = line?;
+        if line.starts_with('>') {
+            handle.write_fmt(format_args!("{}\n", line))?;
         } else {
-            handle.write_fmt(format_args!("{},{}\n", tid, count))?
+            let taxon = line.parse::<taxon::TaxonId>()?;
+            let snapped = snapping[taxon].unwrap_or(0);
+            handle.write_fmt(format_args!("{}\n", snapped))?;
         }
     }
 
@@ -604,7 +592,7 @@ fn jsontree(taxons: &str, ranked_only: bool) -> Result<()> {
                                      .map(|(n, s)| to_json(n, s, by_id))
                                      .collect::<Vec<_>>()
         })
-    }
+   }
 
     let tree = tree::tree::Tree::new(1, &by_id.ancestry(), &counts)?;
     let aggtree = tree.aggregate(&ops::Add::add);
