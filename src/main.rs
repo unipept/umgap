@@ -380,15 +380,14 @@ fn taxa2agg(taxons: &str, method: &str, aggregation: &str, delimiter: Option<&st
         let counts = agg::count(taxons.into_iter());
         let counts = agg::filter(counts, lower_bound);
 
-        // If we don't have a consensus taxon, leave out the read (i.e. consider undetected)
-        if !counts.is_empty() {
-            let aggregate = aggregator.aggregate(&counts)?;
-            let taxon = by_id.get(snapping[aggregate].unwrap()).unwrap();
-            writer.write_record(fasta::Record {
-                header: record.header,
-                sequence: vec![taxon.id.to_string(), taxon.name.to_string(), taxon.rank.to_string()],
-            })?;
-        }
+        writer.write_record(fasta::Record {
+            header: record.header,
+            sequence: if counts.is_empty() { vec![] } else {
+                let aggregate = aggregator.aggregate(&counts)?;
+                let taxon = by_id.get(snapping[aggregate].unwrap()).unwrap();
+                vec![taxon.id.to_string(), taxon.name.to_string(), taxon.rank.to_string()]
+            }
+        })?;
     }
     Ok(())
 }
