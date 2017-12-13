@@ -606,7 +606,7 @@ fn seedextend(min_seed_size: &str, max_gap_size: &str, _taxon_file: &str) -> Res
     let _gap_penalty = 0.5; // TODO: move down
     // let _taxa = taxon::read_taxa_file(taxon_file)?; // TODO use it
 
-    let mut writer = fasta::Writer::new(io::stdout(), ",", false);
+    let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
 
     let separator = Some(try!(regex::Regex::new(r"\s+").map_err(|err| err.to_string())));
     for record in fasta::Reader::new(io::stdin(), separator, false).records() {
