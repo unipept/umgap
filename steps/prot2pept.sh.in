@@ -56,5 +56,5 @@ else
     @UMGAP@ prot2pept | \
 
     # Filter very small and very large peptides (they aren't indexed in Unipept anyway)
-    @UMGAP@ filter
+    @UMGAP@ filter -m "$UMGAP_PEPTIDES_MIN_LENGTH" -M "$UMGAP_PEPTIDES_MAX_LENGTH"
 fi
