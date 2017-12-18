@@ -1,8 +1,8 @@
-UMGAP - Unipept Metagenomics Analysis pipeline
+UMGAP - Unipept Metagenomics Analysis Pipeline
 ==============================================
 The Unipept Metagenomics Analysis Pipeline can analyse metagenomic samples and
 return a frequency table of the taxons it detected for each read. It is based on
-the [Unipept Metaproteomics Analysis Pipeline](Unipept). Both
+the [Unipept Metaproteomics Analysis Pipeline][Unipept]. Both
 tools were developed at the Department of Applied Maths, Computer science and
 Statistics at [Ghent University](UGent).
 
