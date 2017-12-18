@@ -63,6 +63,7 @@ parse_arguments "$@"
     @UMGAP@ taxa2agg -r -a "$UMGAP_TAXA2AGG_TYPE" \
                      -m "$UMGAP_TAXA2AGG_METHOD" \
                      -f "$UMGAP_TAXA2AGG_HYBRID_FACTOR" \
+                     -l "$UMGAP_TAXA2AGG_MIN_FREQ" \
                      "$UMGAP_TAXONS_TSV" | \
 
     @SED@ 'N;/^>.*\n$/d'
