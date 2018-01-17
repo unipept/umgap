@@ -85,10 +85,10 @@ quick_main!(|| -> Result<()> {
                 "Each taxon is followed by a score between 0 and 1")
             (@arg ranked: -r --ranked
                 "Restrict to taxa with a taxonomic rank")
-            (@arg method: -m --method [RMQtree]
-                "The method to use for aggregation")
-            (@arg aggregate: -a --aggregate [LCAMRTLhybrid]
-                "The aggregation to use")
+            (@arg method: -m --method [STR]
+                "The method to use for aggregation (RMQ or tree)")
+            (@arg aggregate: -a --aggregate [STR]
+                "The aggregation to use (LCA*, MRTL or hybrid)")
             (@arg factor: -f --factor [RATIO]
                 "The factor for the hybrid aggregation, from 0.0 (MRTL) to \
                  1.0 (LCA*)")
@@ -346,12 +346,12 @@ fn taxa2agg(taxons: &str, method: &str, aggregation: &str, delimiter: Option<&st
     let aggregator: Result<Box<agg::Aggregator>> = match (method, aggregation) {
         ("RMQ",  "MRTL") => Ok(Box::new(rmq::rtl::RTLCalculator::new(tree.root, &by_id))),
         ("RMQ",  "LCA*") => Ok(Box::new(rmq::lca::LCACalculator::new(tree))),
-        ("RMQ",  "both") => {
+        ("RMQ",  "hybrid") => {
             writeln!(&mut io::stderr(), "Warning: this is a hybrid between LCA/MRTL, not LCA*/MRTL").unwrap();
             Ok(Box::new(rmq::mix::MixCalculator::new(tree, factor)))
         },
         ("tree", "LCA*") => Ok(Box::new(tree::lca::LCACalculator::new(tree.root, &by_id))),
-        ("tree", "both") => Ok(Box::new(tree::mix::MixCalculator::new(tree.root, &by_id, factor))),
+        ("tree", "hybrid") => Ok(Box::new(tree::mix::MixCalculator::new(tree.root, &by_id, factor))),
         _                => Err(ErrorKind::InvalidInvocation(format!("{} and {} cannot be combined", method, aggregation)).into())
     };
     let aggregator = aggregator?;
@@ -550,11 +550,11 @@ fn snaprank(taxons: &str, rank: &str) -> Result<()> {
     for line in stdin.lock().lines() {
         let line = line?;
         if line.starts_with('>') {
-            handle.write_fmt(format_args!("{}\n", line))?;
+            writeln!(handle, "{}", line)?;
         } else {
             let taxon = line.parse::<taxon::TaxonId>()?;
             let snapped = snapping[taxon].unwrap_or(0);
-            handle.write_fmt(format_args!("{}\n", snapped))?;
+            writeln!(handle, "{}", snapped)?;
         }
     }
 
