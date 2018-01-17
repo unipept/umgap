@@ -41,7 +41,7 @@ function parse_arguments() {
     done
 
     # Check the validity and whether required options are specified
-    if [[ "$UMGAP_TAXA2AGG_METHOD" == "both" && -z "$UMGAP_TAXA2AGG_HYBRID_FACTOR" ]]; then
+    if [[ "$UMGAP_TAXA2AGG_METHOD" == "hybrid" && -z "$UMGAP_TAXA2AGG_HYBRID_FACTOR" ]]; then
         echo "When using hybrid aggregation, a complementary factor is mandatory." >&2
     fi
 
