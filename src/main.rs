@@ -39,6 +39,8 @@ use umgap::tree;
 use umgap::utils;
 
 quick_main!(|| -> Result<()> {
+
+    // TODO https://docs.rs/clap/2.31.2/clap/macro.arg_enum.html
     let matches = clap_app!(umgap =>
         (version: crate_version!())
         (author: crate_authors!("\n"))
@@ -170,6 +172,15 @@ quick_main!(|| -> Result<()> {
                  (default 0)")
             (@arg taxon_file: +required "The NCBI taxonomy tsv-file")
         )
+        (@subcommand report =>
+            (about: "Count and report on a list of taxon ids")
+            (@arg taxon_file: +required "The NCBI taxonomy tsv-file")
+        )
+        (@subcommand bestof =>
+            (about: "Pick the frame with the most none-root hits")
+            (@arg frames: -f --frames [INT]
+                "The number of frames of which to pick the best")
+        )
     ).get_matches();
 
     match matches.subcommand() {
@@ -224,6 +235,11 @@ quick_main!(|| -> Result<()> {
             matches.value_of("min_seed_size").unwrap_or("4"),
             matches.value_of("max_gap_size").unwrap_or("0"),
             matches.value_of("taxon_file").unwrap()), // required so safe
+        ("report", Some(matches)) => report(
+            matches.value_of("taxon_file").unwrap(), // required so safe
+            matches.value_of("rank").unwrap_or("species")),
+        ("bestof", Some(matches)) => bestof(
+            matches.value_of("frames").unwrap_or("6")),
         _  => { println!("{}", matches.usage()); Ok(()) }
     }
 });
@@ -593,7 +609,7 @@ fn jsontree(taxons: &str, ranked_only: bool) -> Result<()> {
                                      .map(|(n, s)| to_json(n, s, by_id))
                                      .collect::<Vec<_>>()
         })
-   }
+    }
 
     let tree = tree::tree::Tree::new(1, &by_id.ancestry(), &counts)?;
     let aggtree = tree.aggregate(&ops::Add::add);
@@ -676,6 +692,73 @@ fn seedextend(min_seed_size: &str, max_gap_size: &str, _taxon_file: &str) -> Res
                            .map(|t| t.to_string())
                            .collect()
         }).map_err(|err| err.to_string()));
+    }
+    Ok(())
+}
+
+fn report(taxons: &str, rank: &str) -> Result<()> {
+    let taxons = taxon::read_taxa_file(taxons)?;
+    let rank = rank.parse::<taxon::Rank>()?;
+    if rank == taxon::Rank::NoRank {
+        return Err(ErrorKind::InvalidInvocation("Snap to an actual rank.".into()).into());
+    }
+
+    // Parsing the taxons
+    let tree     = taxon::TaxonTree::new(&taxons);
+    let by_id    = taxon::TaxonList::new(taxons);
+    let snapping = tree.filter_ancestors(|tid|
+        by_id.get(tid).map(|t| t.rank == rank).unwrap_or(false)
+    );
+
+    // Read and count taxon ranks
+    let mut counts = HashMap::new();
+    let stdin = io::stdin();
+    for line in stdin.lock().lines() {
+        let taxon = line?.parse::<taxon::TaxonId>()?;
+        *counts.entry(snapping[taxon].unwrap_or(0)).or_insert(0) += 1;
+    }
+
+    let mut counts = counts
+        .into_iter()
+        .map(|(taxon, count)| (count, taxon))
+        .collect::<Vec<(taxon::TaxonId, usize)>>();
+    counts.sort();
+
+    let stdout = io::stdout();
+    let mut stdout = stdout.lock();
+    for (count, taxon) in counts {
+        let taxon = by_id.get(taxon)
+                         .ok_or("LCA taxon id not in taxon list. Check compatibility with index.")?;
+        writeln!(stdout, "{},{},{},{}", count, taxon.id, taxon.name, taxon.rank)?;
+    }
+
+    Ok(())
+}
+
+fn bestof(frames: &str) -> Result<()> {
+    // Parsing the number of frames
+    let frames = frames.parse::<usize>()?;
+
+    let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
+
+    let delimiter = Some(regex::Regex::new(r"\n").unwrap());
+
+    // Combine frames and process them
+    let mut chunk = Vec::with_capacity(frames);
+    for record in fasta::Reader::new(io::stdin(), delimiter, false).records() {
+        let record = record?;
+        if chunk.len() < frames - 1 {
+            chunk.push(record);
+        } else {
+            // process chunk
+            writer.write_record_ref(chunk.iter().max_by_key(|&rec| {
+                rec.sequence.iter()
+                   .map(|tid| tid.parse::<TaxonId>().unwrap_or(0))
+                   .filter(|&s| s != 0 && s != 1)
+                   .count()
+            }).unwrap())?;
+            chunk.clear();
+        }
     }
     Ok(())
 }
