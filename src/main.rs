@@ -64,12 +64,7 @@ quick_main!(|| -> Result<()> {
         (@subcommand pept2lca =>
             (about: "Looks up each line of input in a given FST index and \
                      outputs the result. Lines starting with a '>' are \
-                     copied. Lines for which no mapping is found are ignored. \
-                     Prints more information if the taxa are supplied.")
-            (@arg taxon_file: -t --taxa [FILE]
-                "The NCBI taxonomy tsv-file")
-            (@arg with_input: -i --("with-input")
-                "Print the identified peptide along with the output")
+                     copied. Lines for which no mapping is found are ignored.")
             (@arg one_on_one: -o --("one-on-one")
                 "Map unknown sequences to 0 instead of ignoring them")
             (@arg fst_index: +required "An FST to query")
@@ -94,8 +89,6 @@ quick_main!(|| -> Result<()> {
             (@arg factor: -f --factor [RATIO]
                 "The factor for the hybrid aggregation, from 0.0 (MRTL) to \
                  1.0 (LCA*)")
-            (@arg delimiter: -d --delimiter [REGEX]
-                "Regex to split input taxa, default is whitespace")
             (@arg lower_bound: -l --("lower-bound") [INT]
                 "The smallest input frequency for a taxon to be included in \
                  the aggregation")
@@ -174,6 +167,8 @@ quick_main!(|| -> Result<()> {
         )
         (@subcommand report =>
             (about: "Count and report on a list of taxon ids")
+            (@arg rank: -r --rank [RANK]
+                "The rank (default: species) to show.")
             (@arg taxon_file: +required "The NCBI taxonomy tsv-file")
         )
         (@subcommand bestof =>
@@ -193,8 +188,6 @@ quick_main!(|| -> Result<()> {
             )),
         ("pept2lca", Some(matches)) => pept2lca(
             matches.value_of("fst_index").unwrap(), // required so safe
-            matches.value_of("taxon_file"),
-            matches.is_present("with_input"),
             matches.is_present("one_on_one")),
         ("prot2kmer2lca", Some(matches)) => prot2kmer2lca(
             matches.value_of("fst_index").unwrap(), // required so safe
@@ -203,7 +196,6 @@ quick_main!(|| -> Result<()> {
             matches.value_of("taxon_file").unwrap(), // required so safe
             matches.value_of("method").unwrap_or("RMQ"),
             matches.value_of("aggregate").unwrap_or("LCA*"),
-            matches.value_of("delimiter"),
             matches.is_present("ranked"),
             matches.value_of("factor").unwrap_or("0"),
             matches.is_present("scored"),
@@ -283,11 +275,8 @@ fn translate(methionine: bool, table: &str, show_table: bool, frames: Vec<&str>)
     Ok(())
 }
 
-fn pept2lca(fst: &str, taxons: Option<&str>, with_input: bool, one_on_one: bool) -> Result<()> {
+fn pept2lca(fst: &str, one_on_one: bool) -> Result<()> {
     let fst = fst::Map::from_path(fst)?;
-    let by_id = taxons.map(|taxons| taxon::read_taxa_file(taxons))
-                      .map(|res| res.map(Some)).unwrap_or(Ok(None))?
-        .map(|taxa| taxon::TaxonList::new_with_unknown(taxa, one_on_one));
     let default = if one_on_one { Some(0) } else { None };
     let stdin = io::stdin();
     let stdout = io::stdout();
@@ -297,16 +286,7 @@ fn pept2lca(fst: &str, taxons: Option<&str>, with_input: bool, one_on_one: bool)
         if line.starts_with('>') {
             writeln!(stdout, "{}", line)?;
         } else if let Some(lca) = fst.get(&line).map(Some).unwrap_or(default) {
-            if with_input {
-                write!(stdout, "{},", line)?;
-            }
-            if let Some(ref by_id) = by_id {
-                let taxon = by_id.get(lca as usize)
-                                 .ok_or("LCA taxon id not in taxon list. Check compatibility with index.")?;
-                writeln!(stdout, "{},{},{}", taxon.id, taxon.name, taxon.rank)?;
-            } else {
-                writeln!(stdout, "{}", lca)?;
-            }
+            writeln!(stdout, "{}", lca)?;
         }
     }
     Ok(())
@@ -314,7 +294,7 @@ fn pept2lca(fst: &str, taxons: Option<&str>, with_input: bool, one_on_one: bool)
 
 fn prot2kmer2lca(fst: &str, k: &str) -> Result<()> {
     let map = fst::Map::from_path(fst)?;
-    let mut writer = fasta::Writer::new(io::stdout(), " ", false);
+    let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
     let k = k.parse::<usize>()?;
 
     for prot in fasta::Reader::new(io::stdin(), None, true).records() {
@@ -341,7 +321,7 @@ fn prot2kmer2lca(fst: &str, k: &str) -> Result<()> {
     Ok(())
 }
 
-fn taxa2agg(taxons: &str, method: &str, aggregation: &str, delimiter: Option<&str>, ranked_only: bool, factor: &str, scored: bool, lower_bound: &str) -> Result<()> {
+fn taxa2agg(taxons: &str, method: &str, aggregation: &str, ranked_only: bool, factor: &str, scored: bool, lower_bound: &str) -> Result<()> {
     // Parsing the Taxa file
     let taxons = taxon::read_taxa_file(taxons)?;
 
@@ -352,7 +332,7 @@ fn taxa2agg(taxons: &str, method: &str, aggregation: &str, delimiter: Option<&st
     let lower_bound = lower_bound.parse::<f32>()?;
 
     // Parsing the delimiter regex
-    let delimiter = regex::Regex::new(delimiter.unwrap_or(r"\s+")).map(Some)?;
+    let delimiter = Some(regex::Regex::new("\n").unwrap());
 
     // Parsing the taxons
     let tree     = taxon::TaxonTree::new(&taxons);
@@ -384,7 +364,7 @@ fn taxa2agg(taxons: &str, method: &str, aggregation: &str, delimiter: Option<&st
 
     let parser = if scored { with_score } else { not_scored };
 
-    let mut writer = fasta::Writer::new(io::stdout(), ",", false);
+    let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
 
     // Iterate over each read
     for record in fasta::Reader::new(io::stdin(), delimiter, true).records() {
@@ -402,8 +382,7 @@ fn taxa2agg(taxons: &str, method: &str, aggregation: &str, delimiter: Option<&st
             header: record.header,
             sequence: if counts.is_empty() { vec![] } else {
                 let aggregate = aggregator.aggregate(&counts)?;
-                let taxon = by_id.get(snapping[aggregate].unwrap()).unwrap();
-                vec![taxon.id.to_string(), taxon.name.to_string(), taxon.rank.to_string()]
+                vec![snapping[aggregate].unwrap().to_string()]
             }
         })?;
     }
@@ -626,7 +605,7 @@ fn seedextend(min_seed_size: &str, max_gap_size: &str, _taxon_file: &str) -> Res
 
     let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
 
-    let separator = Some(try!(regex::Regex::new(r"\s+").map_err(|err| err.to_string())));
+    let separator = Some(regex::Regex::new("\n").unwrap());
     for record in fasta::Reader::new(io::stdin(), separator, false).records() {
         let record = record?;
         let taxons = record.sequence.iter()
@@ -729,7 +708,7 @@ fn report(taxons: &str, rank: &str) -> Result<()> {
     for (count, taxon) in counts {
         let taxon = by_id.get(taxon)
                          .ok_or("LCA taxon id not in taxon list. Check compatibility with index.")?;
-        writeln!(stdout, "{},{},{},{}", count, taxon.id, taxon.name, taxon.rank)?;
+        writeln!(stdout, "{},{},{}", count, taxon.id, taxon.name)?;
     }
 
     Ok(())
