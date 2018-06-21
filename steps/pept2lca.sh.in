@@ -95,4 +95,4 @@ fi | \
     fi | \
 
     # Group LCAs of same read together
-    @UMGAP@ uniq -k --separator ' '
+    @UMGAP@ uniq -k -i '\s+' --separator $'\n'
