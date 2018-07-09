@@ -25,6 +25,9 @@ extern crate error_chain;
 extern crate serde_json;
 use serde_json::value;
 
+extern crate either;
+use either::Either;
+
 extern crate umgap;
 use umgap::dna::Strand;
 use umgap::dna::translation::TranslationTable;
@@ -76,6 +79,8 @@ quick_main!(|| -> Result<()> {
                      queries the k-mers in an FST for the LCA's.")
             (@arg length: -k --length +required
                 "The length of the k-mers in the FST")
+            (@arg one_on_one: -o --("one-on-one")
+                "Map unknown sequences to 0 instead of ignoring them")
             (@arg fst_index: +required "An FST to query")
         )
         (@subcommand taxa2agg =>
@@ -194,7 +199,8 @@ quick_main!(|| -> Result<()> {
             matches.is_present("one_on_one")),
         ("prot2kmer2lca", Some(matches)) => prot2kmer2lca(
             matches.value_of("fst_index").unwrap(), // required so safe
-            matches.value_of("length").unwrap_or("9")),
+            matches.value_of("length").unwrap_or("9"),
+            matches.is_present("one_on_one")),
         ("taxa2agg", Some(matches)) => taxa2agg(
             matches.value_of("taxon_file").unwrap(), // required so safe
             matches.value_of("method").unwrap_or("RMQ"),
@@ -294,7 +300,7 @@ fn pept2lca(fst: &str, one_on_one: bool) -> Result<()> {
     Ok(())
 }
 
-fn prot2kmer2lca(fst: &str, k: &str) -> Result<()> {
+fn prot2kmer2lca(fst: &str, k: &str, one_on_one: bool) -> Result<()> {
     let map = fst::Map::from_path(fst)?;
     let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
     let k = k.parse::<usize>()?;
@@ -306,13 +312,17 @@ fn prot2kmer2lca(fst: &str, k: &str) -> Result<()> {
             continue
         }
 
-        let lcas = (0..(prot.sequence[0].len() - k + 1))
-            .map(|i| &prot.sequence[0][i..i + k])
-            .filter_map(|kmer| map.get(kmer))
-            .map(|lca| lca.to_string())
-            .collect::<Vec<_>>();
+        let lcas = {
+            let kmers = (0..(prot.sequence[0].len() - k + 1)).map(|i| &prot.sequence[0][i..i + k]);
+            if one_on_one {
+                Either::Left(kmers.map(|kmer| map.get(kmer).unwrap_or(0)))
+            } else {
+                Either::Right(kmers.filter_map(|kmer| map.get(kmer)))
+            }
+        }.map(|lca| lca.to_string())
+         .collect::<Vec<_>>();
 
-        if ! lcas.is_empty() {
+        if !lcas.is_empty() {
             writer.write_record(fasta::Record {
                 header: prot.header,
                 sequence: lcas
