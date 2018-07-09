@@ -53,9 +53,11 @@ quick_main!(|| -> Result<()> {
             (@arg all_frames: -a --("all-frames") conflicts_with[FRAME]
                 "Read and output all 6 frames")
             (@arg frame: -f --frame [FRAMES] ...
-                "Adds a reading frame (1, 2, 3, 1R, 2R or 3R). If multiple \
-                 frames are requested, a bar (|) and the name of the frame \
-                 will be appended to the fasta header. (Default: only 1)")
+                "Adds a reading frame (1, 2, 3, 1R, 2R or 3R). (Default: only \
+                 1)")
+            (@arg append_name: -n --name
+                "Append a bar (|) and the name of the frame to the fasta \
+                header.")
             (@arg table: -t --table [INT]
                 "Translation table to use (default: 1)")
             (@arg show_table: -s --("show-table")
@@ -183,6 +185,7 @@ quick_main!(|| -> Result<()> {
             matches.is_present("methionine"),
             matches.value_of("table").unwrap_or("1"),
             matches.is_present("show_table"),
+            matches.is_present("append_name"),
             matches.values_of("frame").map(Iterator::collect).unwrap_or(
                 if matches.is_present("all_frames") { vec!["1", "2", "3", "1R", "2R", "3R"] } else { vec!["1"] }
             )),
@@ -236,7 +239,7 @@ quick_main!(|| -> Result<()> {
     }
 });
 
-fn translate(methionine: bool, table: &str, show_table: bool, frames: Vec<&str>) -> Result<()> {
+fn translate(methionine: bool, table: &str, show_table: bool, append_name: bool, frames: Vec<&str>) -> Result<()> {
     // Parsing the table
     let table = table.parse::<&TranslationTable>()?;
 
@@ -256,7 +259,6 @@ fn translate(methionine: bool, table: &str, show_table: bool, frames: Vec<&str>)
             "3R" => Ok((frame, 3, true)),
             _    => Err(ErrorKind::InvalidInvocation(format!("{} is not a frame", frame)).into())
         }).collect::<Result<Vec<(&str, usize, bool)>>>()?;
-        let append_name = frames.len() > 1;
 
         for record in fasta::Reader::new(io::stdin(), None, true).records() {
             let fasta::Record { header, sequence } = record?;
