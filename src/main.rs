@@ -77,7 +77,7 @@ quick_main!(|| -> Result<()> {
         (@subcommand prot2kmer2lca =>
             (about: "Reads all the records in a specified FASTA file and \
                      queries the k-mers in an FST for the LCA's.")
-            (@arg length: -k --length +required
+            (@arg length: -k --length <INT>
                 "The length of the k-mers in the FST")
             (@arg one_on_one: -o --("one-on-one")
                 "Map unknown sequences to 0 instead of ignoring them")
@@ -199,7 +199,7 @@ quick_main!(|| -> Result<()> {
             matches.is_present("one_on_one")),
         ("prot2kmer2lca", Some(matches)) => prot2kmer2lca(
             matches.value_of("fst_index").unwrap(), // required so safe
-            matches.value_of("length").unwrap_or("9"),
+            matches.value_of("length").unwrap(),
             matches.is_present("one_on_one")),
         ("taxa2agg", Some(matches)) => taxa2agg(
             matches.value_of("taxon_file").unwrap(), // required so safe
