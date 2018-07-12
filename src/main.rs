@@ -119,11 +119,11 @@ quick_main!(|| -> Result<()> {
             (about: "Concatenates the data strings of all consecutive FASTA \
                      entries with the same header.")
             (@arg output: -s --separator [INT]
-                "Separator between output items (default the empty string)")
+                "Separator between output items (default a newline)")
             (@arg input: -i --("input-separator") [INT]
                 "Separator regex input items (default same as separator)")
-            (@arg keep: -k --keep
-                "Keep newline in the input sequence")
+            (@arg unwrap: -u --unwrap
+                "The input sequences are wrapped")
             (@arg wrap: -w --wrap
                 "Wrap the output sequences")
         )
@@ -214,9 +214,9 @@ quick_main!(|| -> Result<()> {
         ("prot2kmer", Some(matches)) => prot2kmer(
             matches.value_of("length").unwrap()),
         ("uniq", Some(matches)) => uniq(
-            matches.value_of("output").unwrap_or(""),
+            matches.value_of("output").unwrap_or("\n"),
             matches.value_of("input"),
-            matches.is_present("keep"),
+            matches.is_present("unwrap"),
             matches.is_present("wrap")),
         ("filter", Some(matches)) => filter(
             matches.value_of("min_length").unwrap_or("5"),
@@ -379,7 +379,7 @@ fn taxa2agg(taxons: &str, method: &str, aggregation: &str, ranked_only: bool, fa
     let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
 
     // Iterate over each read
-    for record in fasta::Reader::new(io::stdin(), delimiter, true).records() {
+    for record in fasta::Reader::new(io::stdin(), delimiter, false).records() {
         // Parse the sequence of LCA's
         let record = record?;
         let taxons = record.sequence.iter()
@@ -473,13 +473,13 @@ fn filter(min_length: &str, max_length: &str, contains: &str, lacks: &str) -> Re
     Ok(())
 }
 
-fn uniq(separator: &str, input_separator: Option<&str>, keep: bool, wrap: bool) -> Result<()> {
+fn uniq(separator: &str, input_separator: Option<&str>, unwrap: bool, wrap: bool) -> Result<()> {
     // Parsing the input separator regex
     let input_separator = regex::Regex::new(input_separator.unwrap_or(&regex::escape(separator)))?;
 
     let mut last   = None::<fasta::Record>;
     let mut writer = fasta::Writer::new(io::stdout(), separator, wrap);
-    for record in fasta::Reader::new(io::stdin(), Some(input_separator), !keep).records() {
+    for record in fasta::Reader::new(io::stdin(), Some(input_separator), unwrap).records() {
         let record = record?;
         if let Some(ref mut rec) = last {
             if rec.header == record.header {
