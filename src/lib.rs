@@ -17,6 +17,11 @@ extern crate lazy_static;
 #[macro_use]
 extern crate assert_matches;
 
+#[macro_use]
+extern crate structopt;
+
+extern crate clap;
+
 extern crate regex;
 
 pub mod taxon;
@@ -27,6 +32,7 @@ pub mod errors;
 pub mod io;
 pub mod dna;
 pub mod utils;
+pub mod args;
 
 #[cfg(test)]
 pub mod fixtures;

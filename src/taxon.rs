@@ -7,6 +7,7 @@ use std::io::BufRead;
 use std::fs::File;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::path::Path;
 
 use std::str::FromStr;
 
@@ -180,7 +181,7 @@ impl FromStr for Taxon {
 /// Reads in a file where each line can be parsed as a taxon.
 ///
 /// See [Taxon::from_str()](struct.Taxon.html#method.from_str) for more details on the line format.
-pub fn read_taxa_file(filename: &str) -> Result<Vec<Taxon>> {
+pub fn read_taxa_file<P: AsRef<Path>>(filename: P) -> Result<Vec<Taxon>> {
     let file   = File::open(filename).chain_err(|| "Failed opening taxon file.")?;
     let reader = io::BufReader::new(file);
     let mut taxa = Vec::new();
