@@ -68,6 +68,11 @@ fn translate(args: args::Translate) -> Result<()> {
     // Parsing the table
     let table = args.table.parse::<&TranslationTable>()?;
 
+    // Which frames TODO ugly
+    let frames = if args.all_frames { vec![args::Frame::Forward1, args::Frame::Forward2, args::Frame::Forward3,
+                                           args::Frame::Reverse1, args::Frame::Reverse2, args::Frame::Reverse3] }
+                               else { args.frames };
+
     // Split on show_tables
     if args.show_table {
         table.print();
@@ -75,7 +80,7 @@ fn translate(args: args::Translate) -> Result<()> {
         let mut writer = fasta::Writer::new(io::stdout(), "", false);
 
         // Parsing the frames
-        let frames = args.frames.iter().map(|&frame| match frame {
+        let frames = frames.iter().map(|&frame| match frame {
             args::Frame::Forward1 => (frame, 1, false),
             args::Frame::Forward2 => (frame, 2, false),
             args::Frame::Forward3 => (frame, 3, false),
