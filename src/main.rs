@@ -407,23 +407,17 @@ fn seedextend(args: args::SeedExtend) -> Result<()> {
     let separator = Some(regex::Regex::new("\n").unwrap());
     for record in fasta::Reader::new(io::stdin(), separator, false).records() {
         let record = record?;
-        let taxons = record.sequence.iter()
-                                    .map(|s| s.parse::<TaxonId>())
-                                    .collect::<std::result::Result<Vec<TaxonId>,_>>()?;
-        if taxons.len() == 0 {
-            writer.write_record(fasta::Record {
-                header: record.header,
-                sequence: vec![]
-            })?;
-            continue;
-        }
+        let mut taxons = record.sequence.iter()
+                               .map(|s| s.parse::<TaxonId>())
+                               .collect::<std::result::Result<Vec<TaxonId>,_>>()?;
+        taxons.push(0);
 
         let mut seeds = Vec::new();
         let mut start = 0;
-        let mut end = 0;
-        let mut last_tid = 0;
-        let mut same_tid = 0;
-        let mut same_max = 0;
+        let mut end = 1;
+        let mut last_tid = taxons[start];
+        let mut same_tid = 1;
+        let mut same_max = 1;
         while end < taxons.len() {
             // same tid as last, add to seed.
             if last_tid == taxons[end] {
