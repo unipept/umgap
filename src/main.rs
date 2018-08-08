@@ -9,7 +9,6 @@ use std::collections::HashMap;
 use std::ops;
 use std::cmp;
 
-#[macro_use(clap_app, crate_version, crate_authors)]
 extern crate clap;
 
 extern crate fst;
@@ -28,6 +27,9 @@ use serde_json::value;
 extern crate either;
 use either::Either;
 
+extern crate structopt;
+use structopt::StructOpt;
+
 extern crate umgap;
 use umgap::dna::Strand;
 use umgap::dna::translation::TranslationTable;
@@ -40,231 +42,47 @@ use umgap::agg;
 use umgap::rmq;
 use umgap::tree;
 use umgap::utils;
+use umgap::args;
 
 quick_main!(|| -> Result<()> {
-
-    // TODO https://docs.rs/clap/2.31.2/clap/macro.arg_enum.html
-    let matches = clap_app!(umgap =>
-        (version: crate_version!())
-        (author: crate_authors!("\n"))
-        (about: "The Unipept Metagenomics Analysis Pipeline")
-        (@subcommand translate =>
-            (about: "Translates DNA on stdin directly into Amino Acid \
-                     Sequences on stdout.")
-            (@arg methionine: -m --methionine
-                "Replace each start-codon with methionine")
-            (@arg all_frames: -a --("all-frames") conflicts_with[FRAME]
-                "Read and output all 6 frames")
-            (@arg frame: -f --frame [FRAMES] ...
-                "Adds a reading frame (1, 2, 3, 1R, 2R or 3R). (Default: only \
-                 1)")
-            (@arg append_name: -n --name
-                "Append a bar (|) and the name of the frame to the fasta \
-                header.")
-            (@arg table: -t --table [INT]
-                "Translation table to use (default: 1)")
-            (@arg show_table: -s --("show-table")
-                "Print the selected table and exit")
-        )
-        (@subcommand pept2lca =>
-            (about: "Looks up each line of input in a given FST index and \
-                     outputs the result. Lines starting with a '>' are \
-                     copied. Lines for which no mapping is found are ignored.")
-            (@arg one_on_one: -o --("one-on-one")
-                "Map unknown sequences to 0 instead of ignoring them")
-            (@arg fst_index: +required "An FST to query")
-        )
-        (@subcommand prot2kmer2lca =>
-            (about: "Reads all the records in a specified FASTA file and \
-                     queries the k-mers in an FST for the LCA's.")
-            (@arg length: -k --length <INT>
-                "The length of the k-mers in the FST")
-            (@arg one_on_one: -o --("one-on-one")
-                "Map unknown sequences to 0 instead of ignoring them")
-            (@arg fst_index: +required "An FST to query")
-        )
-        (@subcommand taxa2agg =>
-            (about: "Aggregates taxa to a single taxon.")
-            (@arg scored: -s --scored
-                "Each taxon is followed by a score between 0 and 1")
-            (@arg ranked: -r --ranked
-                "Restrict to taxa with a taxonomic rank")
-            (@arg method: -m --method [STR]
-                "The method to use for aggregation (RMQ or tree)")
-            (@arg aggregate: -a --aggregate [STR]
-                "The aggregation to use (LCA*, MRTL or hybrid)")
-            (@arg factor: -f --factor [RATIO]
-                "The factor for the hybrid aggregation, from 0.0 (MRTL) to \
-                 1.0 (LCA*)")
-            (@arg lower_bound: -l --("lower-bound") [INT]
-                "The smallest input frequency for a taxon to be included in \
-                 the aggregation")
-            (@arg taxon_file: +required "The NCBI taxonomy tsv-file")
-        )
-        (@subcommand prot2pept =>
-            (about: "Splits each protein sequence in a FASTA format into a \
-                     list of (tryptic) peptides.")
-            (@arg pattern: -p --pattern [REGEX]
-                "The cleavage-pattern (regex), i.e. the pattern after which \
-                 the next peptide will be cleaved (default: ([KR])([^P]) for \
-                 tryptic peptides).")
-        )
-        (@subcommand prot2kmer =>
-            (about: "Splits each protein sequence in a FASTA format into a \
-                     list of kmers.")
-            (@arg length: -k --length <INT>
-                "The K in K-mers")
-        )
-        (@subcommand uniq =>
-            (about: "Concatenates the data strings of all consecutive FASTA \
-                     entries with the same header.")
-            (@arg output: -s --separator [INT]
-                "Separator between output items (default a newline)")
-            (@arg input: -i --("input-separator") [INT]
-                "Separator regex input items (default same as separator)")
-            (@arg unwrap: -u --unwrap
-                "The input sequences are wrapped")
-            (@arg wrap: -w --wrap
-                "Wrap the output sequences")
-        )
-        (@subcommand filter =>
-            (about: "Filter peptides in a FASTA format based on specific \
-                     criteria.")
-            (@arg min_length: -m --minlen [INT]
-                "Only retain tryptic peptides that have at least min \
-                 (default: 5) amino acids.")
-            (@arg max_length: -M --maxlen [INT]
-                "Only retain tryptic peptides that have at most max \
-                 (default: 50) amino acids.")
-            (@arg contains: -c --contains [STRING]
-                "The letters that a sequence must contain.")
-            (@arg lacks: -l --lacks [STRING]
-                "The letters that a sequence cannot contain.")
-        )
-        (@subcommand fastq2fasta =>
-            (about: "Interleaves a number of FASTQ files into a single FASTA \
-                     output.")
-            (@arg input: ... #{1,10} "The input files")
-        )
-        (@subcommand buildindex =>
-            (about: "Write an FST index of stdin on stdout.")
-        )
-        (@subcommand snaprank =>
-            (about: "Snap taxa to a specified rank.")
-            (@arg rank: -r --rank [RANK]
-                "The rank (default: species) to show.")
-            (@arg taxon_file: +required "The NCBI taxonomy tsv-file")
-        )
-        (@subcommand jsontree =>
-            (about: "Aggregates taxa to a JSON tree for usage in the \
-                     unipept visualisations.")
-            (@arg ranked: -r --ranked
-                "Restrict to taxa with a taxonomic rank")
-            (@arg taxon_file: +required "The NCBI taxonomy tsv-file")
-        )
-        (@subcommand seedextend =>
-            (about: "Seed and extend.")
-            (@arg min_seed_size: -s --("min-seed-size") [INT]
-                "The minimum length of equal taxa to count as seed \
-                 (default 4)")
-            (@arg max_gap_size: -g --("max-gap-size") [INT]
-                "The maximum length of a gap between seeds in an extension \
-                 (default 0)")
-            (@arg taxon_file: +required "The NCBI taxonomy tsv-file")
-        )
-        (@subcommand report =>
-            (about: "Count and report on a list of taxon ids")
-            (@arg rank: -r --rank [RANK]
-                "The rank (default: species) to show.")
-            (@arg taxon_file: +required "The NCBI taxonomy tsv-file")
-        )
-        (@subcommand bestof =>
-            (about: "Pick the frame with the most none-root hits")
-            (@arg frames: -f --frames [INT]
-                "The number of frames of which to pick the best")
-        )
-    ).get_matches();
-
-    match matches.subcommand() {
-        ("translate", Some(matches)) => translate(
-            matches.is_present("methionine"),
-            matches.value_of("table").unwrap_or("1"),
-            matches.is_present("show_table"),
-            matches.is_present("append_name"),
-            matches.values_of("frame").map(Iterator::collect).unwrap_or(
-                if matches.is_present("all_frames") { vec!["1", "2", "3", "1R", "2R", "3R"] } else { vec!["1"] }
-            )),
-        ("pept2lca", Some(matches)) => pept2lca(
-            matches.value_of("fst_index").unwrap(), // required so safe
-            matches.is_present("one_on_one")),
-        ("prot2kmer2lca", Some(matches)) => prot2kmer2lca(
-            matches.value_of("fst_index").unwrap(), // required so safe
-            matches.value_of("length").unwrap(),
-            matches.is_present("one_on_one")),
-        ("taxa2agg", Some(matches)) => taxa2agg(
-            matches.value_of("taxon_file").unwrap(), // required so safe
-            matches.value_of("method").unwrap_or("RMQ"),
-            matches.value_of("aggregate").unwrap_or("LCA*"),
-            matches.is_present("ranked"),
-            matches.value_of("factor").unwrap_or("0"),
-            matches.is_present("scored"),
-            matches.value_of("lower_bound").unwrap_or("0")),
-        ("prot2pept", Some(matches)) => prot2pept(
-            matches.value_of("pattern").unwrap_or("([KR])([^P])")),
-        ("prot2kmer", Some(matches)) => prot2kmer(
-            matches.value_of("length").unwrap()),
-        ("uniq", Some(matches)) => uniq(
-            matches.value_of("output").unwrap_or("\n"),
-            matches.value_of("input"),
-            matches.is_present("unwrap"),
-            matches.is_present("wrap")),
-        ("filter", Some(matches)) => filter(
-            matches.value_of("min_length").unwrap_or("5"),
-            matches.value_of("max_length").unwrap_or("50"),
-            matches.value_of("contains").unwrap_or(""),
-            matches.value_of("lacks").unwrap_or("")),
-        ("fastq2fasta", Some(matches)) => fastq2fasta(
-            matches.values_of("input").unwrap().collect()), // required so safe
-        ("buildindex", Some(_)) => buildindex(),
-        ("snaprank", Some(matches)) => snaprank(
-            matches.value_of("taxon_file").unwrap(), // required so safe
-            matches.value_of("rank").unwrap_or("species")),
-        ("jsontree", Some(matches)) => jsontree(
-            matches.value_of("taxon_file").unwrap(), // required so safe
-            matches.is_present("ranked")),
-        ("seedextend", Some(matches)) => seedextend(
-            matches.value_of("min_seed_size").unwrap_or("4"),
-            matches.value_of("max_gap_size").unwrap_or("0"),
-            matches.value_of("taxon_file").unwrap()), // required so safe
-        ("report", Some(matches)) => report(
-            matches.value_of("taxon_file").unwrap(), // required so safe
-            matches.value_of("rank").unwrap_or("species")),
-        ("bestof", Some(matches)) => bestof(
-            matches.value_of("frames").unwrap_or("6")),
-        _  => { println!("{}", matches.usage()); Ok(()) }
+    match args::Opt::from_args() {
+        args::Opt::Translate(args)       => translate(args),
+        args::Opt::PeptToLca(args)       => pept2lca(args),
+        args::Opt::ProtToKmerToLca(args) => prot2kmer2lca(args),
+        args::Opt::TaxaToAgg(args)       => taxa2agg(args),
+        args::Opt::ProtToPept(args)      => prot2pept(args),
+        args::Opt::ProtToKmer(args)      => prot2kmer(args),
+        args::Opt::Filter(args)          => filter(args),
+        args::Opt::Uniq(args)            => uniq(args),
+        args::Opt::FastqToFasta(args)    => fastq2fasta(args),
+        args::Opt::SnapRank(args)        => snaprank(args),
+        args::Opt::JsonTree(args)        => jsontree(args),
+        args::Opt::SeedExtend(args)      => seedextend(args),
+        args::Opt::Report(args)          => report(args),
+        args::Opt::BestOf(args)          => bestof(args),
+        args::Opt::BuildIndex            => buildindex(),
     }
 });
 
-fn translate(methionine: bool, table: &str, show_table: bool, append_name: bool, frames: Vec<&str>) -> Result<()> {
+fn translate(args: args::Translate) -> Result<()> {
     // Parsing the table
-    let table = table.parse::<&TranslationTable>()?;
+    let table = args.table.parse::<&TranslationTable>()?;
 
     // Split on show_tables
-    if show_table {
+    if args.show_table {
         table.print();
     } else {
         let mut writer = fasta::Writer::new(io::stdout(), "", false);
 
         // Parsing the frames
-        let frames = frames.iter().map(|&frame| match frame {
-            "1"  => Ok((frame, 1, false)),
-            "2"  => Ok((frame, 2, false)),
-            "3"  => Ok((frame, 3, false)),
-            "1R" => Ok((frame, 1, true)),
-            "2R" => Ok((frame, 2, true)),
-            "3R" => Ok((frame, 3, true)),
-            _    => Err(ErrorKind::InvalidInvocation(format!("{} is not a frame", frame)).into())
-        }).collect::<Result<Vec<(&str, usize, bool)>>>()?;
+        let frames = args.frames.iter().map(|&frame| match frame {
+            args::Frame::Forward1 => (frame, 1, false),
+            args::Frame::Forward2 => (frame, 2, false),
+            args::Frame::Forward3 => (frame, 3, false),
+            args::Frame::Reverse1 => (frame, 1, true),
+            args::Frame::Reverse2 => (frame, 2, true),
+            args::Frame::Reverse3 => (frame, 3, true),
+        }).collect::<Vec<(args::Frame, usize, bool)>>();
 
         for record in fasta::Reader::new(io::stdin(), None, true).records() {
             let fasta::Record { header, sequence } = record?;
@@ -274,8 +92,8 @@ fn translate(methionine: bool, table: &str, show_table: bool, append_name: bool,
             for &(name, frame, reversed) in &frames {
                 let strand = if reversed { &reverse } else { &forward };
                 writer.write_record(fasta::Record {
-                    header: if !append_name { header.clone() } else { header.clone() + "|" + name },
-                    sequence: vec![String::from_utf8(table.translate_frame(methionine, strand.frame(frame))).unwrap()]
+                    header: if !args.append_name { header.clone() } else { header.clone() + "|" + &name.to_string() },
+                    sequence: vec![String::from_utf8(table.translate_frame(args.methionine, strand.frame(frame))).unwrap()]
                 })?;
             }
         }
@@ -283,9 +101,9 @@ fn translate(methionine: bool, table: &str, show_table: bool, append_name: bool,
     Ok(())
 }
 
-fn pept2lca(fst: &str, one_on_one: bool) -> Result<()> {
-    let fst = fst::Map::from_path(fst)?;
-    let default = if one_on_one { Some(0) } else { None };
+fn pept2lca(args: args::PeptToLca) -> Result<()> {
+    let fst = fst::Map::from_path(args.fst_file)?;
+    let default = if args.one_on_one { Some(0) } else { None };
     let stdin = io::stdin();
     let stdout = io::stdout();
     let mut stdout = stdout.lock();
@@ -300,21 +118,20 @@ fn pept2lca(fst: &str, one_on_one: bool) -> Result<()> {
     Ok(())
 }
 
-fn prot2kmer2lca(fst: &str, k: &str, one_on_one: bool) -> Result<()> {
-    let map = fst::Map::from_path(fst)?;
+fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
+    let map = fst::Map::from_path(&args.fst_file)?;
     let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
-    let k = k.parse::<usize>()?;
 
     for prot in fasta::Reader::new(io::stdin(), None, true).records() {
         let prot = prot?;
 
-        if prot.sequence[0].len() < k {
+        if prot.sequence[0].len() < args.length {
             continue
         }
 
         let lcas = {
-            let kmers = (0..(prot.sequence[0].len() - k + 1)).map(|i| &prot.sequence[0][i..i + k]);
-            if one_on_one {
+            let kmers = (0..(prot.sequence[0].len() - args.length + 1)).map(|i| &prot.sequence[0][i..i + args.length]);
+            if args.one_on_one {
                 Either::Left(kmers.map(|kmer| map.get(kmer).unwrap_or(0)))
             } else {
                 Either::Right(kmers.filter_map(|kmer| map.get(kmer)))
@@ -333,15 +150,9 @@ fn prot2kmer2lca(fst: &str, k: &str, one_on_one: bool) -> Result<()> {
     Ok(())
 }
 
-fn taxa2agg(taxons: &str, method: &str, aggregation: &str, ranked_only: bool, factor: &str, scored: bool, lower_bound: &str) -> Result<()> {
+fn taxa2agg(args: args::TaxaToAgg) -> Result<()> {
     // Parsing the Taxa file
-    let taxons = taxon::read_taxa_file(taxons)?;
-
-    // Parsing the factor
-    let factor = factor.parse::<f32>()?;
-
-    // Parsing the factor
-    let lower_bound = lower_bound.parse::<f32>()?;
+    let taxons = taxon::read_taxa_file(args.taxon_file)?;
 
     // Parsing the delimiter regex
     let delimiter = Some(regex::Regex::new("\n").unwrap());
@@ -349,18 +160,18 @@ fn taxa2agg(taxons: &str, method: &str, aggregation: &str, ranked_only: bool, fa
     // Parsing the taxons
     let tree     = taxon::TaxonTree::new(&taxons);
     let by_id    = taxon::TaxonList::new(taxons);
-    let snapping = tree.snapping(&by_id, ranked_only);
+    let snapping = tree.snapping(&by_id, args.ranked_only);
 
-    let aggregator: Result<Box<agg::Aggregator>> = match (method, aggregation) {
-        ("RMQ",  "MRTL") => Ok(Box::new(rmq::rtl::RTLCalculator::new(tree.root, &by_id))),
-        ("RMQ",  "LCA*") => Ok(Box::new(rmq::lca::LCACalculator::new(tree))),
-        ("RMQ",  "hybrid") => {
+    let aggregator: Result<Box<agg::Aggregator>> = match (args.method, args.strategy) {
+        (args::Method::RangeMinimumQuery, args::Strategy::MaximumRootToLeafPath) => Ok(Box::new(rmq::rtl::RTLCalculator::new(tree.root, &by_id))),
+        (args::Method::RangeMinimumQuery, args::Strategy::LowestCommonAncestor) => Ok(Box::new(rmq::lca::LCACalculator::new(tree))),
+        (args::Method::RangeMinimumQuery, args::Strategy::Hybrid) => {
             writeln!(&mut io::stderr(), "Warning: this is a hybrid between LCA/MRTL, not LCA*/MRTL").unwrap();
-            Ok(Box::new(rmq::mix::MixCalculator::new(tree, factor)))
+            Ok(Box::new(rmq::mix::MixCalculator::new(tree, args.factor)))
         },
-        ("tree", "LCA*") => Ok(Box::new(tree::lca::LCACalculator::new(tree.root, &by_id))),
-        ("tree", "hybrid") => Ok(Box::new(tree::mix::MixCalculator::new(tree.root, &by_id, factor))),
-        _                => Err(ErrorKind::InvalidInvocation(format!("{} and {} cannot be combined", method, aggregation)).into())
+        (args::Method::Tree, args::Strategy::LowestCommonAncestor) => Ok(Box::new(tree::lca::LCACalculator::new(tree.root, &by_id))),
+        (args::Method::Tree, args::Strategy::Hybrid) => Ok(Box::new(tree::mix::MixCalculator::new(tree.root, &by_id, args.factor))),
+        (m, s) => Err(ErrorKind::InvalidInvocation(format!("{:?} and {:?} cannot be combined", m, s)).into())
     };
     let aggregator = aggregator?;
 
@@ -374,7 +185,7 @@ fn taxa2agg(taxons: &str, method: &str, aggregation: &str, ranked_only: bool, fa
         Ok((tid.parse::<TaxonId>()?, 1.0))
     }
 
-    let parser = if scored { with_score } else { not_scored };
+    let parser = if args.scored { with_score } else { not_scored };
 
     let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
 
@@ -388,7 +199,7 @@ fn taxa2agg(taxons: &str, method: &str, aggregation: &str, ranked_only: bool, fa
 
         // Create a frequency table of taxons for this read (taking into account the lower bound)
         let counts = agg::count(taxons.into_iter());
-        let counts = agg::filter(counts, lower_bound);
+        let counts = agg::filter(counts, args.lower_bound);
 
         writer.write_record(fasta::Record {
             header: record.header,
@@ -401,8 +212,8 @@ fn taxa2agg(taxons: &str, method: &str, aggregation: &str, ranked_only: bool, fa
     Ok(())
 }
 
-fn prot2pept(pattern: &str) -> Result<()> {
-    let pattern = regex::Regex::new(pattern)?;
+fn prot2pept(args: args::ProtToPept) -> Result<()> {
+    let pattern = regex::Regex::new(&args.pattern)?;
 
     let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
     for record in fasta::Reader::new(io::stdin(), None, true).records() {
@@ -425,16 +236,14 @@ fn prot2pept(pattern: &str) -> Result<()> {
     Ok(())
 }
 
-fn prot2kmer(k: &str) -> Result<()> {
-    let k = k.parse::<usize>()?;
-
+fn prot2kmer(args: args::ProtToKmer) -> Result<()> {
     let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
     for record in fasta::Reader::new(io::stdin(), None, true).records() {
         let fasta::Record { header, sequence } = record?;
-        if sequence[0].len() < k { continue }
+        if sequence[0].len() < args.length { continue }
         writer.write_record(fasta::Record {
             header: header,
-            sequence: sequence[0].as_bytes().windows(k)
+            sequence: sequence[0].as_bytes().windows(args.length)
                                  .map(String::from_utf8_lossy).map(Cow::into_owned)
                                  .collect(),
         })?;
@@ -442,11 +251,9 @@ fn prot2kmer(k: &str) -> Result<()> {
     Ok(())
 }
 
-fn filter(min_length: &str, max_length: &str, contains: &str, lacks: &str) -> Result<()> {
-    let min      = min_length.parse::<usize>()?;
-    let max      = max_length.parse::<usize>()?;
-    let contains = contains.chars().collect::<HashSet<char>>();
-    let lacks    = lacks.chars().collect::<HashSet<char>>();
+fn filter(args: args::Filter) -> Result<()> {
+    let contains = args.contains.chars().collect::<HashSet<char>>();
+    let lacks    = args.lacks.chars().collect::<HashSet<char>>();
 
     // Each peptide/nucleotide sequence is assumed to be on its own line
     let delimiter = regex::Regex::new(r"\n").map(Some)?;
@@ -460,7 +267,7 @@ fn filter(min_length: &str, max_length: &str, contains: &str, lacks: &str) -> Re
             sequence: sequence.into_iter()
                               .filter(|seq| {
                                   let length = seq.len();
-                                  length >= min && length <= max
+                                  length >= args.min_length && length <= args.max_length
                               })
                               .filter(|seq| {
                                   let set = seq.chars().collect::<HashSet<char>>();
@@ -473,13 +280,13 @@ fn filter(min_length: &str, max_length: &str, contains: &str, lacks: &str) -> Re
     Ok(())
 }
 
-fn uniq(separator: &str, input_separator: Option<&str>, unwrap: bool, wrap: bool) -> Result<()> {
+fn uniq(args: args::Uniq) -> Result<()> {
     // Parsing the input separator regex
-    let input_separator = regex::Regex::new(input_separator.unwrap_or(&regex::escape(separator)))?;
+    let input_separator = regex::Regex::new(&args.input_separator.unwrap_or(regex::escape(&args.separator)))?;
 
     let mut last   = None::<fasta::Record>;
-    let mut writer = fasta::Writer::new(io::stdout(), separator, wrap);
-    for record in fasta::Reader::new(io::stdin(), Some(input_separator), unwrap).records() {
+    let mut writer = fasta::Writer::new(io::stdout(), &args.separator, args.wrap);
+    for record in fasta::Reader::new(io::stdin(), Some(input_separator), args.unwrap).records() {
         let record = record?;
         if let Some(ref mut rec) = last {
             if rec.header == record.header {
@@ -498,10 +305,10 @@ fn uniq(separator: &str, input_separator: Option<&str>, unwrap: bool, wrap: bool
     Ok(())
 }
 
-fn fastq2fasta(input: Vec<&str>) -> Result<()> {
-    let handles = input.iter()
-                       .map(fs::File::open)
-                       .collect::<io::Result<Vec<fs::File>>>()?;
+fn fastq2fasta(args: args::FastqToFasta) -> Result<()> {
+    let handles = args.input.iter()
+                            .map(fs::File::open)
+                            .collect::<io::Result<Vec<fs::File>>>()?;
     let readers = handles.iter()
                          .map(fastq::Reader::new)
                          .map(fastq::Reader::records)
@@ -519,27 +326,9 @@ fn fastq2fasta(input: Vec<&str>) -> Result<()> {
     Ok(())
 }
 
-fn buildindex() -> Result<()> {
-    let mut reader = csv::Reader::from_reader(io::stdin())
-                                 .has_headers(false)
-                                 .delimiter(b'\t');
-
-    let mut index = fst::MapBuilder::new(io::stdout())?;
-
-    for record in reader.decode() {
-        let (kmer, lca): (String, u64) = record?;
-        index.insert(kmer, lca)?;
-    }
-
-    index.finish()?;
-
-    Ok(())
-}
-
-fn snaprank(taxons: &str, rank: &str) -> Result<()> {
-    let taxons = taxon::read_taxa_file(taxons)?;
-    let rank = rank.parse::<taxon::Rank>()?;
-    if rank == taxon::Rank::NoRank {
+fn snaprank(args: args::SnapRank) -> Result<()> {
+    let taxons = taxon::read_taxa_file(&args.taxon_file)?;
+    if args.rank == taxon::Rank::NoRank {
         return Err(ErrorKind::InvalidInvocation("Snap to an actual rank.".into()).into());
     }
 
@@ -547,7 +336,7 @@ fn snaprank(taxons: &str, rank: &str) -> Result<()> {
     let tree     = taxon::TaxonTree::new(&taxons);
     let by_id    = taxon::TaxonList::new(taxons);
     let snapping = tree.filter_ancestors(|tid|
-        by_id.get(tid).map(|t| t.rank == rank).unwrap_or(false)
+        by_id.get(tid).map(|t| t.rank == args.rank).unwrap_or(false)
     );
 
     // Read and count taxon ranks
@@ -568,13 +357,13 @@ fn snaprank(taxons: &str, rank: &str) -> Result<()> {
     Ok(())
 }
 
-fn jsontree(taxons: &str, ranked_only: bool) -> Result<()> {
-    let taxons = taxon::read_taxa_file(taxons)?;
+fn jsontree(args: args::JsonTree) -> Result<()> {
+    let taxons = taxon::read_taxa_file(args.taxon_file)?;
 
     // Parsing the taxons
     let tree     = taxon::TaxonTree::new(&taxons);
     let by_id    = taxon::TaxonList::new(taxons);
-    let snapping = tree.snapping(&by_id, ranked_only);
+    let snapping = tree.snapping(&by_id, args.ranked_only);
 
     // Read and count taxon ranks
     let mut counts = HashMap::new();
@@ -609,9 +398,7 @@ fn jsontree(taxons: &str, ranked_only: bool) -> Result<()> {
     Ok(())
 }
 
-fn seedextend(min_seed_size: &str, max_gap_size: &str, _taxon_file: &str) -> Result<()> {
-    let min_seed_size = min_seed_size.parse::<usize>()?;
-    let max_gap_size = max_gap_size.parse::<usize>()?;
+fn seedextend(args: args::SeedExtend) -> Result<()> {
     let _gap_penalty = 0.5; // TODO: move down
     // let _taxa = taxon::read_taxa_file(taxon_file)?; // TODO use it
 
@@ -646,9 +433,9 @@ fn seedextend(min_seed_size: &str, max_gap_size: &str, _taxon_file: &str) -> Res
             }
 
             // our gap just became to big
-            if last_tid == 0 && same_tid > max_gap_size {
+            if last_tid == 0 && same_tid > args.max_gap_size {
                 // add extended seed
-                if same_max >= min_seed_size { seeds.push((start, end - same_tid)) }
+                if same_max >= args.min_seed_size { seeds.push((start, end - same_tid)) }
                 start = end;
                 last_tid = taxons[end];
                 same_tid = 1;
@@ -670,7 +457,7 @@ fn seedextend(min_seed_size: &str, max_gap_size: &str, _taxon_file: &str) -> Res
             same_tid = 1;
             end += 1;
         }
-        if same_max >= min_seed_size {
+        if same_max >= args.min_seed_size {
             if last_tid == 0 { end -= same_tid }
             seeds.push((start, end))
         }
@@ -687,10 +474,9 @@ fn seedextend(min_seed_size: &str, max_gap_size: &str, _taxon_file: &str) -> Res
     Ok(())
 }
 
-fn report(taxons: &str, rank: &str) -> Result<()> {
-    let taxons = taxon::read_taxa_file(taxons)?;
-    let rank = rank.parse::<taxon::Rank>()?;
-    if rank == taxon::Rank::NoRank {
+fn report(args: args::Report) -> Result<()> {
+    let taxons = taxon::read_taxa_file(&args.taxon_file)?;
+    if args.rank == taxon::Rank::NoRank {
         return Err(ErrorKind::InvalidInvocation("Snap to an actual rank.".into()).into());
     }
 
@@ -698,7 +484,7 @@ fn report(taxons: &str, rank: &str) -> Result<()> {
     let tree     = taxon::TaxonTree::new(&taxons);
     let by_id    = taxon::TaxonList::new(taxons);
     let snapping = tree.filter_ancestors(|tid|
-        by_id.get(tid).map(|t| t.rank == rank).unwrap_or(false)
+        by_id.get(tid).map(|t| t.rank == args.rank).unwrap_or(false)
     );
 
     // Read and count taxon ranks
@@ -726,19 +512,16 @@ fn report(taxons: &str, rank: &str) -> Result<()> {
     Ok(())
 }
 
-fn bestof(frames: &str) -> Result<()> {
-    // Parsing the number of frames
-    let frames = frames.parse::<usize>()?;
-
+fn bestof(args: args::BestOf) -> Result<()> {
     let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
 
     let delimiter = Some(regex::Regex::new(r"\n").unwrap());
 
     // Combine frames and process them
-    let mut chunk = Vec::with_capacity(frames);
+    let mut chunk = Vec::with_capacity(args.frames);
     for record in fasta::Reader::new(io::stdin(), delimiter, false).records() {
         let record = record?;
-        if chunk.len() < frames - 1 {
+        if chunk.len() < args.frames - 1 {
             chunk.push(record);
         } else {
             // process chunk
@@ -751,5 +534,22 @@ fn bestof(frames: &str) -> Result<()> {
             chunk.clear();
         }
     }
+    Ok(())
+}
+
+fn buildindex() -> Result<()> {
+    let mut reader = csv::Reader::from_reader(io::stdin())
+                                 .has_headers(false)
+                                 .delimiter(b'\t');
+
+    let mut index = fst::MapBuilder::new(io::stdout())?;
+
+    for record in reader.decode() {
+        let (kmer, lca): (String, u64) = record?;
+        index.insert(kmer, lca)?;
+    }
+
+    index.finish()?;
+
     Ok(())
 }
