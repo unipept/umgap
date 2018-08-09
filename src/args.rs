@@ -111,20 +111,51 @@ impl FromStr for Strategy {
 #[derive(Debug, StructOpt)]
 #[allow(missing_docs)]
 pub enum Opt {
+    /// Translates DNA into Amino Acid Sequences.
     #[structopt(name = "translate")] Translate(Translate),
+
+    /// Looks up each line of input in a given FST index and outputs
+    /// the result. Lines starting with a '>' are copied. Lines for
+    /// which no mapping is found are ignored.
     #[structopt(name = "pept2lca")] PeptToLca(PeptToLca),
+    
+    /// Reads all the records in a specified FASTA file and queries the
+    /// k-mers in an FST for the LCA's.
     #[structopt(name = "prot2kmer2lca")] ProtToKmerToLca(ProtToKmerToLca),
+    
+    /// Aggregates taxa to a single taxon.
     #[structopt(name = "taxa2agg")] TaxaToAgg(TaxaToAgg),
-    #[structopt(name = "bestof")] BestOf(BestOf),
-    #[structopt(name = "report")] Report(Report),
-    #[structopt(name = "seedextend")] SeedExtend(SeedExtend),
-    #[structopt(name = "jsontree")] JsonTree(JsonTree),
-    #[structopt(name = "snaprank")] SnapRank(SnapRank),
-    #[structopt(name = "fastq2fasta")] FastqToFasta(FastqToFasta),
-    #[structopt(name = "filter")] Filter(Filter),
-    #[structopt(name = "uniq")] Uniq(Uniq),
-    #[structopt(name = "prot2kmer")] ProtToKmer(ProtToKmer),
+    
+    /// Splits each protein sequence in a FASTA format into a list of (tryptic) peptides.
     #[structopt(name = "prot2pept")] ProtToPept(ProtToPept),
+
+    /// Pick the frame with the most none-root hits.
+    #[structopt(name = "bestof")] BestOf(BestOf),
+
+    /// Count and report on a list of taxon ids.
+    #[structopt(name = "report")] Report(Report),
+
+    /// Seed and extend.
+    #[structopt(name = "seedextend")] SeedExtend(SeedExtend),
+
+    /// Aggregates taxa to a JSON tree for usage in the unipept visualisations.
+    #[structopt(name = "jsontree")] JsonTree(JsonTree),
+
+    /// Snap taxa to a specified rank.
+    #[structopt(name = "snaprank")] SnapRank(SnapRank),
+
+    /// Interleaves a number of FASTQ files into a single FASTA output.
+    #[structopt(name = "fastq2fasta")] FastqToFasta(FastqToFasta),
+
+    /// Filter peptides in a FASTA format based on specific criteria.
+    #[structopt(name = "filter")] Filter(Filter),
+
+    /// Concatenates the data strings of all consecutive FASTA entries with the same header.
+    #[structopt(name = "uniq")] Uniq(Uniq),
+
+    /// Splits each protein sequence in a FASTA format into a list of kmers.
+    #[structopt(name = "prot2kmer")] ProtToKmer(ProtToKmer),
+
     /// Write an FST index of stdin on stdout.
     #[structopt(name = "buildindex")] BuildIndex,
 }
