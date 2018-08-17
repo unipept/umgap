@@ -164,7 +164,7 @@ fn taxa2agg(args: args::TaxaToAgg) -> Result<()> {
 
     // Parsing the taxons
     let tree     = taxon::TaxonTree::new(&taxons);
-    let by_id    = taxon::TaxonList::new(taxons);
+    let by_id    = taxon::TaxonList::new_with_unknown(taxons, true);
     let snapping = tree.snapping(&by_id, args.ranked_only);
 
     let aggregator: Result<Box<agg::Aggregator>> = match (args.method, args.strategy) {
@@ -208,7 +208,7 @@ fn taxa2agg(args: args::TaxaToAgg) -> Result<()> {
 
         writer.write_record(fasta::Record {
             header: record.header,
-            sequence: if counts.is_empty() { vec![] } else {
+            sequence: if counts.is_empty() { vec!["1".into()] } else {
                 let aggregate = aggregator.aggregate(&counts)?;
                 vec![snapping[aggregate].unwrap().to_string()]
             }
