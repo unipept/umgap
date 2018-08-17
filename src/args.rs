@@ -346,7 +346,7 @@ pub struct JsonTree {
 #[derive(Debug, StructOpt)]
 pub struct SeedExtend {
     /// The minimum length of equal taxa to count as seed
-    #[structopt(short = "s", long = "min-seed-size", default_value = "4")]
+    #[structopt(short = "s", long = "min-seed-size", default_value = "2")]
     pub min_seed_size: usize,
 
     /// The maximum length of a gap between seeds in an extension 
