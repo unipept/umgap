@@ -404,12 +404,15 @@ fn jsontree(args: args::JsonTree) -> Result<()> {
 }
 
 fn seedextend(args: args::SeedExtend) -> Result<()> {
-    let _gap_penalty = 0.5; // TODO: move down
-    // let _taxa = taxon::read_taxa_file(taxon_file)?; // TODO use it
-
     let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
 
     let separator = Some(regex::Regex::new("\n").unwrap());
+
+    let by_id = if let Some(ref tf) = args.ranked {
+        let taxa = taxon::read_taxa_file(tf)?;
+        Some(taxon::TaxonList::new_with_unknown(taxa, true))
+    } else { None };
+
     for record in fasta::Reader::new(io::stdin(), separator, false).records() {
         let record = record?;
         let mut taxons = record.sequence.iter()
@@ -459,6 +462,15 @@ fn seedextend(args: args::SeedExtend) -> Result<()> {
         if same_max >= args.min_seed_size {
             if last_tid == 0 { end -= same_tid }
             seeds.push((start, end))
+        }
+
+        if let Some(ref by_id) = by_id {
+            seeds = seeds.into_iter()
+                         .max_by_key(|(s, e)| taxons.iter().skip(*s).take(e - s)
+                                                    .map(|t| by_id.score(*t).unwrap_or(args.penalty))
+                                                    .sum::<usize>())
+                         .into_iter()
+                         .collect::<Vec<(usize, usize)>>();
         }
 
         // write it

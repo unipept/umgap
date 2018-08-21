@@ -353,9 +353,13 @@ pub struct SeedExtend {
     #[structopt(short = "g", long = "max-gap-size", default_value = "0")]
     pub max_gap_size: usize,
 
-    /// The NCBI taxonomy tsv-file
-    #[structopt(parse(from_os_str))]
-    pub taxon_file: PathBuf,
+    /// Use taxon ranks in given NCBI taxonomy tsv-file to pick extended seed with highest score
+    #[structopt(short = "r", long = "ranked", parse(from_os_str))]
+    pub ranked: Option<PathBuf>,
+
+    /// The score penalty for gaps in extended seeds
+    #[structopt(short = "p", long = "penalty", default_value = "5")]
+    pub penalty: usize,
 }
 
 /// Count and report on a list of taxon ids.
