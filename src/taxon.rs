@@ -8,6 +8,7 @@ use std::fs::File;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::path::Path;
+use std::cmp::Ordering;
 
 use std::str::FromStr;
 
@@ -25,6 +26,20 @@ impl Rank {
     /// Converts a rank to a usize.
     pub fn index(&self) -> usize {
         *self as usize
+    }
+
+    /// Converts a rank to its score, if it has one
+    pub fn score(&self) -> Option<usize> {
+        if      self < &Rank::Species       { Some(10) }
+        else if self < &Rank::SpeciesGroup  { Some(9) }
+        else if self < &Rank::Genus         { Some(8) }
+        else if self < &Rank::Tribe         { Some(7) }
+        else if self < &Rank::Superfamily   { Some(6) }
+        else if self < &Rank::Superorder    { Some(5) }
+        else if self < &Rank::Superclass    { Some(4) }
+        else if self < &Rank::Superphylum   { Some(3) }
+        else if self < &Rank::Superkingdom  { Some(2) }
+        else { None }
     }
 }
 
@@ -100,6 +115,16 @@ impl fmt::Display for Rank {
             Rank::Forma           => "forma",
         };
         write!(f, "{}", stringified)
+    }
+}
+
+impl PartialOrd for Rank {
+    fn partial_cmp(&self, other: &Rank) -> Option<Ordering> {
+        if self == &Rank::NoRank || other == &Rank::NoRank {
+            None
+        } else {
+            Some(self.index().cmp(&other.index()))
+        }
     }
 }
 
@@ -231,6 +256,19 @@ impl TaxonList {
     pub fn get(&self, index: TaxonId) -> Option<&Taxon> {
         if index >= self.0.len() { None }
         else { self.0[index].as_ref() }
+    }
+
+    /// Retrieve the rank score of a taxon in the list.
+    pub fn score(&self, index: TaxonId) -> Option<usize> {
+        let mut current = index;
+        while let Some(t) = self.get(current) {
+            if t.parent == current || t.rank != Rank::NoRank {
+                return t.rank.score();
+            } else {
+                current = t.parent;
+            }
+        }
+        return None;
     }
 }
 
