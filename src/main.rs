@@ -164,7 +164,7 @@ fn taxa2agg(args: args::TaxaToAgg) -> Result<()> {
 
     // Parsing the taxons
     let tree     = taxon::TaxonTree::new(&taxons);
-    let by_id    = taxon::TaxonList::new_with_unknown(taxons, true);
+    let by_id    = taxon::TaxonList::new(taxons);
     let snapping = tree.snapping(&by_id, args.ranked_only);
 
     let aggregator: Result<Box<agg::Aggregator>> = match (args.method, args.strategy) {
@@ -203,7 +203,7 @@ fn taxa2agg(args: args::TaxaToAgg) -> Result<()> {
                            .collect::<Result<Vec<(TaxonId, f32)>>>()?;
 
         // Create a frequency table of taxons for this read (taking into account the lower bound)
-        let counts = agg::count(taxons.into_iter());
+        let counts = agg::count(taxons.into_iter().filter(|&(tid, _)| tid != 0));
         let counts = agg::filter(counts, args.lower_bound);
 
         writer.write_record(fasta::Record {

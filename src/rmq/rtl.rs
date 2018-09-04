@@ -42,9 +42,11 @@ impl agg::Aggregator for RTLCalculator {
         for (taxon, count) in rtl_counts.iter_mut() {
             let mut next = *taxon;
             while let Some(ancestor) = self.ancestors[next] {
-                if next == ancestor { break; } // TODO use None to indicate ancestry root
                 *count += *taxons.get(&ancestor).unwrap_or(&0.0);
                 next = ancestor;
+            }
+            if next != self.root {
+                bail!(agg::ErrorKind::Taxon(taxon::ErrorKind::UnknownTaxon(next)));
             }
         }
 
