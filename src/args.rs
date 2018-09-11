@@ -156,6 +156,9 @@ pub enum Opt {
     /// Splits each protein sequence in a FASTA format into a list of kmers.
     #[structopt(name = "prot2kmer")] ProtToKmer(ProtToKmer),
 
+    /// Print the values in an FST index to stdout.
+    #[structopt(name = "printindex")] PrintIndex(PrintIndex),
+
     /// Write an FST index of stdin on stdout.
     #[structopt(name = "buildindex")] BuildIndex,
 }
@@ -380,6 +383,14 @@ pub struct BestOf {
     /// The number of frames of which to pick the best
     #[structopt(short = "f", long = "frames", default_value = "6")]
     pub frames: usize,
+}
+
+/// Print the values in an FST index to stdout.
+#[derive(Debug, StructOpt)]
+pub struct PrintIndex {
+    /// An FST to query
+    #[structopt(parse(from_os_str))]
+    pub fst_file: PathBuf,
 }
 
 error_chain! {
