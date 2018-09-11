@@ -12,6 +12,7 @@ use std::cmp;
 extern crate clap;
 
 extern crate fst;
+use fst::Streamer;
 
 extern crate regex;
 
@@ -60,6 +61,7 @@ quick_main!(|| -> Result<()> {
         args::Opt::SeedExtend(args)      => seedextend(args),
         args::Opt::Report(args)          => report(args),
         args::Opt::BestOf(args)          => bestof(args),
+        args::Opt::PrintIndex(args)      => printindex(args),
         args::Opt::BuildIndex            => buildindex(),
     }
 });
@@ -548,6 +550,20 @@ fn bestof(args: args::BestOf) -> Result<()> {
     Ok(())
 }
 
+fn printindex(args: args::PrintIndex) -> Result<()> {
+    let mut writer = csv::Writer::from_writer(io::stdout())
+                                 .delimiter(b'\t');
+
+    let index = fst::Map::from_path(args.fst_file)?;
+    let mut stream = index.stream();
+
+    while let Some((k, v)) = stream.next() {
+        writer.encode((String::from_utf8_lossy(k), v))?;
+    }
+
+    Ok(())
+}
+
 fn buildindex() -> Result<()> {
     let mut reader = csv::Reader::from_reader(io::stdin())
                                  .has_headers(false)
@@ -564,3 +580,4 @@ fn buildindex() -> Result<()> {
 
     Ok(())
 }
+
