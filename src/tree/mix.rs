@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::ops::Add;
 
 extern crate ordered_float;
-use self::ordered_float::NotNaN;
+use self::ordered_float::NotNan;
 
 use agg;
 use taxon::{TaxonId, TaxonList};
@@ -44,7 +44,7 @@ impl agg::Aggregator for MixCalculator {
             .aggregate(&Add::add);
 
         let mut base = &subtree;
-        while let Some(max) = base.children.iter().max_by_key(|c| NotNaN::new(c.value).unwrap()) {
+        while let Some(max) = base.children.iter().max_by_key(|c| NotNan::new(c.value).unwrap()) {
             if max.value / base.value < self.factor { break; }
             base = max;
         }

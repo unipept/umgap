@@ -4,7 +4,7 @@
 use std::collections::HashMap;
 
 extern crate ordered_float;
-use self::ordered_float::NotNaN;
+use self::ordered_float::NotNan;
 
 use taxon;
 use taxon::{TaxonId, TaxonList};
@@ -51,7 +51,7 @@ impl agg::Aggregator for RTLCalculator {
         }
 
         rtl_counts.iter()
-                  .max_by_key(|&(_, &count)| NotNaN::new(count).unwrap())
+                  .max_by_key(|&(_, &count)| NotNan::new(count).unwrap())
                   .map(|tup| *tup.0)
                   .ok_or(agg::ErrorKind::EmptyInput.into())
     }

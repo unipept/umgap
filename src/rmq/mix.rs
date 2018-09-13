@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::collections::VecDeque;
 
 extern crate ordered_float;
-use self::ordered_float::NotNaN;
+use self::ordered_float::NotNan;
 
 use rmq::lca::LCACalculator;
 use taxon::{TaxonId, TaxonTree};
@@ -77,7 +77,7 @@ impl agg::Aggregator for MixCalculator {
         }
 
         weights.iter()
-               .max_by_key(|&(_, w)| NotNaN::new(factorize(*w, self.factor)).unwrap())
+               .max_by_key(|&(_, w)| NotNan::new(factorize(*w, self.factor)).unwrap())
                .map(|tup| *tup.0)
                .ok_or(agg::ErrorKind::EmptyInput.into())
     }
