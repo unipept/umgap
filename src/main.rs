@@ -109,7 +109,7 @@ fn translate(args: args::Translate) -> Result<()> {
 }
 
 fn pept2lca(args: args::PeptToLca) -> Result<()> {
-    let fst = fst::Map::from_path(args.fst_file)?;
+    let fst = unsafe { fst::Map::from_path(args.fst_file) }?;
     let default = if args.one_on_one { Some(0) } else { None };
     let stdin = io::stdin();
     let stdout = io::stdout();
@@ -126,7 +126,7 @@ fn pept2lca(args: args::PeptToLca) -> Result<()> {
 }
 
 fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
-    let map = fst::Map::from_path(&args.fst_file)?;
+    let map = unsafe { fst::Map::from_path(&args.fst_file) }?;
     let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
 
     for prot in fasta::Reader::new(io::stdin(), None, true).records() {
@@ -555,7 +555,7 @@ fn printindex(args: args::PrintIndex) -> Result<()> {
                                         .delimiter(b'\t')
                                         .from_writer(io::stdout());
 
-    let index = fst::Map::from_path(args.fst_file)?;
+    let index = unsafe { fst::Map::from_path(args.fst_file) }?;
     let mut stream = index.stream();
 
     while let Some((k, v)) = stream.next() {
