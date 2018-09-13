@@ -551,27 +551,29 @@ fn bestof(args: args::BestOf) -> Result<()> {
 }
 
 fn printindex(args: args::PrintIndex) -> Result<()> {
-    let mut writer = csv::Writer::from_writer(io::stdout())
-                                 .delimiter(b'\t');
+    let mut writer = csv::WriterBuilder::new()
+                                        .delimiter(b'\t')
+                                        .from_writer(io::stdout());
 
     let index = fst::Map::from_path(args.fst_file)?;
     let mut stream = index.stream();
 
     while let Some((k, v)) = stream.next() {
-        writer.encode((String::from_utf8_lossy(k), v))?;
+        writer.serialize((String::from_utf8_lossy(k), v))?;
     }
 
     Ok(())
 }
 
 fn buildindex() -> Result<()> {
-    let mut reader = csv::Reader::from_reader(io::stdin())
-                                 .has_headers(false)
-                                 .delimiter(b'\t');
+    let mut reader = csv::ReaderBuilder::new()
+                                        .has_headers(false)
+                                        .delimiter(b'\t')
+                                        .from_reader(io::stdin());
 
     let mut index = fst::MapBuilder::new(io::stdout())?;
 
-    for record in reader.decode() {
+    for record in reader.deserialize() {
         let (kmer, lca): (String, u64) = record?;
         index.insert(kmer, lca)?;
     }
