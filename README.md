@@ -1,47 +1,50 @@
-UMGAP - Unipept Metagenomics Analysis Pipeline
-==============================================
+
+# UMGAP - Unipept Metagenomics Analysis Pipeline
+
 The Unipept Metagenomics Analysis Pipeline can analyse metagenomic samples and
 return a frequency table of the taxons it detected for each read. It is based on
 the [Unipept Metaproteomics Analysis Pipeline][Unipept]. Both
 tools were developed at the Department of Applied Maths, Computer science and
 Statistics at [Ghent University](UGent).
 
+
 ## Building
-To download and build the pipeline, you will need the following programs:
 
-* [Bash] (version 4.0.0 or higher)
-* [Meson]
-* [GNU coreutils]
-* [Rust]
-* [Ruby] (and the Unipept gem)
-
-If you have these programs installed, you can build the pipeline by issuing the
-following commands:
+You will need [Rust] installed. The pipeline can then be installed by issuing
+the following commands:
 
 ```sh
 git clone 'git@github.ugent.be:unipept/unipept-metagenomics-scripts.git' umgap
 cd umgap
-meson build
-ninja -C build
+cargo install --path .
 ```
 
-The pipeline can then be executed with the following command:
+This will install the `umgap` command to `~/.cargo/bin` by default. Please
+ensure this directory is in your `$PATH`.
 
-```
-build/pipeline.sh [OPTIONS] <INPUT FILES>
+
+## Updating the pipeline
+
+Your installed version of the pipeline can be updated by issuing
+
+```sh
+cargo install --force --path .
 ```
 
-To get a list of options, please run the pipeline with the `--help` option.
+## Running the pipeline
+
+See `umgap help` or have a look at the short [metagenomics casestudy] at the
+Unipept website.
+
 
 ## License
+
 The UMGAP is released under the terms of the MIT License. See the LICENSE file
 for more info.
 
 
 [Unipept]: https://unipept.ugent.be/
 [UGent]: https://www.ugent.be/
-[Bash]: https://www.gnu.org/software/bash/
-[Meson]: https://mesonbuild.com/
-[GNU coreutils]: https://www.gnu.org/software/coreutils/
 [Rust]: https://www.rust-lang.org/
-[Ruby]: https://www.ruby-lang.org/
+[metagenomics casestudy]: https://unipept.ugent.be/clidocs/casestudies/metagenomics
+

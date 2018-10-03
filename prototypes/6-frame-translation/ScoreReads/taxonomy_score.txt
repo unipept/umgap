@@ -1,9 +1,0 @@
-superkingdom,kingdom,subkingdom 0.2
-superphylum,phylum,subphylum 0.3
-superclass,class,subclass,infraclass 0.4
-superorder,order,suborder,infraorder,parvorder 0.5
-superfamily,family,subfamily 0.6
-tribe,subtribe 0.7
-genus,subgenus 0.8
-species group,species subgroup 0.9
-species,subspecies,varietas,forma 1
