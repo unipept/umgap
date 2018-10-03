@@ -1,9 +1,0 @@
-#!/bin/bash
-
-export PATH="/data/felix/metagenomics/repo/unipept/target/release/:$PATH"
-
-name="$1"
-
-cat $name.sixframe | prot2pept | pept2lca -i -t taxons.9mer.tsv /data/felix/data/fst/tryptic-peptides.index > $name.pept.lca
-./score_peptides -t taxonomy_score.txt $name.pept.lca | sed '1d' > $name.scored.lca
-cat $name.scored.lca | sed 's/|.*$//' |fasta-uniq -s ' ' |sed 's/^ *//' |sed '/^>/ {N; /\n$/d}'|./taxa2agg -s -a 'MRTL' taxons.9mer.tsv > $name.pept.consensus
