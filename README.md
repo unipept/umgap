@@ -37,6 +37,11 @@ See `umgap help` or have a look at the short [metagenomics casestudy] at the
 Unipept website.
 
 
+## Contributing
+
+Please use the RustFMT pre-push hook.
+
+
 ## License
 
 The UMGAP is released under the terms of the MIT License. See the LICENSE file
