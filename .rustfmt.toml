@@ -1,7 +1,7 @@
 indent_style = "Visual"
 where_single_line = true
 format_strings = true
-# hard_tabs = true
+hard_tabs = true
 imports_indent = "Visual"
 match_block_trailing_comma = true
 comment_width = 100
