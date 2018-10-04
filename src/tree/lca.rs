@@ -9,32 +9,32 @@ use tree::tree::Tree;
 
 /// Struct capable of calculating the LCA of 2 nodes in a TaxonTree.
 pub struct LCACalculator {
-    /// The root of the taxon tree.
-    pub root: TaxonId,
-    /// Contains the ancestor for each node. Nodes are indexed by their id.
-    pub parents: Vec<Option<TaxonId>>,
+	/// The root of the taxon tree.
+	pub root: TaxonId,
+	/// Contains the ancestor for each node. Nodes are indexed by their id.
+	pub parents: Vec<Option<TaxonId>>,
 }
 
 impl LCACalculator {
-    /// Constructs an LCACalculator for a given taxon tree.
-    ///
-    /// # Arguments:
-    /// * `root`     - the root of the taxon tree.
-    /// * `taxonomy` - the taxons, indexed by their id.
-    pub fn new(root: TaxonId, taxonomy: &TaxonList) -> Self {
-        LCACalculator { root: root,
-                        parents: taxonomy.ancestry(), }
-    }
+	/// Constructs an LCACalculator for a given taxon tree.
+	///
+	/// # Arguments:
+	/// * `root`     - the root of the taxon tree.
+	/// * `taxonomy` - the taxons, indexed by their id.
+	pub fn new(root: TaxonId, taxonomy: &TaxonList) -> Self {
+		LCACalculator { root: root,
+		                parents: taxonomy.ancestry(), }
+	}
 }
 
 impl agg::Aggregator for LCACalculator {
-    fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> Result<TaxonId, agg::Error> {
-        if taxons.len() == 0 {
-            bail!(agg::ErrorKind::EmptyInput);
-        }
-        let subtree = Tree::new(self.root, &self.parents, taxons)?.collapse(&Add::add);
-        Ok(subtree.root)
-    }
+	fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> Result<TaxonId, agg::Error> {
+		if taxons.len() == 0 {
+			bail!(agg::ErrorKind::EmptyInput);
+		}
+		let subtree = Tree::new(self.root, &self.parents, taxons)?.collapse(&Add::add);
+		Ok(subtree.root)
+	}
 }
 
 #[cfg(test)]

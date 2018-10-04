@@ -16,50 +16,50 @@ use tree::tree::Tree;
 /// hybrid approach between MRL and LCA. It can either prefer MRL or LCA more,
 /// depending on a given ratio.
 pub struct MixCalculator {
-    root: TaxonId,
-    parents: Vec<Option<TaxonId>>,
-    factor: f32,
+	root: TaxonId,
+	parents: Vec<Option<TaxonId>>,
+	factor: f32,
 }
 
 impl MixCalculator {
-    /// Constructs a MixCalculator for a given taxon tree.
-    ///
-    /// # Arguments:
-    /// * `root`     - the root of the taxon tree.
-    /// * `taxonomy` - the taxons, indexed by their id.
-    /// * `factor`   - A ratio (i.e. a number in [0.0, 1.0] which decides the
-    ///                ratio that MRL or LCA will be chosen as aggregation.
-    ///                If factor is 1, LCA will always be chosen; If factor is 0, MRL.
-    pub fn new(root: TaxonId, taxonomy: &TaxonList, factor: f32) -> Self {
-        let LCACalculator { root: r,
-                            parents: p, } = LCACalculator::new(root, taxonomy);
-        MixCalculator { factor: factor,
-                        root: r,
-                        parents: p, }
-    }
+	/// Constructs a MixCalculator for a given taxon tree.
+	///
+	/// # Arguments:
+	/// * `root`     - the root of the taxon tree.
+	/// * `taxonomy` - the taxons, indexed by their id.
+	/// * `factor`   - A ratio (i.e. a number in [0.0, 1.0] which decides the
+	///                ratio that MRL or LCA will be chosen as aggregation.
+	///                If factor is 1, LCA will always be chosen; If factor is 0, MRL.
+	pub fn new(root: TaxonId, taxonomy: &TaxonList, factor: f32) -> Self {
+		let LCACalculator { root: r,
+		                    parents: p, } = LCACalculator::new(root, taxonomy);
+		MixCalculator { factor: factor,
+		                root: r,
+		                parents: p, }
+	}
 }
 
 impl agg::Aggregator for MixCalculator {
-    fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> agg::Result<TaxonId> {
-        if taxons.len() == 0 {
-            bail!(agg::ErrorKind::EmptyInput);
-        }
-        let subtree = Tree::new(self.root, &self.parents, taxons)?.collapse(&Add::add)
-                                                                  .aggregate(&Add::add);
+	fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> agg::Result<TaxonId> {
+		if taxons.len() == 0 {
+			bail!(agg::ErrorKind::EmptyInput);
+		}
+		let subtree = Tree::new(self.root, &self.parents, taxons)?.collapse(&Add::add)
+		                                                          .aggregate(&Add::add);
 
-        let mut base = &subtree;
-        while let Some(max) = base.children
-                                  .iter()
-                                  .max_by_key(|c| NotNan::new(c.value).unwrap())
-        {
-            if max.value / base.value < self.factor {
-                break;
-            }
-            base = max;
-        }
+		let mut base = &subtree;
+		while let Some(max) = base.children
+		                          .iter()
+		                          .max_by_key(|c| NotNan::new(c.value).unwrap())
+		{
+			if max.value / base.value < self.factor {
+				break;
+			}
+			base = max;
+		}
 
-        Ok(base.root)
-    }
+		Ok(base.root)
+	}
 }
 
 #[cfg(test)]
