@@ -1,11 +1,11 @@
 //! Defines translation tables.
 
 use std;
-use std::str;
 use std::collections::HashMap;
+use std::str;
 
-use dna::{Nucleotide, Frame};
 use dna::Nucleotide::*;
+use dna::{Frame, Nucleotide};
 
 /// Represents a DNA codon.
 #[derive(Debug, PartialEq, Eq, Hash)]
@@ -29,9 +29,14 @@ impl CodonIterator {
 
 impl Iterator for CodonIterator {
     type Item = Codon;
+
     fn next(&mut self) -> Option<Self::Item> {
-        if self.0 >= 64 { return None; }
-        let next = Codon(BASE_ORDER[self.0 / 16], BASE_ORDER[(self.0 / 4) % 4], BASE_ORDER[self.0 % 4]);
+        if self.0 >= 64 {
+            return None;
+        }
+        let next = Codon(BASE_ORDER[self.0 / 16],
+                         BASE_ORDER[(self.0 / 4) % 4],
+                         BASE_ORDER[self.0 % 4]);
         self.0 += 1;
         Some(next)
     }
@@ -100,7 +105,7 @@ lazy_static! {
 pub struct TranslationTable {
     name: String,
     index: u32,
-    table: HashMap<Codon, (bool, u8)>
+    table: HashMap<Codon, (bool, u8)>,
 }
 
 impl TranslationTable {
@@ -116,13 +121,22 @@ impl TranslationTable {
     /// Translate the given codon to an AA. Translate each start codon to methionine if asked.
     pub fn translate(&self, methionine: bool, codon: &Codon) -> u8 {
         let &(start, codon) = self.table.get(codon).unwrap_or(&(false, b'-'));
-        if start && methionine { b'M' } else { codon }
+        if start && methionine {
+            b'M'
+        } else {
+            codon
+        }
     }
 
     /// Translate the given DNA frame to a peptide. Translate each start codon to methionine if
     /// asked.
     pub fn translate_frame(&self, methionine: bool, frame: Frame) -> Vec<u8> {
-        frame.0.chunks(3).filter(|t| t.len() == 3).map(Codon::from).map(|c| self.translate(methionine, &c)).collect()
+        frame.0
+             .chunks(3)
+             .filter(|t| t.len() == 3)
+             .map(Codon::from)
+             .map(|c| self.translate(methionine, &c))
+             .collect()
     }
 
     /// Print this translation table in a human readable format.
@@ -131,19 +145,31 @@ impl TranslationTable {
         let mut output: Vec<[u8; 5]> = Vec::new();
         for codon in CodonIterator::new() {
             let (mm, aa) = *self.table.get(&codon).unwrap();
-            output.push([aa, if mm { b'M' } else { b'-' }, codon.0.into(), codon.1.into(), codon.2.into()]);
+            output.push([aa,
+                         if mm { b'M' } else { b'-' },
+                         codon.0.into(),
+                         codon.1.into(),
+                         codon.2.into()]);
         }
-        for (i, name) in ["AAs", "Starts", "Base1", "Base2", "Base3"].into_iter().enumerate() {
-            println!("{:<6} = {}", name, output.iter().map(|t5| char::from(t5[i])).collect::<String>());
+        for (i, name) in ["AAs", "Starts", "Base1", "Base2", "Base3"].into_iter()
+                                                                     .enumerate()
+        {
+            println!("{:<6} = {}",
+                     name,
+                     output.iter()
+                           .map(|t5| char::from(t5[i]))
+                           .collect::<String>());
         }
     }
 }
 
 impl str::FromStr for &'static TranslationTable {
     type Err = Error;
+
     fn from_str(s: &str) -> Result<Self> {
         let id = s.parse::<usize>()?;
-        TABLES[id - 1].as_ref().ok_or(ErrorKind::UnknownTable(id).into())
+        TABLES[id - 1].as_ref()
+                      .ok_or(ErrorKind::UnknownTable(id).into())
     }
 }
 

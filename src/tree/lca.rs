@@ -22,22 +22,23 @@ impl LCACalculator {
     /// * `root`     - the root of the taxon tree.
     /// * `taxonomy` - the taxons, indexed by their id.
     pub fn new(root: TaxonId, taxonomy: &TaxonList) -> Self {
-        LCACalculator {
-            root:    root,
-            parents: taxonomy.ancestry(),
-        }
+        LCACalculator { root: root,
+                        parents: taxonomy.ancestry(), }
     }
 }
 
 impl agg::Aggregator for LCACalculator {
     fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> Result<TaxonId, agg::Error> {
-        if taxons.len() == 0 { bail!(agg::ErrorKind::EmptyInput); }
+        if taxons.len() == 0 {
+            bail!(agg::ErrorKind::EmptyInput);
+        }
         let subtree = Tree::new(self.root, &self.parents, taxons)?.collapse(&Add::add);
         Ok(subtree.root)
     }
 }
 
 #[cfg(test)]
+#[cfg_attr(rustfmt, rustfmt_skip)]
 mod tests {
     use super::LCACalculator;
     use agg::Aggregator;

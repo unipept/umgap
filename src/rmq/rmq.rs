@@ -12,49 +12,56 @@ pub struct RMQ<T: Ord + Display> {
     pub block_min: Vec<usize>,
     /// `sparse[i][j]` is the position of the minimum in block[i] to block[i + 2^(j+1) - 1].
     pub sparse: Vec<Vec<usize>>,
-    /// The j'th bit of labels[i] is 1 iff j is the first position (in the block) left of i where array[j] < array[i].
-    pub labels: Vec<usize>
+    /// The j'th bit of labels[i] is 1 iff j is the first position (in the block) left of i where
+    /// array[j] < array[i].
+    pub labels: Vec<usize>,
 }
 
 /* clear the least significant x - 1 bits */
-fn clearbits(n: usize, x: usize) -> usize { (n >> x) << x }
+fn clearbits(n: usize, x: usize) -> usize {
+    (n >> x) << x
+}
 
-fn size() -> usize { size_of::<usize>() * 8 }
+fn size() -> usize {
+    size_of::<usize>() * 8
+}
 
 fn intlog2(n: usize) -> usize {
     (n.leading_zeros() as usize) ^ (size() - 1)
 }
 
 impl<T: Ord + Display> RMQ<T> {
-
     /// Constructs an RMQ for the given array.
     pub fn new(array: Vec<T>) -> RMQ<T> {
         let block_min = RMQ::<T>::block_min(&array);
-        let sparse    = RMQ::<T>::sparse(&array, &block_min);
-        let labels    = RMQ::<T>::labels(&array);
-        RMQ {
-            array:     array,
-            block_min: block_min,
-            sparse:    sparse,
-            labels:    labels
-        }
+        let sparse = RMQ::<T>::sparse(&array, &block_min);
+        let labels = RMQ::<T>::labels(&array);
+        RMQ { array: array,
+              block_min: block_min,
+              sparse: sparse,
+              labels: labels, }
     }
 
     /// Calculates the position of each block's minimum.
     pub fn block_min(array: &Vec<T>) -> Vec<usize> {
         array.chunks(size())
              .enumerate()
-             .map(|(i, c)| c.iter().enumerate()
-                            .min_by_key(|&(_, val)| val)
-                            .expect("So, it has come to this.")
-                            .0 + i * size())
+             .map(|(i, c)| {
+                      c.iter()
+                       .enumerate()
+                       .min_by_key(|&(_, val)| val)
+                       .expect("So, it has come to this.")
+                       .0
+                      + i * size()
+                  })
              .collect()
     }
 
     fn aggregate_minima(array: &Vec<T>, shift: usize, minima: &Vec<usize>) -> Vec<usize> {
-        minima.iter().zip(minima.iter().skip(shift)).map(|(&l, &r)|
-            if array[l] < array[r] { l } else { r }
-        ).collect()
+        minima.iter()
+              .zip(minima.iter().skip(shift))
+              .map(|(&l, &r)| if array[l] < array[r] { l } else { r })
+              .collect()
     }
 
     /// Calculate the values of the sparse field.
@@ -101,6 +108,7 @@ impl<T: Ord + Display> RMQ<T> {
     }
 
     /// Returns the position of the minimal value in a given sublist.
+    #[cfg_attr(rustfmt, rustfmt_skip)]
     pub fn query(&self, start: usize, end: usize) -> usize {
         if start == end { return start; }
         let (left, right)  = if start < end { (start, end) } else { (end, start) };
@@ -137,10 +145,10 @@ impl<T: Ord + Display> RMQ<T> {
             }
         }
     }
-
 }
 
 #[cfg(test)]
+#[cfg_attr(rustfmt, rustfmt_skip)]
 mod tests {
     use super::*;
 

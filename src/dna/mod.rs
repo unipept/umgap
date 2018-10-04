@@ -21,19 +21,37 @@ use self::Nucleotide::*;
 impl Nucleotide {
     /// Complement of the given nucleotide.
     pub fn complement(&self) -> Self {
-        match self { &A => T, &C => G, &G => C, &T => A, &N => N }
+        match self {
+            &A => T,
+            &C => G,
+            &G => C,
+            &T => A,
+            &N => N,
+        }
     }
 }
 
 impl From<u8> for Nucleotide {
     fn from(ch: u8) -> Self {
-        match ch { b'A' => A, b'C' => C, b'G' => G, b'T' => T, _ => N }
+        match ch {
+            b'A' => A,
+            b'C' => C,
+            b'G' => G,
+            b'T' => T,
+            _ => N,
+        }
     }
 }
 
 impl Into<u8> for Nucleotide {
     fn into(self) -> u8 {
-        match self { A => b'A', C => b'C', G => b'G', T => b'T', N => b'N' }
+        match self {
+            A => b'A',
+            C => b'C',
+            G => b'G',
+            T => b'T',
+            N => b'N',
+        }
     }
 }
 
@@ -79,12 +97,14 @@ mod tests {
 
     #[test]
     fn test_strand_from() {
-        assert_eq!(strand![A C G T N T C G A], Strand::from("ACGT*TCGA".as_bytes()));
+        assert_eq!(strand![A C G T N T C G A],
+                   Strand::from("ACGT*TCGA".as_bytes()));
     }
 
     #[test]
     fn test_strand_reversed() {
-        assert_eq!(strand![A C G T N T G C A], strand![T G C A N A C G T].reversed());
+        assert_eq!(strand![A C G T N T G C A],
+                   strand![T G C A N A C G T].reversed());
     }
 
     #[test]

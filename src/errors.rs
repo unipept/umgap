@@ -9,9 +9,9 @@ extern crate fst;
 
 extern crate regex;
 
-use taxon;
-use dna::translation;
 use agg;
+use dna::translation;
+use taxon;
 
 error_chain! {
     links {
@@ -35,4 +35,3 @@ error_chain! {
         }
     }
 }
-

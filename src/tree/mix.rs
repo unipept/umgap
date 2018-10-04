@@ -8,8 +8,8 @@ use self::ordered_float::NotNan;
 
 use agg;
 use taxon::{TaxonId, TaxonList};
-use tree::tree::Tree;
 use tree::lca::LCACalculator;
+use tree::tree::Tree;
 
 
 /// Struct capable of aggregating of a list of nodes in a TaxonTree, using a
@@ -31,21 +31,30 @@ impl MixCalculator {
     ///                ratio that MRL or LCA will be chosen as aggregation.
     ///                If factor is 1, LCA will always be chosen; If factor is 0, MRL.
     pub fn new(root: TaxonId, taxonomy: &TaxonList, factor: f32) -> Self {
-        let LCACalculator { root: r, parents: p } = LCACalculator::new(root, taxonomy);
-        MixCalculator { factor: factor, root: r, parents: p }
+        let LCACalculator { root: r,
+                            parents: p, } = LCACalculator::new(root, taxonomy);
+        MixCalculator { factor: factor,
+                        root: r,
+                        parents: p, }
     }
 }
 
 impl agg::Aggregator for MixCalculator {
     fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> agg::Result<TaxonId> {
-        if taxons.len() == 0 { bail!(agg::ErrorKind::EmptyInput); }
-        let subtree = Tree::new(self.root, &self.parents, taxons)?
-            .collapse(&Add::add)
-            .aggregate(&Add::add);
+        if taxons.len() == 0 {
+            bail!(agg::ErrorKind::EmptyInput);
+        }
+        let subtree = Tree::new(self.root, &self.parents, taxons)?.collapse(&Add::add)
+                                                                  .aggregate(&Add::add);
 
         let mut base = &subtree;
-        while let Some(max) = base.children.iter().max_by_key(|c| NotNan::new(c.value).unwrap()) {
-            if max.value / base.value < self.factor { break; }
+        while let Some(max) = base.children
+                                  .iter()
+                                  .max_by_key(|c| NotNan::new(c.value).unwrap())
+        {
+            if max.value / base.value < self.factor {
+                break;
+            }
             base = max;
         }
 
@@ -54,6 +63,7 @@ impl agg::Aggregator for MixCalculator {
 }
 
 #[cfg(test)]
+#[cfg_attr(rustfmt, rustfmt_skip)]
 mod tests {
     use super::MixCalculator;
     use agg::Aggregator;
@@ -84,4 +94,3 @@ mod tests {
         assert_matches!(aggregator.counting_aggregate(&vec![1, 12884, 10239, 185751, 185751, 185752]), Ok(12884));
     }
 }
-

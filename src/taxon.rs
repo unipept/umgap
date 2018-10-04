@@ -1,20 +1,21 @@
 //! Defines operations and data structures over taxons.
 
 use std;
-use std::fmt;
-use std::io;
-use std::io::BufRead;
-use std::fs::File;
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::fmt;
+use std::fs::File;
+use std::io;
+use std::io::BufRead;
 use std::path::Path;
-use std::cmp::Ordering;
 
 use std::str::FromStr;
 
 /// Represents the rank of a [Taxon](struct.Taxon.html)
 #[allow(missing_docs)]
 #[derive(PartialEq, Eq, Debug, Clone, Copy)]
+#[cfg_attr(rustfmt, rustfmt_skip)]
 pub enum Rank {
     NoRank, Superkingdom, Kingdom, Subkingdom, Superphylum, Phylum, Subphylum, Superclass, Class,
     Subclass, Infraclass, Superorder, Order, Suborder, Infraorder, Parvorder, Superfamily, Family,
@@ -29,6 +30,7 @@ impl Rank {
     }
 
     /// Converts a rank to its score, if it has one
+    #[cfg_attr(rustfmt, rustfmt_skip)]
     pub fn score(&self) -> Option<usize> {
         if      self < &Rank::Species       { Some(10) }
         else if self < &Rank::SpeciesGroup  { Some(9) }
@@ -45,6 +47,8 @@ impl Rank {
 
 impl FromStr for Rank {
     type Err = Error;
+
+    #[cfg_attr(rustfmt, rustfmt_skip)]
     fn from_str(rank: &str) -> Result<Self> {
         match rank {
             "no rank"          => Ok(Rank::NoRank),
@@ -82,6 +86,7 @@ impl FromStr for Rank {
 }
 
 impl fmt::Display for Rank {
+    #[cfg_attr(rustfmt, rustfmt_skip)]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let stringified = match *self {
             Rank::NoRank          => "no rank",
@@ -143,13 +148,17 @@ pub struct Taxon {
     /// The taxon's parent
     pub parent: TaxonId,
     /// Whether the taxon is valid. `false` taxons are discarded in some calculations
-    pub valid: bool
+    pub valid: bool,
 }
 
 impl Taxon {
     /// Creates a taxon from the given arguments.
     pub fn new(id: TaxonId, name: String, rank: Rank, parent: TaxonId, valid: bool) -> Taxon {
-        Taxon { id: id, name: name, rank: rank, parent: parent, valid: valid }
+        Taxon { id: id,
+                name: name,
+                rank: rank,
+                parent: parent,
+                valid: valid, }
     }
 
     /// Creates a taxon from the given arguments (using a &str instead of a String).
@@ -182,17 +191,17 @@ impl FromStr for Taxon {
     /// //                  valid: true
     /// //              }
     /// ```
+    #[cfg_attr(rustfmt, rustfmt_skip)]
     fn from_str(s: &str) -> Result<Self> {
         let split: Vec<&str> = s.trim_right().split('\t').collect();
 
         if split.len() != 5 { bail!("Taxon requires five fields"); }
-        match (
-            split[0].parse::<TaxonId>(),
-            split[1].to_string(),
-            split[2].parse::<Rank>(),
-            split[3].parse::<TaxonId>(),
-            split[4]
-        ) {
+        match (split[0].parse::<TaxonId>(),
+               split[1].to_string(),
+               split[2].parse::<Rank>(),
+               split[3].parse::<TaxonId>(),
+               split[4])
+        {
             (Ok(id), name, Ok(rank), Ok(parent), "\x01") => Ok(Taxon::new(id, name, rank, parent, true)),
             (Ok(id), name, Ok(rank), Ok(parent), "\x00") => Ok(Taxon::new(id, name, rank, parent, false)),
             (Err(e), _,    _,        _,          _)      => Err(e.into()),
@@ -207,7 +216,7 @@ impl FromStr for Taxon {
 ///
 /// See [Taxon::from_str()](struct.Taxon.html#method.from_str) for more details on the line format.
 pub fn read_taxa_file<P: AsRef<Path>>(filename: P) -> Result<Vec<Taxon>> {
-    let file   = File::open(filename).chain_err(|| "Failed opening taxon file.")?;
+    let file = File::open(filename).chain_err(|| "Failed opening taxon file.")?;
     let reader = io::BufReader::new(file);
     let mut taxa = Vec::new();
     for mline in reader.lines() {
@@ -247,15 +256,19 @@ impl TaxonList {
 
     /// Constructs a vector mapping a TaxonId to the id of its parent, if it has one.
     pub fn ancestry(&self) -> Vec<Option<TaxonId>> {
-        self.0.iter()
+        self.0
+            .iter()
             .map(|opttaxon| opttaxon.as_ref().map(|taxon| taxon.parent))
             .collect()
     }
 
     /// Retrieve a taxon from the taxon list by id.
     pub fn get(&self, index: TaxonId) -> Option<&Taxon> {
-        if index >= self.0.len() { None }
-        else { self.0[index].as_ref() }
+        if index >= self.0.len() {
+            None
+        } else {
+            self.0[index].as_ref()
+        }
     }
 
     /// Retrieve the rank score of a taxon in the list.
@@ -279,7 +292,7 @@ pub struct TaxonTree {
     pub root: TaxonId,
     /// A map that maps each taxon to its children
     pub children: HashMap<TaxonId, Vec<TaxonId>>,
-    max: TaxonId
+    max: TaxonId,
 }
 
 impl TaxonTree {
@@ -289,8 +302,12 @@ impl TaxonTree {
         let mut max = taxons[0].id;
         let mut roots: HashSet<TaxonId> = taxons.into_iter().map(|t| t.id).collect();
         for taxon in taxons {
-            if taxon.id > max { max = taxon.id }
-            if taxon.id == taxon.parent { continue; }
+            if taxon.id > max {
+                max = taxon.id
+            }
+            if taxon.id == taxon.parent {
+                continue;
+            }
             let siblings = map.entry(taxon.parent).or_insert(Vec::new());
             siblings.push(taxon.id);
             roots.remove(&taxon.id);
@@ -298,18 +315,25 @@ impl TaxonTree {
         if roots.len() > 1 {
             panic!("More than one root!");
         }
-        TaxonTree {
-            root: roots.into_iter().next().expect("There's no root!"),
-            max: max,
-            children: map
-        }
+        TaxonTree { root: roots.into_iter().next().expect("There's no root!"),
+                    max: max,
+                    children: map, }
     }
 
     // Takes a (mutable) vector of taxons indexed by their id, and adds the current taxon if it
     // passes the filter.
-    fn with_filtered<F>(&self, mut ancestors: &mut Vec<Option<TaxonId>>, current: TaxonId, ancestor: Option<TaxonId>, filter: &F)
-    where F: Fn(TaxonId) -> bool {
-        let ancestor = if filter(current) { Some(current) } else { ancestor };
+    fn with_filtered<F>(&self,
+                        mut ancestors: &mut Vec<Option<TaxonId>>,
+                        current: TaxonId,
+                        ancestor: Option<TaxonId>,
+                        filter: &F)
+        where F: Fn(TaxonId) -> bool
+    {
+        let ancestor = if filter(current) {
+            Some(current)
+        } else {
+            ancestor
+        };
         ancestors[current] = ancestor;
         if let Some(children) = self.children.get(&current) {
             for child in children {
@@ -320,7 +344,7 @@ impl TaxonTree {
 
     /// Returns a filtered list of taxons (or more specifically, their identifiers)
     pub fn filter_ancestors<F>(&self, filter: F) -> Vec<Option<TaxonId>>
-    where F: Fn(TaxonId) -> bool {
+        where F: Fn(TaxonId) -> bool {
         let mut valid_ancestors = (0..self.max + 1).map(|_| None).collect();
         self.with_filtered(&mut valid_ancestors, self.root, Some(self.root), &filter);
         valid_ancestors
@@ -337,6 +361,7 @@ impl TaxonTree {
     /// # Arguments:
     /// * `taxons`: a vector of taxons, indexed by their TaxonId.
     /// * `ranked_only`: whether to include only taxons with a rank.
+    #[cfg_attr(rustfmt, rustfmt_skip)]
     pub fn snapping(&self, taxons: &TaxonList, ranked_only: bool) -> Vec<Option<TaxonId>> {
         self.filter_ancestors(|i: TaxonId| {
             taxons.get(i)
@@ -356,25 +381,28 @@ pub struct EulerIterator {
     path: Vec<(TaxonId, usize, usize)>,
     current: TaxonId,
     currentn: usize,
-    children: usize
+    children: usize,
 }
 
 impl EulerIterator {
     fn new(tree: TaxonTree) -> EulerIterator {
         let child_count = tree.child_count(tree.root);
-        let TaxonTree { root, children, max } = tree;
-        EulerIterator {
-            tree: TaxonTree { root: root, children: children, max: max },
-            path: Vec::new(),
-            current: root,
-            currentn: 0,
-            children: child_count
-        }
+        let TaxonTree { root,
+                        children,
+                        max, } = tree;
+        EulerIterator { tree: TaxonTree { root: root,
+                                          children: children,
+                                          max: max, },
+                        path: Vec::new(),
+                        current: root,
+                        currentn: 0,
+                        children: child_count, }
     }
 }
 
 impl Iterator for EulerIterator {
     type Item = (TaxonId, Depth);
+
     fn next(&mut self) -> Option<(TaxonId, Depth)> {
         if self.currentn > self.children {
             match self.path.pop() {
@@ -384,10 +412,10 @@ impl Iterator for EulerIterator {
                     self.currentn = currentn;
                     self.children = children;
                     self.next()
-                }
+                },
             }
         } else if self.currentn == self.children {
-            let current   = self.current;
+            let current = self.current;
             match self.path.pop() {
                 None => {
                     self.current = 0;
@@ -400,13 +428,14 @@ impl Iterator for EulerIterator {
                     self.currentn = currentn;
                     self.children = children;
                     Some((current, self.path.len() + 1))
-                }
+                },
             }
         } else {
             let current = self.current;
             // there must be unvisited children, as currentn < children
             let children = self.tree.children.get(&current).unwrap();
-            self.path.push((self.current, self.currentn + 1, self.children));
+            self.path
+                .push((self.current, self.currentn + 1, self.children));
             self.current = children[self.currentn];
             self.currentn = 0;
             self.children = self.tree.child_count(self.current);
@@ -416,8 +445,9 @@ impl Iterator for EulerIterator {
 }
 
 impl IntoIterator for TaxonTree {
-    type Item = (TaxonId, Depth);
     type IntoIter = EulerIterator;
+    type Item = (TaxonId, Depth);
+
     fn into_iter(self) -> Self::IntoIter {
         EulerIterator::new(self)
     }
@@ -442,6 +472,7 @@ error_chain! {
 }
 
 #[cfg(test)]
+#[cfg_attr(rustfmt, rustfmt_skip)]
 mod tests {
     use super::*;
     use fixtures;
