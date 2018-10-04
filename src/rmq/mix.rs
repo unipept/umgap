@@ -6,9 +6,9 @@ use std::collections::VecDeque;
 extern crate ordered_float;
 use self::ordered_float::NotNan;
 
+use agg;
 use rmq::lca::LCACalculator;
 use taxon::{TaxonId, TaxonTree};
-use agg;
 
 /// Struct capable of aggregating of a list of nodes in a TaxonTree, using a
 /// hybrid approach between MRL and LCA. It can either prefer MRL or LCA more,
@@ -21,7 +21,7 @@ pub struct MixCalculator {
 #[derive(Clone, Copy)]
 struct Weights {
     lca: f32,
-    rtl: f32
+    rtl: f32,
 }
 
 impl Weights {
@@ -39,10 +39,8 @@ impl MixCalculator {
     ///                ratio that MRL or LCA will be chosen as aggregation.
     ///                If factor is 1, LCA will always be chosen; If factor is 0, MRL.
     pub fn new(taxonomy: TaxonTree, factor: f32) -> Self {
-        MixCalculator {
-            lca_aggregator: LCACalculator::new(taxonomy),
-            factor: factor
-        }
+        MixCalculator { lca_aggregator: LCACalculator::new(taxonomy),
+                        factor: factor, }
     }
 }
 
@@ -53,7 +51,7 @@ fn factorize(weights: Weights, factor: f32) -> f32 {
 impl agg::Aggregator for MixCalculator {
     fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> agg::Result<TaxonId> {
         let mut weights: HashMap<TaxonId, Weights> = HashMap::with_capacity(taxons.len());
-        let mut queue:   VecDeque<TaxonId>         = taxons.keys().map(|&t| t).collect();
+        let mut queue: VecDeque<TaxonId> = taxons.keys().map(|&t| t).collect();
 
         // We collect all relevant taxa by starting out with all given taxa and iterate until no
         // more taxa are added. In each iteration, we add the lca of each pair already in the
@@ -61,15 +59,22 @@ impl agg::Aggregator for MixCalculator {
         //
         // Each of these taxa is given two weights:
         // weight.lca is the count of all given taxa descending from this one (including itself).
-        // weight.rtl is the count of all given taxa from which this one descends (including itself).
+        // weight.rtl is the count of all given taxa from which this one descends (including
+        // itself).
         while let Some(left) = queue.pop_front() {
-            if weights.contains_key(&left) { continue; }
+            if weights.contains_key(&left) {
+                continue;
+            }
             for (&right, &count) in taxons.iter() {
                 let lca = self.lca_aggregator.lca(left, right)?;
                 if lca == left || lca == right {
                     let mut weight = weights.entry(left).or_insert(Weights::new());
-                    if lca == left  { weight.lca += count; }
-                    if lca == right { weight.rtl += count; }
+                    if lca == left {
+                        weight.lca += count;
+                    }
+                    if lca == right {
+                        weight.rtl += count;
+                    }
                 } else {
                     queue.push_back(lca);
                 }
@@ -81,10 +86,10 @@ impl agg::Aggregator for MixCalculator {
                .map(|tup| *tup.0)
                .ok_or(agg::ErrorKind::EmptyInput.into())
     }
-
 }
 
 #[cfg(test)]
+#[cfg_attr(rustfmt, rustfmt_skip)]
 mod tests {
     use super::MixCalculator;
     use agg::Aggregator;

@@ -29,44 +29,47 @@ impl<R: Read> Reader<R> {
     /// Creates a Reader from the given Read (e.g. a file). Passing a separator will split the
     /// fasta entry on this separator.
     pub fn new(reader: R, separator: Option<Regex>, wrapped: bool) -> Self {
-        Reader {
-            lines: BufReader::new(reader).lines().peekable(),
-            separator: separator,
-            wrapped: wrapped,
-        }
+        Reader { lines: BufReader::new(reader).lines().peekable(),
+                 separator: separator,
+                 wrapped: wrapped, }
     }
 
     /// Reads the next record from the FASTA file.
     pub fn read_record(&mut self) -> Result<Option<Record>> {
         let mut header = match self.lines.next() {
-            None         => return Ok(None),
+            None => return Ok(None),
             Some(header) => header?,
         };
 
         if !header.starts_with('>') {
-            bail!(errors::ErrorKind::Io(
-                io::Error::new(io::ErrorKind::Other,
-                               "Expected > at beginning of fasta header.")));
+            bail!(errors::ErrorKind::Io(io::Error::new(io::ErrorKind::Other,
+                                                       "Expected > at beginning of fasta \
+                                                        header.")));
         }
         let _ = header.remove(0);
 
         let mut sequence = String::new();
-        while self.lines.peek()
-                        .and_then(|line| line.as_ref().ok())
-                        .map(|line| !line.starts_with('>'))
-                        .unwrap_or(false) {
+        while self.lines
+                  .peek()
+                  .and_then(|line| line.as_ref().ok())
+                  .map(|line| !line.starts_with('>'))
+                  .unwrap_or(false)
+        {
             sequence.push_str(&self.lines.next().unwrap()?);
-            if !self.wrapped { sequence.push('\n') }
+            if !self.wrapped {
+                sequence.push('\n')
+            }
         }
 
-        Ok(Some(Record {
-            header: header,
-            sequence: self.separator.as_ref()
-                                    .map(|re| re.split(sequence.trim_right())
-                                                .map(str::to_string)
-                                                .collect())
-                                    .unwrap_or(vec![sequence]),
-        }))
+        Ok(Some(Record { header: header,
+                         sequence: self.separator
+                                       .as_ref()
+                                       .map(|re| {
+                                                re.split(sequence.trim_right())
+                                                  .map(str::to_string)
+                                                  .collect()
+                                            })
+                                       .unwrap_or(vec![sequence]), }))
     }
 
     /// Returns a Records struct with itself as its reader.
@@ -96,9 +99,9 @@ impl<R: Read> Iterator for Records<R> {
 
     fn next(&mut self) -> Option<Result<Record>> {
         match self.reader.read_record() {
-            Ok(None)         => None,
+            Ok(None) => None,
             Ok(Some(record)) => Some(Ok(record)),
-            Err(err)         => Some(Err(err)),
+            Err(err) => Some(Err(err)),
         }
     }
 }
@@ -114,11 +117,9 @@ impl<'a, W: Write> Writer<'a, W> {
     /// Constructs a writer from the specified Write. Items are printed
     /// separated by separator.
     pub fn new(write: W, separator: &'a str, wrap: bool) -> Self {
-        Writer {
-            buffer: io::BufWriter::new(write),
-            separator: separator,
-            wrap: wrap,
-        }
+        Writer { buffer: io::BufWriter::new(write),
+                 separator: separator,
+                 wrap: wrap, }
     }
 
     /// Convenience method, see [write_record_ref](#method.write_record_ref).
@@ -142,4 +143,3 @@ impl<'a, W: Write> Writer<'a, W> {
         Ok(())
     }
 }
-

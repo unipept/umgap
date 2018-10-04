@@ -1,8 +1,8 @@
 //! Argument parsing for the UMGAP
 
+use std::fmt;
 use std::path::PathBuf;
 use std::str::FromStr;
-use std::fmt;
 
 use taxon::Rank;
 
@@ -15,10 +15,10 @@ pub enum Frame {
     Forward3,
     Reverse1,
     Reverse2,
-    Reverse3
+    Reverse3,
 }
 
-static FRAMES: &[&str] = &[ "1", "2", "3", "1R", "2R", "3R" ];
+static FRAMES: &[&str] = &["1", "2", "3", "1R", "2R", "3R"];
 impl Frame {
     fn variants() -> &'static [&'static str] {
         FRAMES
@@ -27,15 +27,16 @@ impl Frame {
 
 impl FromStr for Frame {
     type Err = Error;
+
     fn from_str(s: &str) -> Result<Self> {
         match s {
-            "1"  => Ok(Frame::Forward1),
-            "2"  => Ok(Frame::Forward2),
-            "3"  => Ok(Frame::Forward3),
+            "1" => Ok(Frame::Forward1),
+            "2" => Ok(Frame::Forward2),
+            "3" => Ok(Frame::Forward3),
             "1R" => Ok(Frame::Reverse1),
             "2R" => Ok(Frame::Reverse2),
             "3R" => Ok(Frame::Reverse3),
-            _    => Err(ErrorKind::ParseFrameError(s.to_string()).into())
+            _ => Err(ErrorKind::ParseFrameError(s.to_string()).into()),
         }
     }
 }
@@ -61,7 +62,7 @@ pub enum Method {
     RangeMinimumQuery,
 }
 
-static METHODS: &[&str] = &[ "tree", "rmq" ];
+static METHODS: &[&str] = &["tree", "rmq"];
 impl Method {
     fn variants() -> &'static [&'static str] {
         METHODS
@@ -70,11 +71,12 @@ impl Method {
 
 impl FromStr for Method {
     type Err = Error;
+
     fn from_str(s: &str) -> Result<Self> {
         match s {
             "tree" => Ok(Method::Tree),
-            "rmq"  => Ok(Method::RangeMinimumQuery),
-            _      => Err(ErrorKind::ParseMethodError(s.to_string()).into())
+            "rmq" => Ok(Method::RangeMinimumQuery),
+            _ => Err(ErrorKind::ParseMethodError(s.to_string()).into()),
         }
     }
 }
@@ -88,7 +90,7 @@ pub enum Strategy {
     MaximumRootToLeafPath,
 }
 
-static STRATEGIES: &[&str] = &[ "lca*", "hybrid", "mrtl" ];
+static STRATEGIES: &[&str] = &["lca*", "hybrid", "mrtl"];
 impl Strategy {
     fn variants() -> &'static [&'static str] {
         STRATEGIES
@@ -97,12 +99,13 @@ impl Strategy {
 
 impl FromStr for Strategy {
     type Err = Error;
+
     fn from_str(s: &str) -> Result<Self> {
         match s {
-            "lca*"   => Ok(Strategy::LowestCommonAncestor),
+            "lca*" => Ok(Strategy::LowestCommonAncestor),
             "hybrid" => Ok(Strategy::Hybrid),
-            "mrtl"   => Ok(Strategy::MaximumRootToLeafPath),
-            _        => Err(ErrorKind::ParseStrategyError(s.to_string()).into())
+            "mrtl" => Ok(Strategy::MaximumRootToLeafPath),
+            _ => Err(ErrorKind::ParseStrategyError(s.to_string()).into()),
         }
     }
 }
@@ -112,55 +115,71 @@ impl FromStr for Strategy {
 #[allow(missing_docs)]
 pub enum Opt {
     /// Translates DNA into Amino Acid Sequences.
-    #[structopt(name = "translate")] Translate(Translate),
+    #[structopt(name = "translate")]
+    Translate(Translate),
 
     /// Looks up each line of input in a given FST index and outputs
     /// the result. Lines starting with a '>' are copied. Lines for
     /// which no mapping is found are ignored.
-    #[structopt(name = "pept2lca")] PeptToLca(PeptToLca),
-    
+    #[structopt(name = "pept2lca")]
+    PeptToLca(PeptToLca),
+
     /// Reads all the records in a specified FASTA file and queries the
     /// k-mers in an FST for the LCA's.
-    #[structopt(name = "prot2kmer2lca")] ProtToKmerToLca(ProtToKmerToLca),
-    
+    #[structopt(name = "prot2kmer2lca")]
+    ProtToKmerToLca(ProtToKmerToLca),
+
     /// Aggregates taxa to a single taxon.
-    #[structopt(name = "taxa2agg")] TaxaToAgg(TaxaToAgg),
-    
+    #[structopt(name = "taxa2agg")]
+    TaxaToAgg(TaxaToAgg),
+
     /// Splits each protein sequence in a FASTA format into a list of (tryptic) peptides.
-    #[structopt(name = "prot2pept")] ProtToPept(ProtToPept),
+    #[structopt(name = "prot2pept")]
+    ProtToPept(ProtToPept),
 
     /// Pick the frame with the most none-root hits.
-    #[structopt(name = "bestof")] BestOf(BestOf),
+    #[structopt(name = "bestof")]
+    BestOf(BestOf),
 
     /// Count and report on a list of taxon ids.
-    #[structopt(name = "report")] Report(Report),
+    #[structopt(name = "report")]
+    Report(Report),
 
     /// Seed and extend.
-    #[structopt(name = "seedextend")] SeedExtend(SeedExtend),
+    #[structopt(name = "seedextend")]
+    SeedExtend(SeedExtend),
 
     /// Aggregates taxa to a JSON tree for usage in the unipept visualisations.
-    #[structopt(name = "jsontree")] JsonTree(JsonTree),
+    #[structopt(name = "jsontree")]
+    JsonTree(JsonTree),
 
     /// Snap taxa to a specified rank.
-    #[structopt(name = "snaprank")] SnapRank(SnapRank),
+    #[structopt(name = "snaprank")]
+    SnapRank(SnapRank),
 
     /// Interleaves a number of FASTQ files into a single FASTA output.
-    #[structopt(name = "fastq2fasta")] FastqToFasta(FastqToFasta),
+    #[structopt(name = "fastq2fasta")]
+    FastqToFasta(FastqToFasta),
 
     /// Filter peptides in a FASTA format based on specific criteria.
-    #[structopt(name = "filter")] Filter(Filter),
+    #[structopt(name = "filter")]
+    Filter(Filter),
 
     /// Concatenates the data strings of all consecutive FASTA entries with the same header.
-    #[structopt(name = "uniq")] Uniq(Uniq),
+    #[structopt(name = "uniq")]
+    Uniq(Uniq),
 
     /// Splits each protein sequence in a FASTA format into a list of kmers.
-    #[structopt(name = "prot2kmer")] ProtToKmer(ProtToKmer),
+    #[structopt(name = "prot2kmer")]
+    ProtToKmer(ProtToKmer),
 
     /// Print the values in an FST index to stdout.
-    #[structopt(name = "printindex")] PrintIndex(PrintIndex),
+    #[structopt(name = "printindex")]
+    PrintIndex(PrintIndex),
 
     /// Write an FST index of stdin on stdout.
-    #[structopt(name = "buildindex")] BuildIndex,
+    #[structopt(name = "buildindex")]
+    BuildIndex,
 }
 
 /// Translates DNA into Amino Acid Sequences.
@@ -175,7 +194,9 @@ pub struct Translate {
     pub all_frames: bool,
 
     /// Adds a reading frame (1, 2, 3, 1R, 2R or 3R)
-    #[structopt(short = "f", long = "frame", raw(possible_values = "&Frame::variants()"))]
+    #[structopt(short = "f",
+                long = "frame",
+                raw(possible_values = "&Frame::variants()"))]
     pub frames: Vec<Frame>,
 
     /// Append a bar (|) and the name of the frame to the fasta header
@@ -234,11 +255,17 @@ pub struct TaxaToAgg {
     pub ranked_only: bool,
 
     /// The method to use for aggregation
-    #[structopt(short = "m", long = "method", default_value = "tree", raw(possible_values = "&Method::variants()"))]
+    #[structopt(short = "m",
+                long = "method",
+                default_value = "tree",
+                raw(possible_values = "&Method::variants()"))]
     pub method: Method,
 
     /// The method to use for aggregation
-    #[structopt(short = "a", long = "aggregate", default_value = "hybrid", raw(possible_values = "&Strategy::variants()"))]
+    #[structopt(short = "a",
+                long = "aggregate",
+                default_value = "hybrid",
+                raw(possible_values = "&Strategy::variants()"))]
     pub strategy: Strategy,
 
     /// The factor for the hybrid aggregation, from 0.0 (MRTL) to
@@ -261,7 +288,9 @@ pub struct TaxaToAgg {
 pub struct ProtToPept {
     /// The cleavage-pattern (regex), i.e. the pattern after which
     /// the next peptide will be cleaved for tryptic peptides)
-    #[structopt(short = "p", long = "pattern", default_value = "([KR])([^P])")]
+    #[structopt(short = "p",
+                long = "pattern",
+                default_value = "([KR])([^P])")]
     pub pattern: String,
 }
 
@@ -352,7 +381,7 @@ pub struct SeedExtend {
     #[structopt(short = "s", long = "min-seed-size", default_value = "2")]
     pub min_seed_size: usize,
 
-    /// The maximum length of a gap between seeds in an extension 
+    /// The maximum length of a gap between seeds in an extension
     #[structopt(short = "g", long = "max-gap-size", default_value = "0")]
     pub max_gap_size: usize,
 

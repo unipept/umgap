@@ -1,0 +1,14 @@
+indent_style = "Visual"
+where_single_line = true
+format_strings = true
+# hard_tabs = true
+imports_indent = "Visual"
+match_block_trailing_comma = true
+comment_width = 100
+reorder_impl_items = true
+report_todo = "Always"
+report_fixme = "Always"
+# struct_field_align_threshold = 30 see https://github.com/rust-lang-nursery/rustfmt/issues/2633
+use_try_shorthand = true
+wrap_comments = true
+blank_lines_upper_bound = 2

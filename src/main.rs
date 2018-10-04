@@ -1,3 +1,4 @@
+#![cfg_attr(rustfmt, rustfmt_skip)]
 
 use std::io;
 use std::io::Write;
@@ -582,4 +583,3 @@ fn buildindex() -> Result<()> {
 
     Ok(())
 }
-

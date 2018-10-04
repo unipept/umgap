@@ -1,10 +1,10 @@
 //! Allows operations over the [FASTQ format](https://en.wikipedia.org/wiki/FASTQ_format).
 
-use std::io;
-use std::io::Read;
-use std::io::BufRead;
-use std::iter::Peekable;
 use std::fmt;
+use std::io;
+use std::io::BufRead;
+use std::io::Read;
+use std::iter::Peekable;
 
 use errors;
 use errors::Result;
@@ -17,46 +17,45 @@ pub struct Reader<R: Read> {
 impl<R: Read> Reader<R> {
     /// Creates a Reader from the given Read (e.g. a file)
     pub fn new(readable: R) -> Self {
-        Reader {
-            lines: io::BufReader::new(readable).lines().peekable(),
-        }
+        Reader { lines: io::BufReader::new(readable).lines().peekable(), }
     }
 
     /// Reads the next record from the FASTQ file.
     pub fn read_record(&mut self) -> Result<Option<Record>> {
         // reading the header
         let mut header = match self.lines.next() {
-            None         => return Ok(None),
-            Some(header) => header?
+            None => return Ok(None),
+            Some(header) => header?,
         };
         if !header.starts_with('@') {
-            bail!(errors::ErrorKind::Io(io::Error::new(
-                io::ErrorKind::Other,
-                "Expected @ at beginning of fastq header."
-            )));
+            bail!(errors::ErrorKind::Io(io::Error::new(io::ErrorKind::Other,
+                                                       "Expected @ at beginning of fastq \
+                                                        header.")));
         }
         let _ = header.remove(0);
 
         // reading the sequence
         let mut lines = 0;
         let mut sequence = String::new();
-        while self.lines.peek()
+        while self.lines
+                  .peek()
                   .and_then(|line| line.as_ref().ok())
                   .map(|line| !line.starts_with('+'))
-                  .unwrap_or(false) {
+                  .unwrap_or(false)
+        {
             sequence.push_str(&self.lines.next().unwrap()?);
             lines += 1;
         }
 
         // skipping the separator
-        if self.lines.next()
+        if self.lines
+               .next()
                .and_then(|line| line.ok())
                .map(|line| !line.starts_with('+'))
-               .unwrap_or(false) {
-            bail!(errors::ErrorKind::Io(io::Error::new(
-                io::ErrorKind::Other,
-                "Expected a + as separator."
-            )));
+               .unwrap_or(false)
+        {
+            bail!(errors::ErrorKind::Io(io::Error::new(io::ErrorKind::Other,
+                                                       "Expected a + as separator.")));
         }
 
         // reading the quality
@@ -65,18 +64,15 @@ impl<R: Read> Reader<R> {
             if let Some(line) = self.lines.next() {
                 quality.push_str(&line?)
             } else {
-                bail!(errors::ErrorKind::Io(io::Error::new(
-                    io::ErrorKind::Other,
-                    "Expected as many quality lines as sequence lines."
-                )));
+                bail!(errors::ErrorKind::Io(io::Error::new(io::ErrorKind::Other,
+                                                           "Expected as many quality lines as \
+                                                            sequence lines.")));
             }
         }
 
-        Ok(Some(Record {
-            header: header,
-            sequence: sequence,
-            quality: quality,
-        }))
+        Ok(Some(Record { header: header,
+                         sequence: sequence,
+                         quality: quality, }))
     }
 
     /// Returns a Records struct with itself as its reader.
@@ -102,7 +98,9 @@ pub struct Record {
 
 impl fmt::Display for Record {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Record ({},{},{})", self.header, self.sequence, self.quality)
+        write!(f,
+               "Record ({},{},{})",
+               self.header, self.sequence, self.quality)
     }
 }
 
@@ -116,10 +114,9 @@ impl<R: Read> Iterator for Records<R> {
 
     fn next(&mut self) -> Option<Result<Record>> {
         match self.reader.read_record() {
-            Ok(None)         => None,
+            Ok(None) => None,
             Ok(Some(record)) => Some(Ok(record)),
-            Err(err)         => Some(Err(err)),
+            Err(err) => Some(Err(err)),
         }
     }
 }
-

@@ -19,7 +19,7 @@ pub trait Aggregator {
 
 /// Returns how many times each taxon occurs in a vector of taxons.
 pub fn count<T>(taxons: T) -> HashMap<TaxonId, f32>
-        where T: Iterator<Item=(TaxonId, f32)> {
+    where T: Iterator<Item = (TaxonId, f32)> {
     let mut counts = HashMap::new();
     for (taxon, count) in taxons {
         *counts.entry(taxon).or_insert(0.0) += count;
@@ -50,30 +50,30 @@ error_chain! {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use taxon::TaxonList;
     use fixtures;
     use rmq;
+    use taxon::TaxonList;
     use tree;
 
-    fn aggregators(by_id: &TaxonList) -> Vec<Box<Aggregator>> { vec![
-        Box::new(rmq::lca::LCACalculator::new(fixtures::tree())),
-        Box::new(rmq::rtl::RTLCalculator::new(fixtures::ROOT, by_id)),
-        Box::new(rmq::mix::MixCalculator::new(fixtures::tree(), 0.0)),
-        Box::new(rmq::mix::MixCalculator::new(fixtures::tree(), 1.0)),
-        Box::new(rmq::mix::MixCalculator::new(fixtures::tree(), 0.5)),
-        Box::new(tree::lca::LCACalculator::new(fixtures::ROOT, by_id)),
-        Box::new(tree::mix::MixCalculator::new(fixtures::ROOT, by_id, 0.0)),
-        Box::new(tree::mix::MixCalculator::new(fixtures::ROOT, by_id, 1.0)),
-        Box::new(tree::mix::MixCalculator::new(fixtures::ROOT, by_id, 0.5)),
-    ] }
+    fn aggregators(by_id: &TaxonList) -> Vec<Box<Aggregator>> {
+        vec![Box::new(rmq::lca::LCACalculator::new(fixtures::tree())),
+             Box::new(rmq::rtl::RTLCalculator::new(fixtures::ROOT, by_id)),
+             Box::new(rmq::mix::MixCalculator::new(fixtures::tree(), 0.0)),
+             Box::new(rmq::mix::MixCalculator::new(fixtures::tree(), 1.0)),
+             Box::new(rmq::mix::MixCalculator::new(fixtures::tree(), 0.5)),
+             Box::new(tree::lca::LCACalculator::new(fixtures::ROOT, by_id)),
+             Box::new(tree::mix::MixCalculator::new(fixtures::ROOT, by_id, 0.0)),
+             Box::new(tree::mix::MixCalculator::new(fixtures::ROOT, by_id, 1.0)),
+             Box::new(tree::mix::MixCalculator::new(fixtures::ROOT, by_id, 0.5)),]
+    }
 
     #[test]
     fn test_empty_query() {
         for aggregator in aggregators(&fixtures::by_id()) {
-            assert_matches!(
-                *aggregator.counting_aggregate(&Vec::new()).unwrap_err().kind(),
-                ErrorKind::EmptyInput
-            );
+            assert_matches!(*aggregator.counting_aggregate(&Vec::new())
+                                       .unwrap_err()
+                                       .kind(),
+                            ErrorKind::EmptyInput);
         }
     }
 
@@ -89,14 +89,12 @@ mod tests {
     #[test]
     fn test_invalid_taxa() {
         for aggregator in aggregators(&fixtures::by_id()) {
-            assert_matches!(
-                *aggregator.counting_aggregate(&vec![5]).unwrap_err().kind(),
-                ErrorKind::Taxon(taxon::ErrorKind::UnknownTaxon(5))
-            );
-            assert_matches!(
-                *aggregator.counting_aggregate(&vec![1, 2, 5, 1]).unwrap_err().kind(),
-                ErrorKind::Taxon(taxon::ErrorKind::UnknownTaxon(5))
-            );
+            assert_matches!(*aggregator.counting_aggregate(&vec![5]).unwrap_err().kind(),
+                            ErrorKind::Taxon(taxon::ErrorKind::UnknownTaxon(5)));
+            assert_matches!(*aggregator.counting_aggregate(&vec![1, 2, 5, 1])
+                                       .unwrap_err()
+                                       .kind(),
+                            ErrorKind::Taxon(taxon::ErrorKind::UnknownTaxon(5)));
         }
     }
 }

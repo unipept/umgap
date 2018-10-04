@@ -6,9 +6,9 @@ use std::collections::HashMap;
 extern crate ordered_float;
 use self::ordered_float::NotNan;
 
+use agg;
 use taxon;
 use taxon::{TaxonId, TaxonList};
-use agg;
 
 /// Struct capable of calculating the MRL of a list of nodes in a TaxonTree
 pub struct RTLCalculator {
@@ -28,10 +28,8 @@ impl RTLCalculator {
     pub fn new(root: TaxonId, taxons: &TaxonList) -> Self {
         let mut ancestors = taxons.ancestry();
         ancestors[root] = None;
-        RTLCalculator {
-            root: root,
-            ancestors: ancestors,
-        }
+        RTLCalculator { root: root,
+                        ancestors: ancestors, }
     }
 }
 
@@ -58,6 +56,7 @@ impl agg::Aggregator for RTLCalculator {
 }
 
 #[cfg(test)]
+#[cfg_attr(rustfmt, rustfmt_skip)]
 mod tests {
     use super::RTLCalculator;
     use agg::Aggregator;
