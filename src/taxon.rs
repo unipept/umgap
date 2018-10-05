@@ -10,7 +10,7 @@ use std::ops::Index;
 use std::path::Path;
 use std::str::FromStr;
 
-use rank::{Rank, RANK_SIZE};
+use rank::*;
 
 /// A unique identifier for a [Taxon](struct.Taxon.html).
 pub type TaxonId = usize;
@@ -49,7 +49,7 @@ impl Taxon {
 
 /// The full lineage of a taxon
 #[derive(Debug)]
-pub struct Lineage([Option<Taxon>; RANK_SIZE]);
+pub struct Lineage([Option<Taxon>; RANK_COUNT]);
 
 impl Index<Rank> for Lineage {
 	type Output = Option<Taxon>;
@@ -62,7 +62,7 @@ impl Index<Rank> for Lineage {
 //impl IntoIterator for Lineage {
 //	type Item=(Option<Taxon>,Rank);
 //	type IntoIter = LineageIntoIterator;
-//	
+//
 //	fn into_iter(self) -> Self::IntoIter {
 //		LineageIntoIterator { lineage: self, rank: Rank::Superkingdom }
 //	}
@@ -76,10 +76,10 @@ impl Index<Rank> for Lineage {
 //
 //impl Iterator for LineageIntoIterator {
 //	type Item = (Option<Taxon>,Rank);
-//	
+//
 //	fn next(&mut self) -> Option<Self::Item> {
 //		if rank.index() <= RANK_COUNT {
-//			self.rank = 
+//			self.rank =
 //		} else {
 //			None
 //		}
@@ -206,7 +206,7 @@ impl TaxonList {
 
 	/// Create the full lineage for the given taxon
 	pub fn lineage(&self, index: TaxonId) -> Option<Lineage> {
-		let mut lineage_arr: [Option<Taxon>; RANK_SIZE] = Default::default();
+		let mut lineage_arr: [Option<Taxon>; RANK_COUNT] = Default::default();
 		let mut taxon = self.get(index)?;
 		loop {
 			lineage_arr[taxon.rank.index()] = Some(taxon.clone());
@@ -392,10 +392,8 @@ impl IntoIterator for TaxonTree {
 }
 
 error_chain! {
-	links {
-		Rank(::rank::Error, ::rank::ErrorKind) #[doc = "Error propagated from Rank"];
-	}
 	foreign_links {
+		UnknownRank(strum::ParseError) #[doc = "Encountered an unknown rank"];
 		InvalidID(std::num::ParseIntError) #[doc = "Indicates failure to parse a Taxon ID"];
 	}
 	errors {
@@ -411,6 +409,7 @@ error_chain! {
 #[cfg_attr(rustfmt, rustfmt_skip)]
 mod tests {
     use super::*;
+	use rank::Rank;
     use fixtures;
 
     #[test]

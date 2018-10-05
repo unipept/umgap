@@ -91,6 +91,7 @@ mod tests {
     use super::LCACalculator;
     use agg::Aggregator;
     use taxon::*;
+	use rank::Rank;
     use fixtures;
 
     #[test]

@@ -23,15 +23,18 @@ extern crate clap;
 
 extern crate regex;
 
-extern crate plain_enum;
+extern crate strum;
+
+#[macro_use]
+extern crate strum_macros;
 
 pub mod agg;
 pub mod args;
 pub mod dna;
 pub mod errors;
 pub mod io;
-pub mod rmq;
 pub mod rank;
+pub mod rmq;
 pub mod taxon;
 pub mod tree;
 pub mod utils;
