@@ -8,9 +8,13 @@ use std::fmt;
 use std::fs::File;
 use std::io;
 use std::io::BufRead;
+use std::ops::Index;
 use std::path::Path;
 
 use std::str::FromStr;
+
+/// How many ranks do we have?
+const RANK_COUNT: usize = 29;
 
 /// Represents the rank of a [Taxon](struct.Taxon.html)
 #[allow(missing_docs)]
@@ -167,6 +171,19 @@ impl Taxon {
 	}
 }
 
+/// The full lineage of a taxon
+#[derive(Debug)]
+pub struct Lineage([Option<Taxon>; RANK_COUNT]);
+
+impl Index<Rank> for Lineage {
+	type Output = Option<Taxon>;
+
+	fn index(&self, rank: Rank) -> &Option<Taxon> {
+		&self.0[rank.index()]
+	}
+}
+
+
 impl FromStr for Taxon {
 	type Err = Error;
 
@@ -282,6 +299,24 @@ impl TaxonList {
 			}
 		}
 		return None;
+	}
+
+	/// Create the full lineage for the given taxon
+	pub fn lineage(&self, index: TaxonId) -> Option<Lineage> {
+		let mut lineage_arr: [Option<Taxon>; RANK_COUNT] = Default::default();
+		let mut taxon = self.get(index)?;
+		loop {
+			lineage_arr[taxon.rank.index()] = Some(taxon.clone());
+			match self.get(taxon.parent) {
+				Some(parent) => {
+					taxon = parent;
+				},
+				None => {
+					break;
+				},
+			}
+		}
+		Some(Lineage(lineage_arr))
 	}
 }
 
