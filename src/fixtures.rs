@@ -1,3 +1,4 @@
+use rank::Rank;
 use taxon::*;
 
 pub const ROOT: TaxonId = 1;
