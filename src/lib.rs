@@ -23,12 +23,15 @@ extern crate clap;
 
 extern crate regex;
 
+extern crate plain_enum;
+
 pub mod agg;
 pub mod args;
 pub mod dna;
 pub mod errors;
 pub mod io;
 pub mod rmq;
+pub mod rank;
 pub mod taxon;
 pub mod tree;
 pub mod utils;
