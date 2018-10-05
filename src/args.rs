@@ -4,7 +4,7 @@ use std::fmt;
 use std::path::PathBuf;
 use std::str::FromStr;
 
-use taxon::Rank;
+use rank::Rank;
 
 /// A reading frame
 #[allow(missing_docs)]

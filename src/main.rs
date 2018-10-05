@@ -32,6 +32,7 @@ use either::Either;
 extern crate structopt;
 use structopt::StructOpt;
 
+
 extern crate umgap;
 use umgap::dna::Strand;
 use umgap::dna::translation::TranslationTable;
@@ -45,6 +46,7 @@ use umgap::rmq;
 use umgap::tree;
 use umgap::utils;
 use umgap::args;
+use umgap::rank;
 
 quick_main!(|| -> Result<()> {
 	match args::Opt::from_args() {
@@ -351,12 +353,19 @@ fn taxonomy(args: args::Taxonomy) -> Result<()> {
 				writeln!(handle, "{}", line)?;
 		  } else {
 				let id = line.parse::<taxon::TaxonId>()?;
-				let taxon = by_id.get(id).unwrap_or(root); // Map to root if id not found
+				// Map to root if id not found
+				let taxon = by_id.get(id).unwrap_or(root);
+				write!(handle, "{},{},{}", taxon.id, taxon.name, taxon.rank);
 				if args.all_ranks {
-					 writeln!(handle, ""); // TODO
-				} else {
-					 writeln!(handle, "{},{},{}", taxon.id, taxon.name, taxon.rank);
+//					for opt_taxon in by_id.lineage(id).unwrap() {
+//						if let Some(l_taxon) = opt_taxon {
+//							write!(handle, ",{},{}", l_taxon.id, l_taxon.name);
+//						} else {
+//							write!(handle, ",,");
+//						}
+//					}
 				}
+				write!(handle, "\n");
 		  }
 	 }
 	 Ok(())
@@ -364,7 +373,7 @@ fn taxonomy(args: args::Taxonomy) -> Result<()> {
 
 fn snaprank(args: args::SnapRank) -> Result<()> {
 	let taxons = taxon::read_taxa_file(&args.taxon_file)?;
-	if args.rank == taxon::Rank::NoRank {
+	if args.rank == rank::Rank::NoRank {
 		return Err(ErrorKind::InvalidInvocation("Snap to an actual rank.".into()).into());
 	}
 
@@ -518,7 +527,7 @@ fn seedextend(args: args::SeedExtend) -> Result<()> {
 
 fn report(args: args::Report) -> Result<()> {
 	let taxons = taxon::read_taxa_file(&args.taxon_file)?;
-	if args.rank == taxon::Rank::NoRank {
+	if args.rank == rank::Rank::NoRank {
 		return Err(ErrorKind::InvalidInvocation("Snap to an actual rank.".into()).into());
 	}
 
