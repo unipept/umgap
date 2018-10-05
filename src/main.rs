@@ -22,7 +22,7 @@ extern crate csv;
 #[macro_use(quick_main)]
 extern crate error_chain;
 
-#[macro_use(json, json_internal)]
+#[macro_use(json)]
 extern crate serde_json;
 use serde_json::value;
 
@@ -57,6 +57,7 @@ quick_main!(|| -> Result<()> {
 		args::Opt::Filter(args)          => filter(args),
 		args::Opt::Uniq(args)            => uniq(args),
 		args::Opt::FastqToFasta(args)    => fastq2fasta(args),
+		args::Opt::Taxonomy(args)        => taxonomy(args),
 		args::Opt::SnapRank(args)        => snaprank(args),
 		args::Opt::JsonTree(args)        => jsontree(args),
 		args::Opt::SeedExtend(args)      => seedextend(args),
@@ -332,6 +333,33 @@ fn fastq2fasta(args: args::FastqToFasta) -> Result<()> {
 		}
 	}
 	Ok(())
+}
+
+fn taxonomy(args: args::Taxonomy) -> Result<()> {
+	 let taxons = taxon::read_taxa_file(&args.taxon_file)?;
+
+	 let tree	= taxon::TaxonTree::new(&taxons);
+	 let by_id	= taxon::TaxonList::new(taxons);
+	 let root	= by_id.get(tree.root).unwrap();
+
+	 let stdin = io::stdin();
+	 let stdout = io::stdout();
+	 let mut handle = stdout.lock();
+	 for line in stdin.lock().lines() {
+		  let line = line?;
+		  if line.starts_with('>') {
+				writeln!(handle, "{}", line)?;
+		  } else {
+				let id = line.parse::<taxon::TaxonId>()?;
+				let taxon = by_id.get(id).unwrap_or(root); // Map to root if id not found
+				if args.all_ranks {
+					 writeln!(handle, ""); // TODO
+				} else {
+					 writeln!(handle, "{},{},{}", taxon.id, taxon.name, taxon.rank);
+				}
+		  }
+	 }
+	 Ok(())
 }
 
 fn snaprank(args: args::SnapRank) -> Result<()> {

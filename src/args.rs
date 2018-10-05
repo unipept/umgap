@@ -153,6 +153,10 @@ pub enum Opt {
 	#[structopt(name = "jsontree")]
 	JsonTree(JsonTree),
 
+	/// Show taxonomy info
+	#[structopt(name = "taxonomy")]
+	Taxonomy(Taxonomy),
+
 	/// Snap taxa to a specified rank.
 	#[structopt(name = "snaprank")]
 	SnapRank(SnapRank),
@@ -361,6 +365,24 @@ pub struct SnapRank {
 	#[structopt(parse(from_os_str))]
 	pub taxon_file: PathBuf,
 }
+
+/// Show the id, name, and rank of the given taxon ids in a CSV format
+#[derive(Debug, StructOpt)]
+pub struct Taxonomy {
+	/// The NCBI taxonomy tsv-file
+	#[structopt(parse(from_os_str))]
+	pub taxon_file: PathBuf,
+
+	/// Show the full lineage of a taxon. Ranks below the given taxon
+	/// whill be empty.
+	#[structopt(short = "a", long = "all")]
+	pub all_ranks: bool,
+
+	/// Do not output the CSV header
+	#[structopt(short = "H", long = "no-header")]
+	pub no_header: bool,
+}
+
 
 /// Aggregates taxa to a JSON tree for usage in the unipept visualisations.
 #[derive(Debug, StructOpt)]
