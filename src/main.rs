@@ -32,6 +32,8 @@ use either::Either;
 extern crate structopt;
 use structopt::StructOpt;
 
+extern crate strum;
+use strum::IntoEnumIterator;
 
 extern crate umgap;
 use umgap::dna::Strand;
@@ -47,6 +49,7 @@ use umgap::tree;
 use umgap::utils;
 use umgap::args;
 use umgap::rank;
+
 
 quick_main!(|| -> Result<()> {
 	match args::Opt::from_args() {
@@ -347,6 +350,20 @@ fn taxonomy(args: args::Taxonomy) -> Result<()> {
 	 let stdin = io::stdin();
 	 let stdout = io::stdout();
 	 let mut handle = stdout.lock();
+
+	 if !args.no_header {
+		 write!(handle, "taxon_id,taxon_name,taxon_rank");
+		 if args.all_ranks {
+			 for rank in rank::Rank::iter() {
+				 if rank != rank::Rank::NoRank {
+					let rank_name = rank.to_string().replace(" ", "_");
+					write!(handle, ",{}_id,{}_name", rank_name, rank_name);
+				 }
+			 }
+		 }
+		 write!(handle, "\n");
+	 }
+
 	 for line in stdin.lock().lines() {
 		  let line = line?;
 		  if line.starts_with('>') {
@@ -357,13 +374,16 @@ fn taxonomy(args: args::Taxonomy) -> Result<()> {
 				let taxon = by_id.get(id).unwrap_or(root);
 				write!(handle, "{},{},{}", taxon.id, taxon.name, taxon.rank);
 				if args.all_ranks {
-//					for opt_taxon in by_id.lineage(id).unwrap() {
-//						if let Some(l_taxon) = opt_taxon {
-//							write!(handle, ",{},{}", l_taxon.id, l_taxon.name);
-//						} else {
-//							write!(handle, ",,");
-//						}
-//					}
+					let lineage = by_id.lineage(id);
+					for rank in rank::Rank::iter() {
+						if rank == rank::Rank::NoRank {
+							continue;
+						} else if let Some(l_taxon) = &lineage[rank] {
+							write!(handle, ",{},{}", l_taxon.id, l_taxon.name);
+						} else {
+							write!(handle, ",,");
+						}
+					}
 				}
 				write!(handle, "\n");
 		  }

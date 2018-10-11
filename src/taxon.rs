@@ -11,6 +11,7 @@ use std::path::Path;
 use std::str::FromStr;
 
 use rank::*;
+use strum::IntoEnumIterator;
 
 /// A unique identifier for a [Taxon](struct.Taxon.html).
 pub type TaxonId = usize;
@@ -46,7 +47,6 @@ impl Taxon {
 	}
 }
 
-
 /// The full lineage of a taxon
 #[derive(Debug)]
 pub struct Lineage([Option<Taxon>; RANK_COUNT]);
@@ -58,34 +58,6 @@ impl Index<Rank> for Lineage {
 		&self.0[rank.index()]
 	}
 }
-
-//impl IntoIterator for Lineage {
-//	type Item=(Option<Taxon>,Rank);
-//	type IntoIter = LineageIntoIterator;
-//
-//	fn into_iter(self) -> Self::IntoIter {
-//		LineageIntoIterator { lineage: self, rank: Rank::Superkingdom }
-//	}
-//}
-//
-//
-//struct LineageIntoIterator {
-//	lineage: Lineage,
-//	rank: Rank,
-//}
-//
-//impl Iterator for LineageIntoIterator {
-//	type Item = (Option<Taxon>,Rank);
-//
-//	fn next(&mut self) -> Option<Self::Item> {
-//		if rank.index() <= RANK_COUNT {
-//			self.rank =
-//		} else {
-//			None
-//		}
-//	}
-//}
-
 
 impl FromStr for Taxon {
 	type Err = Error;
@@ -205,21 +177,24 @@ impl TaxonList {
 	}
 
 	/// Create the full lineage for the given taxon
-	pub fn lineage(&self, index: TaxonId) -> Option<Lineage> {
+	pub fn lineage(&self, index: TaxonId) -> Lineage {
 		let mut lineage_arr: [Option<Taxon>; RANK_COUNT] = Default::default();
-		let mut taxon = self.get(index)?;
-		loop {
-			lineage_arr[taxon.rank.index()] = Some(taxon.clone());
-			match self.get(taxon.parent) {
-				Some(parent) => {
-					taxon = parent;
-				},
-				None => {
-					break;
-				},
+		let mut next_taxon = self.get(index);
+		let mut prev_taxon = None;
+		// Because prev_taxon starts as None,
+		// the while will not be executed if the given taxon id was not found.
+		// Otherwise the while will stop if a taxon has itself as parent.
+		while next_taxon != prev_taxon {
+			let taxon = next_taxon.expect("taxon id not found while building lineage");
+
+			if taxon.rank != Rank::NoRank {
+				lineage_arr[taxon.rank.index()] = Some(taxon.clone());
 			}
+
+			prev_taxon = next_taxon;
+			next_taxon = self.get(taxon.parent);
 		}
-		Some(Lineage(lineage_arr))
+		return Lineage(lineage_arr)
 	}
 }
 
@@ -460,4 +435,11 @@ mod tests {
         assert_eq!(Some(12884), ancestry[185752]);
         assert_eq!(None,        ancestry[3]);
     }
+
+	#[test]
+	fn test_lineage() {
+		let list  = fixtures::taxon_list();
+		let by_id = fixtures::by_id();
+		let lineage = by_id.lineage(185751);
+	}
 }
