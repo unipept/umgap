@@ -441,5 +441,14 @@ mod tests {
 		let list  = fixtures::taxon_list();
 		let by_id = fixtures::by_id();
 		let lineage = by_id.lineage(185751);
+		for rank in Rank::iter() {
+			if rank == Rank::Superkingdom {
+				assert_eq!(lineage[rank].as_ref(), Some(&list[3]));
+			} else if rank == Rank::Family {
+				assert_eq!(lineage[rank].as_ref(), Some(&list[4]));
+			} else {
+				assert_eq!(lineage[rank], None);
+			}
+		}
 	}
 }
