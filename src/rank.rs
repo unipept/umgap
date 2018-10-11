@@ -4,7 +4,7 @@
 use std::cmp::Ordering;
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
-#[derive(PartialEq, Eq, Debug, Clone, Copy, Display, EnumString)]
+#[derive(PartialEq, Eq, Debug, Clone, Copy, Display, EnumString, EnumIter)]
 pub enum Rank {
 	#[strum(serialize="no rank")]          NoRank,
 	#[strum(serialize="superkingdom")]     Superkingdom,
@@ -68,5 +68,3 @@ impl PartialOrd for Rank {
 		}
 	}
 }
-
-mod test {}
