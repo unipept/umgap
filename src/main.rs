@@ -33,6 +33,8 @@ extern crate structopt;
 use structopt::StructOpt;
 
 extern crate strum;
+extern crate itertools;
+use itertools::Itertools;
 
 extern crate umgap;
 use umgap::dna::Strand;
@@ -121,12 +123,20 @@ fn pept2lca(args: args::PeptToLca) -> Result<()> {
 	let stdin = io::stdin();
 	let stdout = io::stdout();
 	let mut stdout = stdout.lock();
-	for line in stdin.lock().lines() {
-		let line = line?;
-		if line.starts_with('>') {
-			writeln!(stdout, "{}", line)?;
-		} else if let Some(lca) = fst.get(&line).map(Some).unwrap_or(default) {
-			writeln!(stdout, "{}", lca)?;
+
+	// Parsing the delimiter regex
+	let delimiter = Some(regex::Regex::new("\n").unwrap());
+
+
+	for chunk in &fasta::Reader::new(io::stdin(), delimiter, false).records().chunks(12) {
+		for read in chunk {
+			let read = read?;
+			writeln!(stdout, ">{}", read.header)?;
+			for seq in read.sequence {
+				if let Some(lca) = fst.get(&seq).map(Some).unwrap_or(default) {
+					writeln!(stdout, "{}", lca)?;
+				}
+			}
 		}
 	}
 	Ok(())
