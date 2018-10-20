@@ -35,6 +35,8 @@ use structopt::StructOpt;
 extern crate strum;
 extern crate itertools;
 use itertools::Itertools;
+extern crate rayon;
+use rayon::prelude::*;
 
 extern crate umgap;
 use umgap::dna::Strand;
@@ -120,25 +122,27 @@ fn translate(args: args::Translate) -> Result<()> {
 fn pept2lca(args: args::PeptToLca) -> Result<()> {
 	let fst = unsafe { fst::Map::from_path(args.fst_file) }?;
 	let default = if args.one_on_one { Some(0) } else { None };
-	let stdin = io::stdin();
-	let stdout = io::stdout();
-	let mut stdout = stdout.lock();
 
 	// Parsing the delimiter regex
 	let delimiter = Some(regex::Regex::new("\n").unwrap());
 
-
-	for chunk in &fasta::Reader::new(io::stdin(), delimiter, false).records().chunks(12) {
-		for read in chunk {
-			let read = read?;
-			writeln!(stdout, ">{}", read.header)?;
-			for seq in read.sequence {
-				if let Some(lca) = fst.get(&seq).map(Some).unwrap_or(default) {
-					writeln!(stdout, "{}", lca)?;
+	fasta::Reader::new(io::stdin(), delimiter, false)
+		.records()
+		.chunked(12)
+		.par_bridge()
+		.for_each(|chunk| {
+			let mut chunk_output = String::new();
+			for read in chunk {
+				let read = read.expect("TODO");
+				chunk_output.push_str(&format!(">{}\n", read.header));
+				for seq in read.sequence {
+					if let Some(lca) = fst.get(&seq).map(Some).unwrap_or(default) {
+						chunk_output.push_str(&format!("{}\n", lca));
+					}
 				}
 			}
-		}
-	}
+			print!("{}", chunk_output);
+		});
 	Ok(())
 }
 
