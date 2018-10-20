@@ -88,6 +88,14 @@ pub struct Records<R: Read> {
 	reader: Reader<R>,
 }
 
+impl<R: Read> Records<R>{
+	/// Convert this to a chunked version which processes the records in chunks
+	/// of the given size.
+	pub fn chunked(self, size: usize) -> ChunkedRecords<R> {
+		ChunkedRecords { reader: self.reader, chunk_size: size }
+	}
+}
+
 impl<R: Read> Iterator for Records<R> {
 	type Item = Result<Record>;
 
@@ -96,6 +104,38 @@ impl<R: Read> Iterator for Records<R> {
 			Ok(None) => None,
 			Ok(Some(record)) => Some(Ok(record)),
 			Err(err) => Some(Err(err)),
+		}
+	}
+}
+
+/// Allows for iteration over records in chunks
+pub struct ChunkedRecords<R: Read> {
+	reader: Reader<R>,
+	chunk_size: usize,
+}
+
+impl<R: Read> Iterator for ChunkedRecords<R> {
+	type Item = Vec<Result<Record>>;
+
+	fn next(&mut self) -> Option<Vec<Result<Record>>> {
+		let mut taken = Vec::with_capacity(self.chunk_size);
+		let mut i = 0;
+		let mut finished = false;
+		while i < self.chunk_size && !finished {
+			match self.reader.read_record() {
+				Ok(None)         => finished = true,
+				Ok(Some(result)) => taken.push(Ok(result)),
+				Err(err)         => {
+					taken.push(Err(err));
+					finished = true;
+				}
+			}
+			i += 1;
+		}
+		if i == 1 && finished {
+			None
+		} else {
+			Some(taken)
 		}
 	}
 }
