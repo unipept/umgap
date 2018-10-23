@@ -33,7 +33,6 @@ extern crate structopt;
 use structopt::StructOpt;
 
 extern crate strum;
-use strum::IntoEnumIterator;
 
 extern crate umgap;
 use umgap::dna::Strand;
@@ -354,11 +353,9 @@ fn taxonomy(args: args::Taxonomy) -> Result<()> {
 	 if !args.no_header {
 		 write!(handle, "taxon_id,taxon_name,taxon_rank");
 		 if args.all_ranks {
-			 for rank in rank::Rank::iter() {
-				 if rank != rank::Rank::NoRank {
-					let rank_name = rank.to_string().replace(" ", "_");
-					write!(handle, ",{}_id,{}_name", rank_name, rank_name);
-				 }
+			 for rank in rank::Rank::ranks() {
+				 let rank_name = rank.to_string().replace(" ", "_");
+				 write!(handle, ",{}_id,{}_name", rank_name, rank_name);
 			 }
 		 }
 		 write!(handle, "\n");
@@ -375,10 +372,8 @@ fn taxonomy(args: args::Taxonomy) -> Result<()> {
 				write!(handle, "{},{},{}", taxon.id, taxon.name, taxon.rank);
 				if args.all_ranks {
 					let lineage = by_id.lineage(id);
-					for rank in rank::Rank::iter() {
-						if rank == rank::Rank::NoRank {
-							continue;
-						} else if let Some(l_taxon) = &lineage[rank] {
+					for rank in rank::Rank::ranks() {
+						if let Some(l_taxon) = &lineage[rank] {
 							write!(handle, ",{},{}", l_taxon.id, l_taxon.name);
 						} else {
 							write!(handle, ",,");

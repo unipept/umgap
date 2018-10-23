@@ -2,6 +2,7 @@
 #![allow(missing_docs)]
 
 use std::cmp::Ordering;
+use strum::IntoEnumIterator;
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
 #[derive(PartialEq, Eq, Debug, Clone, Copy, Display, EnumString, EnumIter)]
@@ -56,6 +57,11 @@ impl Rank {
 		else if self < &Rank::Superphylum {  Some(3) }
 		else if self < &Rank::Superkingdom { Some(2) }
 		else { None }
+	}
+
+	/// Iterator over all the real ranks (NoRank is skipped)
+	pub fn ranks() -> impl Iterator<Item=Rank> {
+		Self::iter().skip(1)
 	}
 }
 
