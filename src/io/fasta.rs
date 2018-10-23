@@ -123,8 +123,8 @@ impl<R: Read> Iterator for ChunkedRecords<R> {
 		let mut finished = false;
 		while i < self.chunk_size && !finished {
 			match self.reader.read_record() {
-				Ok(None)         => finished = true,
 				Ok(Some(result)) => taken.push(Ok(result)),
+				Ok(None)         => finished = true,
 				Err(err)         => {
 					taken.push(Err(err));
 					finished = true;
