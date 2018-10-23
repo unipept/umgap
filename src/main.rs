@@ -130,10 +130,10 @@ fn pept2lca(args: args::PeptToLca) -> Result<()> {
 		.records()
 		.chunked(12)
 		.par_bridge()
-		.for_each(|chunk| {
+		.map(|chunk| {
 			let mut chunk_output = String::new();
 			for read in chunk {
-				let read = read.expect("TODO");
+				let read = read?;
 				chunk_output.push_str(&format!(">{}\n", read.header));
 				for seq in read.sequence {
 					if let Some(lca) = fst.get(&seq).map(Some).unwrap_or(default) {
@@ -142,8 +142,9 @@ fn pept2lca(args: args::PeptToLca) -> Result<()> {
 				}
 			}
 			print!("{}", chunk_output);
-		});
-	Ok(())
+			Ok(())
+		})
+		.collect()
 }
 
 fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
