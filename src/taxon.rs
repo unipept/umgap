@@ -11,7 +11,6 @@ use std::path::Path;
 use std::str::FromStr;
 
 use rank::*;
-use strum::IntoEnumIterator;
 
 /// A unique identifier for a [Taxon](struct.Taxon.html).
 pub type TaxonId = usize;
