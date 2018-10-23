@@ -128,7 +128,7 @@ fn pept2lca(args: args::PeptToLca) -> Result<()> {
 
 	fasta::Reader::new(io::stdin(), delimiter, false)
 		.records()
-		.chunked(12)
+		.chunked(args.chunk_size)
 		.par_bridge()
 		.map(|chunk| {
 			let mut chunk_output = String::new();

@@ -232,6 +232,11 @@ pub struct PeptToLca {
 	/// An FST to query
 	#[structopt(parse(from_os_str))]
 	pub fst_file: PathBuf,
+
+	/// How much reads to group together in one chunk, this prevents these
+	/// reads from spreading apart due to multithreading.
+	#[structopt(short = "c", long = "chunksize", default_value = "5")]
+	pub chunk_size: usize,
 }
 
 /// Reads all the records in a specified FASTA file and queries the
