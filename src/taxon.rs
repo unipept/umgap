@@ -176,24 +176,26 @@ impl TaxonList {
 	}
 
 	/// Create the full lineage for the given taxon
-	pub fn lineage(&self, index: TaxonId) -> Lineage {
+	pub fn lineage(&self, index: TaxonId) -> Result<Lineage> {
 		let mut lineage_arr: [Option<Taxon>; RANK_COUNT] = Default::default();
-		let mut next_taxon = self.get(index);
+		let mut taxon_id = index;
+		let mut next_taxon = self.get(taxon_id);
 		let mut prev_taxon = None;
 		// Because prev_taxon starts as None,
 		// the while will not be executed if the given taxon id was not found.
 		// Otherwise the while will stop if a taxon has itself as parent.
 		while next_taxon != prev_taxon {
-			let taxon = next_taxon.expect("taxon id not found while building lineage");
+			let taxon = next_taxon.ok_or(ErrorKind::UnknownTaxon(taxon_id))?;
 
 			if taxon.rank != Rank::NoRank {
 				lineage_arr[taxon.rank.index()] = Some(taxon.clone());
 			}
 
 			prev_taxon = next_taxon;
-			next_taxon = self.get(taxon.parent);
+			taxon_id   = taxon.parent;
+			next_taxon = self.get(taxon_id);
 		}
-		return Lineage(lineage_arr)
+		return Ok(Lineage(lineage_arr))
 	}
 }
 

@@ -371,7 +371,7 @@ fn taxonomy(args: args::Taxonomy) -> Result<()> {
 				let taxon = by_id.get(id).unwrap_or(root);
 				write!(handle, "{},{},{}", taxon.id, taxon.name, taxon.rank);
 				if args.all_ranks {
-					let lineage = by_id.lineage(id);
+					let lineage = by_id.lineage(id)?;
 					for rank in rank::Rank::ranks() {
 						if let Some(l_taxon) = &lineage[rank] {
 							write!(handle, ",{},{}", l_taxon.id, l_taxon.name);
