@@ -162,6 +162,12 @@ impl TaxonList {
 		}
 	}
 
+	/// Retrieve a taxon from the taxon list by id, returns UnknownTaxon if
+	/// the taxon is not present.
+	pub fn get_or_unknown(&self, index: TaxonId) -> Result<&Taxon> {
+		Ok(self.get(index).ok_or(ErrorKind::UnknownTaxon(index))?)
+	}
+
 	/// Retrieve the rank score of a taxon in the list.
 	pub fn score(&self, index: TaxonId) -> Option<usize> {
 		let mut current = index;

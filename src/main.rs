@@ -341,10 +341,7 @@ fn fastq2fasta(args: args::FastqToFasta) -> Result<()> {
 
 fn taxonomy(args: args::Taxonomy) -> Result<()> {
 	 let taxons = taxon::read_taxa_file(&args.taxon_file)?;
-
-	 let tree	= taxon::TaxonTree::new(&taxons);
 	 let by_id	= taxon::TaxonList::new(taxons);
-	 let root	= by_id.get(tree.root).unwrap();
 
 	 let stdin = io::stdin();
 	 let stdout = io::stdout();
@@ -368,7 +365,7 @@ fn taxonomy(args: args::Taxonomy) -> Result<()> {
 		  } else {
 				let id = line.parse::<taxon::TaxonId>()?;
 				// Map to root if id not found
-				let taxon = by_id.get(id).unwrap_or(root);
+				let taxon = by_id.get_or_unknown(id)?;
 				write!(handle, "{},{},{}", taxon.id, taxon.name, taxon.rank);
 				if args.all_ranks {
 					let lineage = by_id.lineage(id)?;
