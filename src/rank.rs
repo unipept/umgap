@@ -60,7 +60,7 @@ impl Rank {
 	}
 
 	/// Iterator over all the real ranks (NoRank is skipped)
-	pub fn ranks() -> impl Iterator<Item=Rank> {
+	pub fn ranks() -> impl Iterator<Item = Rank> {
 		Self::iter().skip(1)
 	}
 }
