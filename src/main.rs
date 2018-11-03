@@ -98,7 +98,7 @@ fn translate(args: args::Translate) -> Result<()> {
 		    args::Frame::Reverse3 => (frame, 3, true),
 		}).collect::<Vec<(args::Frame, usize, bool)>>();
 
-		for record in fasta::Reader::new(io::stdin(), None, true).records() {
+		for record in fasta::Reader::new(io::stdin(), true).records() {
 			let fasta::Record { header, sequence } = record?;
 
 			let forward = Strand::from(sequence[0].as_bytes());
@@ -136,7 +136,7 @@ fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
 	let map = unsafe { fst::Map::from_path(&args.fst_file) }?;
 	let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
 
-	for prot in fasta::Reader::new(io::stdin(), None, true).records() {
+	for prot in fasta::Reader::new(io::stdin(), true).records() {
 		let prot = prot?;
 
 		if prot.sequence[0].len() < args.length {
@@ -167,9 +167,6 @@ fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
 fn taxa2agg(args: args::TaxaToAgg) -> Result<()> {
 	// Parsing the Taxa file
 	let taxons = taxon::read_taxa_file(args.taxon_file)?;
-
-	// Parsing the delimiter regex
-	let delimiter = Some(regex::Regex::new("\n").unwrap());
 
 	// Parsing the taxons
 	let tree	 = taxon::TaxonTree::new(&taxons);
@@ -204,7 +201,7 @@ fn taxa2agg(args: args::TaxaToAgg) -> Result<()> {
 	let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
 
 	// Iterate over each read
-	for record in fasta::Reader::new(io::stdin(), delimiter, false).records() {
+	for record in fasta::Reader::new(io::stdin(), false).records() {
 		// Parse the sequence of LCA's
 		let record = record?;
 		let taxons = record.sequence.iter()
@@ -230,7 +227,7 @@ fn prot2pept(args: args::ProtToPept) -> Result<()> {
 	let pattern = regex::Regex::new(&args.pattern)?;
 
 	let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
-	for record in fasta::Reader::new(io::stdin(), None, true).records() {
+	for record in fasta::Reader::new(io::stdin(), true).records() {
 		let fasta::Record { header, sequence } = record?;
 
 		// We will run the regex replacement twice, since a letter can be
@@ -252,7 +249,7 @@ fn prot2pept(args: args::ProtToPept) -> Result<()> {
 
 fn prot2kmer(args: args::ProtToKmer) -> Result<()> {
 	let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
-	for record in fasta::Reader::new(io::stdin(), None, true).records() {
+	for record in fasta::Reader::new(io::stdin(), true).records() {
 		let fasta::Record { header, sequence } = record?;
 		if sequence[0].len() < args.length { continue }
 		writer.write_record(fasta::Record {
@@ -269,11 +266,8 @@ fn filter(args: args::Filter) -> Result<()> {
 	let contains = args.contains.chars().collect::<HashSet<char>>();
 	let lacks	= args.lacks.chars().collect::<HashSet<char>>();
 
-	// Each peptide/nucleotide sequence is assumed to be on its own line
-	let delimiter = regex::Regex::new(r"\n").map(Some)?;
-
 	let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
-	for record in fasta::Reader::new(io::stdin(), delimiter, false).records() {
+	for record in fasta::Reader::new(io::stdin(), false).records() {
 		let fasta::Record { header, sequence } = record?;
 
 		writer.write_record(fasta::Record {
@@ -295,12 +289,9 @@ fn filter(args: args::Filter) -> Result<()> {
 }
 
 fn uniq(args: args::Uniq) -> Result<()> {
-	// Parsing the input separator regex
-	let input_separator = regex::Regex::new(&args.input_separator.unwrap_or(regex::escape(&args.separator)))?;
-
 	let mut last   = None::<fasta::Record>;
 	let mut writer = fasta::Writer::new(io::stdout(), &args.separator, args.wrap);
-	for record in fasta::Reader::new(io::stdin(), Some(input_separator), args.unwrap).records() {
+	for record in fasta::Reader::new(io::stdin(), false).records() {
 		let record = record?;
 		if let Some(ref mut rec) = last {
 			if rec.header == record.header {
@@ -459,14 +450,12 @@ fn jsontree(args: args::JsonTree) -> Result<()> {
 fn seedextend(args: args::SeedExtend) -> Result<()> {
 	let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
 
-	let separator = Some(regex::Regex::new("\n").unwrap());
-
 	let by_id = if let Some(ref tf) = args.ranked {
 		let taxa = taxon::read_taxa_file(tf)?;
 		Some(taxon::TaxonList::new_with_unknown(taxa, true))
 	} else { None };
 
-	for record in fasta::Reader::new(io::stdin(), separator, false).records() {
+	for record in fasta::Reader::new(io::stdin(), false).records() {
 		let record = record?;
 		let mut taxons = record.sequence.iter()
 		                       .map(|s| s.parse::<TaxonId>())
@@ -578,11 +567,9 @@ fn report(args: args::Report) -> Result<()> {
 fn bestof(args: args::BestOf) -> Result<()> {
 	let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
 
-	let delimiter = Some(regex::Regex::new(r"\n").unwrap());
-
 	// Combine frames and process them
 	let mut chunk = Vec::with_capacity(args.frames);
-	for record in fasta::Reader::new(io::stdin(), delimiter, false).records() {
+	for record in fasta::Reader::new(io::stdin(), false).records() {
 		let record = record?;
 		if chunk.len() < args.frames - 1 {
 			chunk.push(record);
@@ -636,8 +623,7 @@ fn buildindex() -> Result<()> {
 fn countrecords() -> Result<()> {
 	let mut records = 0;
 	let mut sequences = 0;
-	let delimiter = Some(regex::Regex::new("\n").unwrap());
-	for record in fasta::Reader::new(io::stdin(), delimiter, false).records() {
+	for record in fasta::Reader::new(io::stdin(), false).records() {
 		let record = record?;
 		records += 1;
 		for seq in record.sequence {

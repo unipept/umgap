@@ -317,14 +317,6 @@ pub struct Uniq {
 	#[structopt(short = "s", long = "separator", default_value = "\n")]
 	pub separator: String,
 
-	/// Separator regex input items (default same as separator)
-	#[structopt(short = "i", long = "input-separator")]
-	pub input_separator: Option<String>,
-
-	/// The input sequences are wrapped
-	#[structopt(short = "u", long = "unwrap")]
-	pub unwrap: bool,
-
 	/// Wrap the output sequences
 	#[structopt(short = "w", long = "wrap")]
 	pub wrap: bool,
