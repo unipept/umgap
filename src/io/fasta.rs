@@ -12,7 +12,7 @@ use std::iter::Peekable;
 use errors;
 use errors::Result;
 
-
+const BUFFER_SIZE: usize = 10_000_000; // 10MB
 const FASTA_WIDTH: usize = 70;
 
 /// Reads a FASTA-formatted source (e.g. a file).
@@ -30,7 +30,7 @@ impl<R: Read> Reader<R> {
 	/// When wrapped is `false`, each record line will be a new item in
 	/// the [Record.sequence](struct.Record.html) vec.
 	pub fn new(reader: R, unwrap: bool) -> Self {
-		Reader { lines: BufReader::new(reader).lines().peekable(),
+		Reader { lines: BufReader::with_capacity(BUFFER_SIZE, reader).lines().peekable(),
 		         unwrap, }
 	}
 
