@@ -69,6 +69,7 @@ quick_main!(|| -> Result<()> {
 		args::Opt::BestOf(args)          => bestof(args),
 		args::Opt::PrintIndex(args)      => printindex(args),
 		args::Opt::BuildIndex            => buildindex(),
+		args::Opt::CountRecords          => countrecords(),
 	}
 });
 
@@ -629,5 +630,23 @@ fn buildindex() -> Result<()> {
 
 	index.finish()?;
 
+	Ok(())
+}
+
+fn countrecords() -> Result<()> {
+	let mut records = 0;
+	let mut sequences = 0;
+	let delimiter = Some(regex::Regex::new("\n").unwrap());
+	for record in fasta::Reader::new(io::stdin(), delimiter, false).records() {
+		let record = record?;
+		records += 1;
+		for seq in record.sequence {
+			if seq.len() > 0 {
+				sequences += 1;
+			}
+		}
+	}
+	println!("Records: {}", records);
+	println!("Sequence items: {}", sequences);
 	Ok(())
 }
