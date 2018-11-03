@@ -184,6 +184,10 @@ pub enum Opt {
 	/// Write an FST index of stdin on stdout.
 	#[structopt(name = "buildindex")]
 	BuildIndex,
+
+	/// Count the amount of FASTA records from stdin
+	#[structopt(name = "countrecords")]
+	CountRecords,
 }
 
 /// Translates DNA into Amino Acid Sequences.
