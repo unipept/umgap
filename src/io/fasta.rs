@@ -9,8 +9,6 @@ use std::io::Read;
 use std::io::Write;
 use std::iter::Peekable;
 
-use regex::Regex;
-
 use errors;
 use errors::Result;
 
@@ -20,18 +18,20 @@ const FASTA_WIDTH: usize = 70;
 /// Reads a FASTA-formatted source (e.g. a file).
 pub struct Reader<R: Read> {
 	lines: Peekable<Lines<BufReader<R>>>,
-	separator: Option<Regex>,
-	wrapped: bool,
+	unwrap: bool,
 }
 
 
 impl<R: Read> Reader<R> {
-	/// Creates a Reader from the given Read (e.g. a file). Passing a separator will split the
-	/// fasta entry on this separator.
-	pub fn new(reader: R, separator: Option<Regex>, wrapped: bool) -> Self {
+	/// Creates a Reader from the given Read (e.g. a file).
+	/// When wrapped is `true`, the reader will unwrap the input sequences by
+	/// removing newlines between the sequence lines
+	/// (each [Record.sequence](struct.Record.html)) will only have one item.
+	/// When wrapped is `false`, each record line will be a new item in
+	/// the [Record.sequence](struct.Record.html) vec.
+	pub fn new(reader: R, unwrap: bool) -> Self {
 		Reader { lines: BufReader::new(reader).lines().peekable(),
-		         separator: separator,
-		         wrapped: wrapped, }
+		         unwrap, }
 	}
 
 	/// Reads the next record from the FASTA file.
@@ -49,28 +49,20 @@ impl<R: Read> Reader<R> {
 		}
 		let _ = header.remove(0);
 
-		let mut sequence = String::new();
+		let mut sequence = Vec::new();
 		while self.lines
 		          .peek()
 		          .and_then(|line| line.as_ref().ok())
 		          .map(|line| !line.starts_with('>'))
 		          .unwrap_or(false)
 		{
-			sequence.push_str(&self.lines.next().unwrap()?);
-			if !self.wrapped {
-				sequence.push('\n')
-			}
+			sequence.push(self.lines.next().unwrap()?);
+		}
+		if self.unwrap {
+			sequence = vec![sequence.join("\n")];
 		}
 
-		Ok(Some(Record { header: header,
-		                 sequence: self.separator
-		                               .as_ref()
-		                               .map(|re| {
-			                               re.split(sequence.trim_right())
-			                                 .map(str::to_string)
-			                                 .collect()
-			                              })
-		                               .unwrap_or(vec![sequence]), }))
+		Ok(Some(Record { header, sequence }))
 	}
 
 	/// Returns a Records struct with itself as its reader.
