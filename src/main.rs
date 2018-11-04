@@ -9,7 +9,6 @@ use std::collections::HashSet;
 use std::collections::HashMap;
 use std::ops;
 use std::cmp;
-use std::sync::Mutex;
 
 extern crate clap;
 
@@ -127,38 +126,25 @@ fn pept2lca(args: args::PeptToLca) -> Result<()> {
 	// Parsing the delimiter regex
 	let delimiter = Some(regex::Regex::new("\n").unwrap());
 
-	let result = Mutex::new(Ok(()));
-
 	fasta::Reader::new(io::stdin(), delimiter, false)
-		.records()
-		.chunked(args.chunk_size)
-		.par_bridge()
-		.map(|chunk| {
-			let mut chunk_output = String::new();
-			for read in chunk {
-				let read = read?;
-				chunk_output.push_str(&format!(">{}\n", read.header));
-				for seq in read.sequence {
-					if let Some(lca) = fst.get(&seq).map(Some).unwrap_or(default) {
-						chunk_output.push_str(&format!("{}\n", lca));
-					}
-				}
-			}
-			Ok(chunk_output)
-		})
-		.for_each(|res| {
-			match res {
-				Ok(output) => print!("{}", output),
-				Err(err)   => {
-					// Remeber the first error result
-					let mut unlocked = result.lock().unwrap();
-					if unlocked.is_ok() {
-						*unlocked = Err(err);
-					}
-				}
-			}
-		});
-		return result.into_inner().unwrap()
+	    .records()
+	    .chunked(args.chunk_size)
+	    .par_bridge()
+	    .map(|chunk| {
+	    	let mut chunk_output = String::new();
+	    	for read in chunk {
+	    		let read = read?;
+	    		chunk_output.push_str(&format!(">{}\n", read.header));
+	    		for seq in read.sequence {
+	    			if let Some(lca) = fst.get(&seq).map(Some).unwrap_or(default) {
+	    				chunk_output.push_str(&format!("{}\n", lca));
+	    			}
+	    		}
+	    	}
+	    	print!("{}", chunk_output);
+	    	Ok(())
+	    })
+	    .collect()
 }
 
 fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
