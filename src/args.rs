@@ -233,9 +233,12 @@ pub struct PeptToLca {
 	#[structopt(parse(from_os_str))]
 	pub fst_file: PathBuf,
 
-	/// How much reads to group together in one chunk, this prevents these
-	/// reads from spreading apart due to multithreading.
-	#[structopt(short = "c", long = "chunksize", default_value = "5")]
+	/// How much reads to group together in one chunk, bigger chunks decrease
+	/// the overhead caused by multithreading. Because the output order is not
+	/// necessarily the same as the input order, having a chunk size which is
+	/// a multiple of 12 (all 6 translations multiplied by the two paired-end
+	/// reads) will keep sequences of the same reads together.
+	#[structopt(short = "c", long = "chunksize", default_value = "240")]
 	pub chunk_size: usize,
 }
 
