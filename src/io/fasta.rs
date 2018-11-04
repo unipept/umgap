@@ -24,14 +24,15 @@ pub struct Reader<R: Read> {
 
 impl<R: Read> Reader<R> {
 	/// Creates a Reader from the given Read (e.g. a file).
-	/// When wrapped is `true`, the reader will unwrap the input sequences by
+	/// When unwrap is `true`, the reader will unwrap the input sequences by
 	/// removing newlines between the sequence lines
 	/// (each [Record.sequence](struct.Record.html)) will only have one item.
-	/// When wrapped is `false`, each record line will be a new item in
+	/// When unwrap is `false`, each record line will be a new item in
 	/// the [Record.sequence](struct.Record.html) vec.
 	pub fn new(reader: R, unwrap: bool) -> Self {
-		Reader { lines: BufReader::with_capacity(BUFFER_SIZE, reader).lines().peekable(),
-		         unwrap, }
+		let lines = BufReader::with_capacity(BUFFER_SIZE, reader).lines()
+		                                                         .peekable();
+		Reader { unwrap, lines }
 	}
 
 	/// Reads the next record from the FASTA file.
@@ -59,7 +60,7 @@ impl<R: Read> Reader<R> {
 			sequence.push(self.lines.next().unwrap()?);
 		}
 		if self.unwrap {
-			sequence = vec![sequence.join("\n")];
+			sequence = vec![sequence.concat()];
 		}
 
 		Ok(Some(Record { header, sequence }))
