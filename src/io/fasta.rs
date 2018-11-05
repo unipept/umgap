@@ -88,11 +88,12 @@ pub struct Records<R: Read> {
 	reader: Reader<R>,
 }
 
-impl<R: Read> Records<R>{
+impl<R: Read> Records<R> {
 	/// Convert this to a chunked version which processes the records in chunks
 	/// of the given size.
 	pub fn chunked(self, size: usize) -> ChunkedRecords<R> {
-		ChunkedRecords { reader: self.reader, chunk_size: size }
+		ChunkedRecords { reader: self.reader,
+		                 chunk_size: size, }
 	}
 }
 
@@ -124,11 +125,11 @@ impl<R: Read> Iterator for ChunkedRecords<R> {
 		while i < self.chunk_size && !finished {
 			match self.reader.read_record() {
 				Ok(Some(result)) => taken.push(Ok(result)),
-				Ok(None)         => finished = true,
-				Err(err)         => {
+				Ok(None) => finished = true,
+				Err(err) => {
 					taken.push(Err(err));
 					finished = true;
-				}
+				},
 			}
 			i += 1;
 		}

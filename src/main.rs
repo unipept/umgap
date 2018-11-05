@@ -33,8 +33,6 @@ extern crate structopt;
 use structopt::StructOpt;
 
 extern crate strum;
-extern crate itertools;
-use itertools::Itertools;
 extern crate rayon;
 use rayon::prelude::*;
 
@@ -123,10 +121,7 @@ fn pept2lca(args: args::PeptToLca) -> Result<()> {
 	let fst = unsafe { fst::Map::from_path(args.fst_file) }?;
 	let default = if args.one_on_one { Some(0) } else { None };
 
-	// Parsing the delimiter regex
-	let delimiter = Some(regex::Regex::new("\n").unwrap());
-
-	fasta::Reader::new(io::stdin(), delimiter, false)
+	fasta::Reader::new(io::stdin(), false)
 	    .records()
 	    .chunked(args.chunk_size)
 	    .par_bridge()
