@@ -9,6 +9,7 @@ use std::io::BufRead;
 use std::ops::Index;
 use std::path::Path;
 use std::str::FromStr;
+use strum;
 
 use rank::*;
 

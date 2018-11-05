@@ -22,7 +22,7 @@ extern crate csv;
 #[macro_use(quick_main)]
 extern crate error_chain;
 
-#[macro_use(json)]
+#[macro_use(json, json_internal)]
 extern crate serde_json;
 use serde_json::value;
 
