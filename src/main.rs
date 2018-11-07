@@ -9,6 +9,7 @@ use std::collections::HashSet;
 use std::collections::HashMap;
 use std::ops;
 use std::cmp;
+use std::time::{Duration, Instant};
 
 extern crate clap;
 
@@ -118,10 +119,14 @@ fn translate(args: args::Translate) -> Result<()> {
 }
 
 fn pept2lca(args: args::PeptToLca) -> Result<()> {
-	let fst = unsafe { fst::Map::from_path(args.fst_file) }?;
+	//let fst = unsafe { fst::Map::from_path(args.fst_file) }?;
+	let bytes = fs::read(args.fst_file)?;
+	let fst = fst::Map::from_bytes(bytes)?;
 	let default = if args.one_on_one { Some(0) } else { None };
 
-	fasta::Reader::new(io::stdin(), false)
+	eprintln!("FST loaded, start querying...");
+	let start = Instant::now();
+	let result = fasta::Reader::new(io::stdin(), false)
 	    .records()
 	    .chunked(args.chunk_size)
 	    .par_bridge()
@@ -139,7 +144,9 @@ fn pept2lca(args: args::PeptToLca) -> Result<()> {
 	    	print!("{}", chunk_output);
 	    	Ok(())
 	    })
-	    .collect()
+	    .collect();
+	eprintln!("querying compelted in {} seconds.", start.elapsed().as_secs());
+	return result;
 }
 
 fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
