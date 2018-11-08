@@ -233,6 +233,12 @@ pub struct PeptToLca {
 	#[structopt(parse(from_os_str))]
 	pub fst_file: PathBuf,
 
+	/// Load FST in memory instead of mmap'ing the file contents. This makes
+	/// querying significantly faster, but bring a lot of overhead with it
+	/// since the file has to be copied to memory first.
+	#[structopt(short = "m", long = "in-memory")]
+	pub fst_in_memory: bool,
+
 	/// How much reads to group together in one chunk, bigger chunks decrease
 	/// the overhead caused by multithreading. Because the output order is not
 	/// necessarily the same as the input order, having a chunk size which is
