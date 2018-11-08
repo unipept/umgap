@@ -9,7 +9,6 @@ use std::collections::HashSet;
 use std::collections::HashMap;
 use std::ops;
 use std::cmp;
-use std::time::{Duration, Instant};
 
 extern crate clap;
 
@@ -128,8 +127,6 @@ fn pept2lca(args: args::PeptToLca) -> Result<()> {
 
 	let default = if args.one_on_one { Some(0) } else { None };
 
-	eprintln!("FST loaded, start querying...");
-	let start = Instant::now();
 	let result = fasta::Reader::new(io::stdin(), false)
 	    .records()
 	    .chunked(args.chunk_size)
@@ -149,7 +146,6 @@ fn pept2lca(args: args::PeptToLca) -> Result<()> {
 	    	Ok(())
 	    })
 	    .collect();
-	eprintln!("querying compelted in {} seconds.", start.elapsed().as_secs());
 	return result;
 }
 
