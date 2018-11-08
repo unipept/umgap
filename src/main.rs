@@ -119,9 +119,13 @@ fn translate(args: args::Translate) -> Result<()> {
 }
 
 fn pept2lca(args: args::PeptToLca) -> Result<()> {
-	//let fst = unsafe { fst::Map::from_path(args.fst_file) }?;
-	let bytes = fs::read(args.fst_file)?;
-	let fst = fst::Map::from_bytes(bytes)?;
+	let fst = if args.fst_in_memory {
+		unsafe { fst::Map::from_path(args.fst_file) }?
+	} else {
+		let bytes = fs::read(args.fst_file)?;
+		fst::Map::from_bytes(bytes)?
+	};
+
 	let default = if args.one_on_one { Some(0) } else { None };
 
 	eprintln!("FST loaded, start querying...");
