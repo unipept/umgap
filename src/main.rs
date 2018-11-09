@@ -169,14 +169,16 @@ fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
 					continue;
 				}
 			chunk_output.push_str(&format!(">{}\n", read.header));
-				let lcas = (0..(prot.len() - k + 1))
+				let mut lcas = (0..(prot.len() - k + 1))
 					.map(|i| &prot[i..i + k])
 					.filter_map(|kmer| fst.get(kmer).map(Some).unwrap_or(default))
 					.map(|lca| lca.to_string())
 					.collect::<Vec<_>>()
 					.join("\n");
+				if !lcas.is_empty(){
+					lcas.push('\n');
+				}
 				chunk_output.push_str(&lcas);
-				chunk_output.push('\n');
 			}
 			// TODO: make this the result of the map
 			// and print using a Writer
