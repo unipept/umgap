@@ -127,14 +127,14 @@ fn pept2lca(args: args::PeptToLca) -> Result<()> {
 
 	let default = if args.one_on_one { Some(0) } else { None };
 
-	let result = fasta::Reader::new(io::stdin(), false)
+	fasta::Reader::new(io::stdin(), false)
 	    .records()
 	    .chunked(args.chunk_size)
 	    .par_bridge()
 	    .map(|chunk| {
+			let chunk = chunk?;
 	    	let mut chunk_output = String::new();
 	    	for read in chunk {
-	    		let read = read?;
 	    		chunk_output.push_str(&format!(">{}\n", read.header));
 	    		for seq in read.sequence {
 	    			if let Some(lca) = fst.get(&seq).map(Some).unwrap_or(default) {
@@ -142,11 +142,12 @@ fn pept2lca(args: args::PeptToLca) -> Result<()> {
 	    			}
 	    		}
 	    	}
-	    	print!("{}", chunk_output);
+			// TODO: make this the result of the map
+			// and print using a Writer
+			print!("{}", chunk_output);
 	    	Ok(())
 	    })
-	    .collect();
-	return result;
+	    .collect()
 }
 
 fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {

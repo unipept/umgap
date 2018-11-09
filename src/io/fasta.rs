@@ -116,27 +116,21 @@ pub struct ChunkedRecords<R: Read> {
 }
 
 impl<R: Read> Iterator for ChunkedRecords<R> {
-	type Item = Vec<Result<Record>>;
+	type Item = Result<Vec<Record>>;
 
-	fn next(&mut self) -> Option<Vec<Result<Record>>> {
-		let mut taken = Vec::with_capacity(self.chunk_size);
-		let mut i = 0;
-		let mut finished = false;
-		while i < self.chunk_size && !finished {
+	fn next(&mut self) -> Option<Result<Vec<Record>>> {
+		let mut chunk = Vec::with_capacity(self.chunk_size);
+		while chunk.len() < self.chunk_size {
 			match self.reader.read_record() {
-				Ok(Some(result)) => taken.push(Ok(result)),
-				Ok(None) => finished = true,
-				Err(err) => {
-					taken.push(Err(err));
-					finished = true;
-				},
+				Ok(Some(result)) => chunk.push(result),
+				Ok(None) => break,
+				Err(err) => return Some(Err(err)),
 			}
-			i += 1;
 		}
-		if i == 1 && finished {
+		if chunk.is_empty() {
 			None
 		} else {
-			Some(taken)
+			Some(Ok(chunk))
 		}
 	}
 }
