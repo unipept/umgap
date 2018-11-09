@@ -26,9 +26,6 @@ extern crate error_chain;
 extern crate serde_json;
 use serde_json::value;
 
-extern crate either;
-use either::Either;
-
 extern crate structopt;
 use structopt::StructOpt;
 
@@ -151,35 +148,42 @@ fn pept2lca(args: args::PeptToLca) -> Result<()> {
 }
 
 fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
-	let map = unsafe { fst::Map::from_path(&args.fst_file) }?;
-	let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
-
-	for prot in fasta::Reader::new(io::stdin(), true).records() {
-		let prot = prot?;
-
-		if prot.sequence[0].len() < args.length {
-			continue;
-		}
-
-		let lcas = {
-			let kmers = (0..(prot.sequence[0].len() - args.length + 1)).map(|i| &prot.sequence[0][i..i + args.length]);
-			if args.one_on_one {
-				Either::Left(kmers.map(|kmer| map.get(kmer).unwrap_or(0)))
-			} else {
-				Either::Right(kmers.filter_map(|kmer| map.get(kmer)))
+	let fst = if args.fst_in_memory {
+		unsafe { fst::Map::from_path(args.fst_file) }?
+	} else {
+		let bytes = fs::read(args.fst_file)?;
+		fst::Map::from_bytes(bytes)?
+	};
+	let default = if args.one_on_one { Some(0) } else { None };
+	let k = args.length;
+	fasta::Reader::new(io::stdin(), true)
+		.records()
+		.chunked(args.chunk_size)
+		.par_bridge()
+		.map(|chunk| {
+			let chunk = chunk?;
+		let mut chunk_output = String::new();
+			for read in chunk {
+				let prot = read.sequence.get(0).ok_or("empty read")?;
+				if prot.len() < k {
+					continue;
+				}
+			chunk_output.push_str(&format!(">{}\n", read.header));
+				let lcas = (0..(prot.len() - k + 1))
+					.map(|i| &prot[i..i + k])
+					.filter_map(|kmer| fst.get(kmer).map(Some).unwrap_or(default))
+					.map(|lca| lca.to_string())
+					.collect::<Vec<_>>()
+					.join("\n");
+				chunk_output.push_str(&lcas);
+				chunk_output.push('\n');
 			}
-		}.map(|lca| lca.to_string())
-		 .collect::<Vec<_>>();
-
-		if !lcas.is_empty() {
-			writer.write_record(fasta::Record {
-			    header: prot.header,
-			    sequence: lcas
-			})?;
-		}
-	}
-
-	Ok(())
+			// TODO: make this the result of the map
+			// and print using a Writer
+			print!("{}", chunk_output);
+			Ok(())
+		})
+		.collect()
 }
 
 fn taxa2agg(args: args::TaxaToAgg) -> Result<()> {
