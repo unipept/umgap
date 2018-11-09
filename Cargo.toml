@@ -1,10 +1,11 @@
 [package]
 name = "umgap"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Felix Van der Jeugt <felix.vanderjeugt@gmail.com>",
            "Stijn Seghers <stijn.seghers@gmail.com>",
            "Niels De Graef <Niels.DeGraef@UGent.be>",
-           "Aranka Steyaert <Aranka.Steyaert@UGent.be>"]
+           "Aranka Steyaert <Aranka.Steyaert@UGent.be>",
+           "Rien Maertens <maertensrien@gmail.com>"]
 description = "The Unipept Metagenomics Analysis Pipeline"
 
 [dependencies]
