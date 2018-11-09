@@ -158,16 +158,19 @@ impl<'a, W: Write> Writer<'a, W> {
 
 	/// Writes a Record to the Write, in FASTA format
 	pub fn write_record_ref(&mut self, record: &Record) -> Result<()> {
-		write!(self.buffer, ">{}\n", record.header)?;
+		write!(self.buffer, ">{}", record.header)?;
 		let sequence = record.sequence.join(self.separator);
 		if !self.wrap {
-			self.buffer.write(sequence.as_bytes())?;
 			self.buffer.write_all(&[b'\n'])?;
+			self.buffer.write(sequence.as_bytes())?;
 		} else {
 			for subseq in sequence.as_bytes().chunks(FASTA_WIDTH) {
-				self.buffer.write_all(subseq)?;
 				self.buffer.write_all(&[b'\n'])?;
+				self.buffer.write_all(subseq)?;
 			}
+		}
+		if !sequence.is_empty() {
+			self.buffer.write_all(&[b'\n'])?;
 		}
 		Ok(())
 	}
