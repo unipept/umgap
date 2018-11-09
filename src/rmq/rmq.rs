@@ -39,7 +39,7 @@ impl<T: Ord + Display> RMQ<T> {
 		RMQ { array: array,
 		      block_min: block_min,
 		      sparse: sparse,
-		      labels: labels, }
+		      labels: labels }
 	}
 
 	/// Calculates the position of each block's minimum.

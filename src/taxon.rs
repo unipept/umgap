@@ -38,7 +38,7 @@ impl Taxon {
 		        name: name,
 		        rank: rank,
 		        parent: parent,
-		        valid: valid, }
+		        valid: valid }
 	}
 
 	/// Creates a taxon from the given arguments (using a &str instead of a String).
@@ -233,7 +233,7 @@ impl TaxonTree {
 		}
 		TaxonTree { root: roots.into_iter().next().expect("There's no root!"),
 		            max: max,
-		            children: map, }
+		            children: map }
 	}
 
 	// Takes a (mutable) vector of taxons indexed by their id, and adds the current taxon if it
@@ -308,11 +308,11 @@ impl EulerIterator {
 		                max, } = tree;
 		EulerIterator { tree: TaxonTree { root: root,
 		                                  children: children,
-		                                  max: max, },
+		                                  max: max },
 		                path: Vec::new(),
 		                current: root,
 		                currentn: 0,
-		                children: child_count, }
+		                children: child_count }
 	}
 }
 

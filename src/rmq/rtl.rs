@@ -29,7 +29,7 @@ impl RTLCalculator {
 		let mut ancestors = taxons.ancestry();
 		ancestors[root] = None;
 		RTLCalculator { root: root,
-		                ancestors: ancestors, }
+		                ancestors: ancestors }
 	}
 }
 

@@ -202,9 +202,11 @@ pub struct Translate {
 	pub all_frames: bool,
 
 	/// Adds a reading frame (1, 2, 3, 1R, 2R or 3R)
-	#[structopt(short = "f",
+	#[structopt(
+	            short = "f",
 	            long = "frame",
-	            raw(possible_values = "&Frame::variants()"))]
+	            raw(possible_values = "&Frame::variants()")
+	)]
 	pub frames: Vec<Frame>,
 
 	/// Append a bar (|) and the name of the frame to the fasta header
@@ -291,17 +293,21 @@ pub struct TaxaToAgg {
 	pub ranked_only: bool,
 
 	/// The method to use for aggregation
-	#[structopt(short = "m",
+	#[structopt(
+	            short = "m",
 	            long = "method",
 	            default_value = "tree",
-	            raw(possible_values = "&Method::variants()"))]
+	            raw(possible_values = "&Method::variants()")
+	)]
 	pub method: Method,
 
 	/// The method to use for aggregation
-	#[structopt(short = "a",
+	#[structopt(
+	            short = "a",
 	            long = "aggregate",
 	            default_value = "hybrid",
-	            raw(possible_values = "&Strategy::variants()"))]
+	            raw(possible_values = "&Strategy::variants()")
+	)]
 	pub strategy: Strategy,
 
 	/// The factor for the hybrid aggregation, from 0.0 (MRTL) to
@@ -324,9 +330,7 @@ pub struct TaxaToAgg {
 pub struct ProtToPept {
 	/// The cleavage-pattern (regex), i.e. the pattern after which
 	/// the next peptide will be cleaved for tryptic peptides)
-	#[structopt(short = "p",
-	            long = "pattern",
-	            default_value = "([KR])([^P])")]
+	#[structopt(short = "p", long = "pattern", default_value = "([KR])([^P])")]
 	pub pattern: String,
 }
 

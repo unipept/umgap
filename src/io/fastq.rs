@@ -17,7 +17,7 @@ pub struct Reader<R: Read> {
 impl<R: Read> Reader<R> {
 	/// Creates a Reader from the given Read (e.g. a file)
 	pub fn new(readable: R) -> Self {
-		Reader { lines: io::BufReader::new(readable).lines().peekable(), }
+		Reader { lines: io::BufReader::new(readable).lines().peekable() }
 	}
 
 	/// Reads the next record from the FASTQ file.
@@ -76,7 +76,7 @@ impl<R: Read> Reader<R> {
 
 		Ok(Some(Record { header: header,
 		                 sequence: sequence,
-		                 quality: quality, }))
+		                 quality: quality }))
 	}
 
 	/// Returns a Records struct with itself as its reader.

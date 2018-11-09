@@ -57,7 +57,7 @@ impl<T: Default + Copy> Tree<T> {
 			                            .map(|&tid| Tree::create(tid, children, taxons))
 			                            .collect()
 			                        })
-		                         .unwrap_or(Vec::new()), }
+		                         .unwrap_or(Vec::new()) }
 	}
 
 	/// Collapses the label of a parent with a single child into that child using the `combine`
@@ -72,7 +72,7 @@ impl<T: Default + Copy> Tree<T> {
 		}
 		Tree { root: new.root,
 		       value: value,
-		       children: new.children.iter().map(|c| c.collapse(combine)).collect(), }
+		       children: new.children.iter().map(|c| c.collapse(combine)).collect() }
 	}
 
 	/// Replaces every label in the tree with the aggregate label of all their descendants, with
@@ -83,7 +83,7 @@ impl<T: Default + Copy> Tree<T> {
 		let value = children.iter().map(|c| c.value).fold(self.value, combine);
 		Tree { root: self.root,
 		       value: value,
-		       children: children, }
+		       children: children }
 	}
 }
 
