@@ -255,7 +255,7 @@ pub struct PeptToLca {
 #[derive(Debug, StructOpt)]
 pub struct ProtToKmerToLca {
 	/// The length of the k-mers in the FST
-	#[structopt(short = "k", long = "length")]
+	#[structopt(short = "k", long = "length", default_value = "9")]
 	pub length: usize,
 
 	/// Map unknown sequences to 0 instead of ignoring them
