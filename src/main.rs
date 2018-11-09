@@ -116,10 +116,10 @@ fn translate(args: args::Translate) -> Result<()> {
 
 fn pept2lca(args: args::PeptToLca) -> Result<()> {
 	let fst = if args.fst_in_memory {
-		unsafe { fst::Map::from_path(args.fst_file) }?
-	} else {
 		let bytes = fs::read(args.fst_file)?;
 		fst::Map::from_bytes(bytes)?
+	} else {
+		unsafe { fst::Map::from_path(args.fst_file) }?
 	};
 
 	let default = if args.one_on_one { Some(0) } else { None };
@@ -149,10 +149,10 @@ fn pept2lca(args: args::PeptToLca) -> Result<()> {
 
 fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
 	let fst = if args.fst_in_memory {
-		unsafe { fst::Map::from_path(args.fst_file) }?
-	} else {
 		let bytes = fs::read(args.fst_file)?;
 		fst::Map::from_bytes(bytes)?
+	} else {
+		unsafe { fst::Map::from_path(args.fst_file) }?
 	};
 	let default = if args.one_on_one { Some(0) } else { None };
 	let k = args.length;
