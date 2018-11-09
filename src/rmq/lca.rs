@@ -33,7 +33,7 @@ impl LCACalculator {
 		// Result
 		LCACalculator { first_occurences: first_occurences,
 		                euler_tour: euler_tour,
-		                rmq_info: RMQ::new(depths), }
+		                rmq_info: RMQ::new(depths) }
 	}
 
 	/// Calculates the lowest common ancestor of 2 taxons.

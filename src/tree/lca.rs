@@ -23,7 +23,7 @@ impl LCACalculator {
 	/// * `taxonomy` - the taxons, indexed by their id.
 	pub fn new(root: TaxonId, taxonomy: &TaxonList) -> Self {
 		LCACalculator { root: root,
-		                parents: taxonomy.ancestry(), }
+		                parents: taxonomy.ancestry() }
 	}
 }
 

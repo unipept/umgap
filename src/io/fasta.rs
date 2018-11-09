@@ -93,7 +93,7 @@ impl<R: Read> Records<R> {
 	/// of the given size.
 	pub fn chunked(self, size: usize) -> ChunkedRecords<R> {
 		ChunkedRecords { reader: self.reader,
-		                 chunk_size: size, }
+		                 chunk_size: size }
 	}
 }
 
@@ -148,7 +148,7 @@ impl<'a, W: Write> Writer<'a, W> {
 	pub fn new(write: W, separator: &'a str, wrap: bool) -> Self {
 		Writer { buffer: io::BufWriter::new(write),
 		         separator: separator,
-		         wrap: wrap, }
+		         wrap: wrap }
 	}
 
 	/// Convenience method, see [write_record_ref](#method.write_record_ref).
