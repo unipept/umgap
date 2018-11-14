@@ -162,23 +162,22 @@ fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
 		.par_bridge()
 		.map(|chunk| {
 			let chunk = chunk?;
-		let mut chunk_output = String::new();
+			let mut chunk_output = String::new();
 			for read in chunk {
-				let prot = read.sequence.get(0).ok_or("empty read")?;
-				if prot.len() < k {
-					continue;
+				// Ignore empty reads and reads with a length smaller than k
+				if let Some(prot) = read.sequence.get(0).filter(|p| p.len() >= k) {
+					chunk_output.push_str(&format!(">{}\n", read.header));
+					let mut lcas = (0..(prot.len() - k + 1))
+						.map(|i| &prot[i..i + k])
+						.filter_map(|kmer| fst.get(kmer).map(Some).unwrap_or(default))
+						.map(|lca| lca.to_string())
+						.collect::<Vec<_>>()
+						.join("\n");
+					if !lcas.is_empty(){
+						lcas.push('\n');
+					}
+					chunk_output.push_str(&lcas);
 				}
-			chunk_output.push_str(&format!(">{}\n", read.header));
-				let mut lcas = (0..(prot.len() - k + 1))
-					.map(|i| &prot[i..i + k])
-					.filter_map(|kmer| fst.get(kmer).map(Some).unwrap_or(default))
-					.map(|lca| lca.to_string())
-					.collect::<Vec<_>>()
-					.join("\n");
-				if !lcas.is_empty(){
-					lcas.push('\n');
-				}
-				chunk_output.push_str(&lcas);
 			}
 			// TODO: make this the result of the map
 			// and print using a Writer
