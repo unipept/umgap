@@ -235,6 +235,10 @@ pub struct PeptToLca {
 	#[structopt(parse(from_os_str))]
 	pub fst_file: PathBuf,
 
+	/// An FST to query
+	#[structopt(parse(from_os_str), short = "s", long = "socket")]
+	pub socket: Option<PathBuf>,
+
 	/// Load FST in memory instead of mmap'ing the file contents. This makes
 	/// querying significantly faster, but bring a lot of overhead with it
 	/// since the file has to be copied to memory first.
