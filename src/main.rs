@@ -9,6 +9,8 @@ use std::collections::HashSet;
 use std::collections::HashMap;
 use std::ops;
 use std::cmp;
+use std::io::Read;
+use std::sync::Mutex;
 
 extern crate clap;
 
@@ -147,18 +149,11 @@ fn pept2lca(args: args::PeptToLca) -> Result<()> {
 		.collect()
 }
 
-fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
-	let fst = if args.fst_in_memory {
-		let bytes = fs::read(args.fst_file)?;
-		fst::Map::from_bytes(bytes)?
-	} else {
-		unsafe { fst::Map::from_path(args.fst_file) }?
-	};
-	let default = if args.one_on_one { Some(0) } else { None };
-	let k = args.length;
-	fasta::Reader::new(io::stdin(), true)
+fn stream_prot2kmer2lca<R,W>(input: R, output: W, fst: fst::Map, k: usize, chunk_size: usize, default: Option<u64>) -> Result<()> where R: Read + Send, W: Write + Send{
+	let output_mutex = Mutex::new(output);
+	fasta::Reader::new(input, true)
 		.records()
-		.chunked(args.chunk_size)
+		.chunked(chunk_size)
 		.par_bridge()
 		.map(|chunk| {
 			let chunk = chunk?;
@@ -181,10 +176,21 @@ fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
 			}
 			// TODO: make this the result of the map
 			// and print using a Writer
-			print!("{}", chunk_output);
+			output_mutex.lock().unwrap().write(chunk_output.as_bytes())?;
 			Ok(())
 		})
 		.collect()
+}
+
+fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
+	let fst = if args.fst_in_memory {
+		let bytes = fs::read(args.fst_file)?;
+		fst::Map::from_bytes(bytes)?
+	} else {
+		unsafe { fst::Map::from_path(args.fst_file) }?
+	};
+	let default = if args.one_on_one { Some(0) } else { None };
+	stream_prot2kmer2lca(io::stdin(), io::stdout(), fst, args.length, args.chunk_size, default)
 }
 
 fn taxa2agg(args: args::TaxaToAgg) -> Result<()> {
