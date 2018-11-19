@@ -11,6 +11,7 @@ use std::ops;
 use std::cmp;
 use std::io::Read;
 use std::sync::Mutex;
+use std::os::unix::net::UnixListener;
 
 extern crate clap;
 
@@ -149,7 +150,7 @@ fn pept2lca(args: args::PeptToLca) -> Result<()> {
 		.collect()
 }
 
-fn stream_prot2kmer2lca<R,W>(input: R, output: W, fst: fst::Map, k: usize, chunk_size: usize, default: Option<u64>) -> Result<()> where R: Read + Send, W: Write + Send{
+fn stream_prot2kmer2lca<R,W>(input: R, output: W, fst: &fst::Map, k: usize, chunk_size: usize, default: Option<u64>) -> Result<()> where R: Read + Send, W: Write + Send{
 	let output_mutex = Mutex::new(output);
 	fasta::Reader::new(input, true)
 		.records()
@@ -184,13 +185,33 @@ fn stream_prot2kmer2lca<R,W>(input: R, output: W, fst: fst::Map, k: usize, chunk
 
 fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
 	let fst = if args.fst_in_memory {
-		let bytes = fs::read(args.fst_file)?;
+		let bytes = fs::read(&args.fst_file)?;
 		fst::Map::from_bytes(bytes)?
 	} else {
-		unsafe { fst::Map::from_path(args.fst_file) }?
+		unsafe { fst::Map::from_path(&args.fst_file) }?
 	};
 	let default = if args.one_on_one { Some(0) } else { None };
-	stream_prot2kmer2lca(io::stdin(), io::stdout(), fst, args.length, args.chunk_size, default)
+	if let Some(socket_addr) = &args.socket {
+		let listener = UnixListener::bind(socket_addr)?;
+		listener.incoming()
+			.map(|stream| {
+				let stream = stream?;
+				stream_prot2kmer2lca(&stream,
+									 &stream,
+									 &fst,
+									 args.length,
+									 args.chunk_size,
+									 default)
+			})
+			.collect()
+	} else {
+		stream_prot2kmer2lca(io::stdin(),
+							 io::stdout(),
+							 &fst,
+							 args.length,
+							 args.chunk_size,
+							 default)
+	}
 }
 
 fn taxa2agg(args: args::TaxaToAgg) -> Result<()> {
