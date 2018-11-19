@@ -11,7 +11,8 @@ use std::ops;
 use std::cmp;
 use std::io::Read;
 use std::sync::Mutex;
-use std::os::unix::net::UnixListener;
+use std::os::unix::net::{UnixListener,UnixStream};
+use std::thread;
 
 extern crate clap;
 
@@ -60,6 +61,7 @@ quick_main!(|| -> Result<()> {
 		args::Opt::TaxaToAgg(args)       => taxa2agg(args),
 		args::Opt::ProtToPept(args)      => prot2pept(args),
 		args::Opt::ProtToKmer(args)      => prot2kmer(args),
+		args::Opt::Communicate(args)     => communicate(args),
 		args::Opt::Filter(args)          => filter(args),
 		args::Opt::Uniq(args)            => uniq(args),
 		args::Opt::FastqToFasta(args)    => fastq2fasta(args),
@@ -212,6 +214,20 @@ fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
 							 args.chunk_size,
 							 default)
 	}
+}
+
+fn communicate(args: args::Communicate) -> Result<()> {
+	let ref stream = UnixStream::connect(args.socket)?;
+	let stdin_reader = thread::spawn(move || {
+		for line in io::stdin().lock().lines() {
+			stream.write(line.unwrap().as_bytes());
+		}
+	});
+	for line in io::BufReader::new(stream).lines() {
+		println!("{}", line?);
+	}
+	stdin_reader.join();
+	Ok(())
 }
 
 fn taxa2agg(args: args::TaxaToAgg) -> Result<()> {

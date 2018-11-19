@@ -129,6 +129,11 @@ pub enum Opt {
 	#[structopt(name = "prot2kmer2lca")]
 	ProtToKmerToLca(ProtToKmerToLca),
 
+	/// Communicate with a socket: send stdin trough the socket and 
+	/// send the socket output to stdout.
+	#[structopt(name = "communicate")]
+	Communicate(Communicate),
+
 	/// Aggregates taxa to a single taxon.
 	#[structopt(name = "taxa2agg")]
 	TaxaToAgg(TaxaToAgg),
@@ -283,6 +288,14 @@ pub struct ProtToKmerToLca {
 	/// reads) will keep sequences of the same reads together.
 	#[structopt(short = "c", long = "chunksize", default_value = "240")]
 	pub chunk_size: usize,
+}
+
+/// Communicate with a socket
+#[derive(Debug, StructOpt)]
+pub struct Communicate {
+	/// Socket to communicate with
+	#[structopt(parse(from_os_str))]
+	pub socket: PathBuf,
 }
 
 /// Aggregates taxa to a single taxon.
