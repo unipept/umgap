@@ -129,7 +129,7 @@ pub enum Opt {
 	#[structopt(name = "prot2kmer2lca")]
 	ProtToKmerToLca(ProtToKmerToLca),
 
-	/// Communicate with a socket: send stdin trough the socket and 
+	/// Communicate with a socket: send stdin trough the socket and
 	/// send the socket output to stdout.
 	#[structopt(name = "communicate")]
 	Communicate(Communicate),
