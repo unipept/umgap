@@ -140,7 +140,7 @@ fn pept2lca(args: args::PeptToLca) -> Result<()> {
 					if let Some(lca) = fst.get(&seq).map(Some).unwrap_or(default) {
 						chunk_output.push_str(&format!("{}\n", lca));
 					}
-					}
+				}
 			}
 			// TODO: make this the result of the map
 			// and print using a Writer
@@ -193,8 +193,10 @@ fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
 	let default = if args.one_on_one { Some(0) } else { None };
 	if let Some(socket_addr) = &args.socket {
 		let listener = UnixListener::bind(socket_addr)?;
+		println!("Socket created, listening for connections.");
 		listener.incoming()
 			.map(|stream| {
+				println!("Connection accepted. Processing...");
 				let stream = stream?;
 				stream_prot2kmer2lca(&stream,
 									 &stream,
@@ -202,8 +204,13 @@ fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
 									 args.length,
 									 args.chunk_size,
 									 default)
-			})
-			.collect()
+			}).for_each(|result| {
+				match result {
+					Ok(_)  => println!("Connection finished succesfully."),
+					Err(e) => println!("Connection died with an error: {}", e),
+				}
+			});
+		Ok(())
 	} else {
 		stream_prot2kmer2lca(io::stdin(),
 							 io::stdout(),
