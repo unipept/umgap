@@ -9,6 +9,9 @@ use std::collections::HashSet;
 use std::collections::HashMap;
 use std::ops;
 use std::cmp;
+use std::io::Read;
+use std::os::unix::net::UnixListener;
+use std::sync::Mutex;
 
 extern crate clap;
 
@@ -125,40 +128,33 @@ fn pept2lca(args: args::PeptToLca) -> Result<()> {
 	let default = if args.one_on_one { Some(0) } else { None };
 
 	fasta::Reader::new(io::stdin(), false)
-	    .records()
-	    .chunked(args.chunk_size)
-	    .par_bridge()
-	    .map(|chunk| {
+		.records()
+		.chunked(args.chunk_size)
+		.par_bridge()
+		.map(|chunk| {
 			let chunk = chunk?;
-	    	let mut chunk_output = String::new();
-	    	for read in chunk {
-	    		chunk_output.push_str(&format!(">{}\n", read.header));
-	    		for seq in read.sequence {
-	    			if let Some(lca) = fst.get(&seq).map(Some).unwrap_or(default) {
-	    				chunk_output.push_str(&format!("{}\n", lca));
-	    			}
-	    		}
-	    	}
+			let mut chunk_output = String::new();
+			for read in chunk {
+				chunk_output.push_str(&format!(">{}\n", read.header));
+				for seq in read.sequence {
+					if let Some(lca) = fst.get(&seq).map(Some).unwrap_or(default) {
+						chunk_output.push_str(&format!("{}\n", lca));
+					}
+				}
+			}
 			// TODO: make this the result of the map
 			// and print using a Writer
 			print!("{}", chunk_output);
-	    	Ok(())
-	    })
-	    .collect()
+			Ok(())
+		})
+		.collect()
 }
 
-fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
-	let fst = if args.fst_in_memory {
-		let bytes = fs::read(args.fst_file)?;
-		fst::Map::from_bytes(bytes)?
-	} else {
-		unsafe { fst::Map::from_path(args.fst_file) }?
-	};
-	let default = if args.one_on_one { Some(0) } else { None };
-	let k = args.length;
-	fasta::Reader::new(io::stdin(), true)
+fn stream_prot2kmer2lca<R,W>(input: R, output: W, fst: &fst::Map, k: usize, chunk_size: usize, default: Option<u64>) -> Result<()> where R: Read + Send, W: Write + Send{
+	let output_mutex = Mutex::new(output);
+	fasta::Reader::new(input, true)
 		.records()
-		.chunked(args.chunk_size)
+		.chunked(chunk_size)
 		.par_bridge()
 		.map(|chunk| {
 			let chunk = chunk?;
@@ -181,10 +177,48 @@ fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
 			}
 			// TODO: make this the result of the map
 			// and print using a Writer
-			print!("{}", chunk_output);
+			output_mutex.lock().unwrap().write(chunk_output.as_bytes())?;
 			Ok(())
 		})
 		.collect()
+}
+
+fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
+	let fst = if args.fst_in_memory {
+		let bytes = fs::read(&args.fst_file)?;
+		fst::Map::from_bytes(bytes)?
+	} else {
+		unsafe { fst::Map::from_path(&args.fst_file) }?
+	};
+	let default = if args.one_on_one { Some(0) } else { None };
+	if let Some(socket_addr) = &args.socket {
+		let listener = UnixListener::bind(socket_addr)?;
+		println!("Socket created, listening for connections.");
+		listener.incoming()
+			.map(|stream| {
+				println!("Connection accepted. Processing...");
+				let stream = stream?;
+				stream_prot2kmer2lca(&stream,
+									 &stream,
+									 &fst,
+									 args.length,
+									 args.chunk_size,
+									 default)
+			}).for_each(|result| {
+				match result {
+					Ok(_)  => println!("Connection finished succesfully."),
+					Err(e) => println!("Connection died with an error: {}", e),
+				}
+			});
+		Ok(())
+	} else {
+		stream_prot2kmer2lca(io::stdin(),
+							 io::stdout(),
+							 &fst,
+							 args.length,
+							 args.chunk_size,
+							 default)
+	}
 }
 
 fn taxa2agg(args: args::TaxaToAgg) -> Result<()> {
