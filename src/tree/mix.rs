@@ -28,8 +28,8 @@ impl MixCalculator {
 	/// * `root`, the root of the taxon tree.
 	/// * `taxonomy`, the taxons, indexed by their id.
 	/// * `factor`, A ratio (i.e. a number in [0.0, 1.0] which decides the ratio that MRL or LCA
-	///   will be chosen as aggregation. If factor is 1, LCA will always be chosen; If factor is
-	///   0, MRL.
+	///   will be chosen as aggregation. If factor is 1, LCA will always be chosen; If factor is 0,
+	///   MRL.
 	pub fn new(root: TaxonId, taxonomy: &TaxonList, factor: f32) -> Self {
 		let LCACalculator { root: r,
 		                    parents: p, } = LCACalculator::new(root, taxonomy);
