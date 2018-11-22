@@ -236,8 +236,8 @@ pub struct PeptToLca {
 	pub fst_file: PathBuf,
 
 	/// Load FST in memory instead of mmap'ing the file contents. This makes
-	/// querying significantly faster, but bring a lot of overhead with it
-	/// since the file has to be copied to memory first.
+	/// querying significantly faster, but requires some time to load the FST
+	/// into memory.
 	#[structopt(short = "m", long = "in-memory")]
 	pub fst_in_memory: bool,
 
@@ -266,13 +266,17 @@ pub struct ProtToKmerToLca {
 	#[structopt(parse(from_os_str))]
 	pub fst_file: PathBuf,
 
-	/// An FST to query
+	/// Instead of reading from stdin and writing to stdout, create a Unix
+	/// socket to communicate with using OpenBSD's netcat (`nc -NU <socket>`).
+	/// This is especially useful in combination with the `--in-memory` flag:
+	/// you only have to load the FST in memory once, after which you can query
+	/// it without having the loading time overhead each time.
 	#[structopt(parse(from_os_str), short = "s", long = "socket")]
 	pub socket: Option<PathBuf>,
 
 	/// Load FST in memory instead of mmap'ing the file contents. This makes
-	/// querying significantly faster, but bring a lot of overhead with it
-	/// since the file has to be copied to memory first.
+	/// querying significantly faster, but requires some time to load the FST
+	/// into memory.
 	#[structopt(short = "m", long = "in-memory")]
 	pub fst_in_memory: bool,
 
