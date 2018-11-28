@@ -73,6 +73,7 @@ quick_main!(|| -> Result<()> {
 		args::Opt::PrintIndex(args)      => printindex(args),
 		args::Opt::BuildIndex            => buildindex(),
 		args::Opt::CountRecords          => countrecords(),
+		args::Opt::BuildPathway(args)    => buildpathway(args),
 	}
 });
 
@@ -747,5 +748,9 @@ fn countrecords() -> Result<()> {
 	}
 	println!("Records: {}", records);
 	println!("Sequence items: {}", sequences);
+	Ok(())
+}
+
+fn buildpathway(args: args::BuildPathway) -> Result<()> {
 	Ok(())
 }

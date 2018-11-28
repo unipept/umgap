@@ -194,6 +194,10 @@ pub enum Opt {
 	/// Count the amount of FASTA records from stdin
 	#[structopt(name = "countrecords")]
 	CountRecords,
+
+	/// Build a pathway database
+	#[structopt(name = "buildpathway")]
+	BuildPathway(BuildPathway),
 }
 
 /// Translates DNA into Amino Acid Sequences.
@@ -549,6 +553,15 @@ pub struct PrintIndex {
 	#[structopt(parse(from_os_str))]
 	pub fst_file: PathBuf,
 }
+
+/// Build a pathway database
+#[derive(Debug, StructOpt)]
+pub struct BuildPathway {
+	/// An FST to query
+	#[structopt(parse(from_os_str))]
+	pub data_directory: PathBuf,
+}
+
 
 error_chain! {
 	errors {
