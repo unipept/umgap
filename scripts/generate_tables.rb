@@ -206,6 +206,15 @@ def reaction_pathways
   return rxn_pwy
 end
 
+def pathway_ancestry
+  SQL.query(%Q{
+      SELECT SubPathwayWID AS child,
+             SuperPathwayWID AS parent
+      FROM SuperPathway;
+      }).map(&:values)
+        .to_h
+end
+
 def kmer_reactions(kmer_prots)
   prot_rxn = protein_reactions
   kmer_prots.map do |kmer, prots|
@@ -221,12 +230,24 @@ end
 
 def kmer_pathways(kmer_rxns)
   rxn_pwy = reaction_pathways
+  parent = pathway_ancestry
   kmer_rxns.map do |kmer, rxns|
     pathways = Set.new
     rxns.each do |rxn_id|
       if rxn_pwy.include?(rxn_id)
         pathways.merge(rxn_pwy[rxn_id])
       end
+    end
+    to_remove = []
+    pathways.each do |pw|
+      while parent.include?(pw)
+        pw = parent
+        to_remove << pw
+      end
+    end
+    pathways -= to_remove
+    if pathways.count == 0
+      byebug
     end
     [kmer, pathways.to_a]
   end
@@ -301,7 +322,7 @@ rxnkmers = kmer_reactions(protkmers).select{|k,prots| prots.any?}
 
 # Pathway KMERS
 puts 'Calculating pathway kmers'
-pwykmers = kmer_pathways(rxnkmers).select{|k,pwys| pwys.length == 1}
+pwykmers = kmer_pathways(rxnkmers)
 
 puts 'Calculation & writing pathway-kmer matchcount'
 
