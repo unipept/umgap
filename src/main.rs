@@ -25,7 +25,7 @@ extern crate csv;
 #[macro_use(quick_main)]
 extern crate error_chain;
 
-#[macro_use(json, json_internal)]
+#[macro_use(json)]
 extern crate serde_json;
 use serde_json::value;
 
@@ -397,14 +397,14 @@ fn taxonomy(args: args::Taxonomy) -> Result<()> {
 	 let mut handle = stdout.lock();
 
 	 if !args.no_header {
-		 write!(handle, "taxon_id,taxon_name,taxon_rank");
+		 write!(handle, "taxon_id,taxon_name,taxon_rank")?;
 		 if args.all_ranks {
 			 for rank in rank::Rank::ranks() {
 				 let rank_name = rank.to_string().replace(" ", "_");
-				 write!(handle, ",{}_id,{}_name", rank_name, rank_name);
+				 write!(handle, ",{}_id,{}_name", rank_name, rank_name)?;
 			 }
 		 }
-		 write!(handle, "\n");
+		 write!(handle, "\n")?;
 	 }
 
 	 for line in stdin.lock().lines() {
@@ -415,18 +415,18 @@ fn taxonomy(args: args::Taxonomy) -> Result<()> {
 				let id = line.parse::<taxon::TaxonId>()?;
 				// Map to root if id not found
 				let taxon = by_id.get_or_unknown(id)?;
-				write!(handle, "{},{},{}", taxon.id, taxon.name, taxon.rank);
+				write!(handle, "{},{},{}", taxon.id, taxon.name, taxon.rank)?;
 				if args.all_ranks {
 					let lineage = by_id.lineage(id)?;
 					for rank in rank::Rank::ranks() {
 						if let Some(l_taxon) = &lineage[rank] {
-							write!(handle, ",{},{}", l_taxon.id, l_taxon.name);
+							write!(handle, ",{},{}", l_taxon.id, l_taxon.name)?;
 						} else {
-							write!(handle, ",,");
+							write!(handle, ",,")?;
 						}
 					}
 				}
-				write!(handle, "\n");
+				write!(handle, "\n")?;
 		  }
 	 }
 	 Ok(())
