@@ -40,13 +40,14 @@ end
 def write_pwy_names
   pwy_names = SQL.query(%q{
     SELECT PW.WID,
-           DBID.XID
+           DBID.XID,
+           PW.Name
     FROM Pathway AS PW
     JOIN DBID
       ON DBID.OtherWID = PW.WID;
     })
   write_tsv 'pwy_name.tsv',
-            ["PWY_ID", "PWY_NAME"],
+            ["PWY_ID", "PWY_XID", "PWY_NAME"],
             pwy_names.map(&:values)
 end
 
@@ -283,6 +284,12 @@ def kmer_values_joined_sorted(kmers)
   kmers.map{|kmer, prots| [kmer, prots.join(',')]}.sort
 end
 
+puts 'Writing pathway names'
+write_pwy_names
+
+puts 'Writing protein pathways'
+write_prot_pwy_tsv
+
 puts 'Writing prot_seq.tsv'
 protseq = protein_sequences
 write_tsv 'prot_seq.tsv',
@@ -294,6 +301,9 @@ k = 9
 
 puts 'Calculating protein kmers'
 protkmers = kmer_prots(protseq, k)
+
+puts 'Writing protein reactions'
+write_prot_rxn_tsv
 
 #puts 'Calculation & writing kmer matchcount'
 
@@ -344,13 +354,4 @@ write_tsv 'kmer_pwys.tsv',
 #write_tsv 'rxn_pwy.tsv',
 #          ['RXN_ID', 'PWY_IDS'],
 #          rxn_pwy.map{|rxn, pwys| [rxn, pwys.join(',')]}
-
-puts 'Writing pathway names'
-write_pwy_names
-
-#puts 'Writing protein reactions'
-#write_prot_rxn_tsv
-
-puts 'Writing protein pathways'
-write_prot_pwy_tsv
 
