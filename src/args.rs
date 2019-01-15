@@ -195,9 +195,9 @@ pub enum Opt {
 	#[structopt(name = "countrecords")]
 	CountRecords,
 
-	/// Build a pathway database
-	#[structopt(name = "buildpathway")]
-	BuildPathway(BuildPathway),
+	/// Index a TSV-file with kmers
+	#[structopt(name = "kmer2ids")]
+	KmerToIds(KmerToIds),
 }
 
 /// Translates DNA into Amino Acid Sequences.
@@ -554,12 +554,24 @@ pub struct PrintIndex {
 	pub fst_file: PathBuf,
 }
 
-/// Build a pathway database
+/// Map kmer to a list of ids using an index file
 #[derive(Debug, StructOpt)]
-pub struct BuildPathway {
-	/// An FST to query
+pub struct KmerToIds {
+	/// TSV-file to query
 	#[structopt(parse(from_os_str))]
-	pub data_directory: PathBuf,
+	pub index_file: PathBuf,
+
+	/// The number of frames of which to pick the best
+	#[structopt(short = "f", long = "frames", default_value = "6")]
+	pub frames: usize,
+
+	/// Length of a kmer
+	#[structopt(short = "k", long = "length", default_value = "9")]
+	pub length: usize,
+
+	/// Show all records, even those with no results
+	#[structopt(short = "a", long = "all-records")]
+	pub all_records: bool,
 }
 
 

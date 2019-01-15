@@ -2,9 +2,10 @@
 
 use std::io;
 use std::io::Write;
-use std::io::BufRead;
+use std::io::{BufRead,BufReader};
 use std::borrow::Cow;
-use std::fs;
+use std::fs::{self, File};
+use std::path::PathBuf;
 use std::collections::HashSet;
 use std::collections::HashMap;
 use std::ops;
@@ -73,7 +74,7 @@ quick_main!(|| -> Result<()> {
 		args::Opt::PrintIndex(args)      => printindex(args),
 		args::Opt::BuildIndex            => buildindex(),
 		args::Opt::CountRecords          => countrecords(),
-		args::Opt::BuildPathway(args)    => buildpathway(args),
+		args::Opt::KmerToIds(args)       => kmer2ids(args),
 	}
 });
 
@@ -751,6 +752,116 @@ fn countrecords() -> Result<()> {
 	Ok(())
 }
 
-fn buildpathway(args: args::BuildPathway) -> Result<()> {
-	Ok(())
+fn file2index(file: PathBuf, header: bool) -> Result<HashMap<String, Vec<String>>> {
+	let mut lines = BufReader::new(File::open(file)?).lines();
+
+	// Skip header
+	if header {
+		lines.next();
+	}
+
+	lines.map(|line| {
+		let line = line?;
+		let mut split = line.split('\t');
+		let kmer: String = String::from(split.next().ok_or("Empty line")?);
+		let ids = split.next().ok_or("No second value")?;
+		let ids = ids.split(',').map(String::from).collect();
+		Ok((kmer, ids))
+	}).collect()
+}
+
+fn most_likely_for_framechunk(records: Vec<fasta::Record>,
+							  k: usize,
+							  index: &HashMap<String, Vec<String>>)
+-> Result<fasta::Record> {
+	// List of resulting id's and how many times we've encountered them
+	let mut results: Vec<(Vec<String>, usize)> = Vec::new();
+	// HashMap we'll reuse to count the ids we have found
+	let mut found: HashMap<&String, usize> = HashMap::new();
+	let header = &records[0].header;
+
+	for record in &records {
+		if header != &record.header {
+			return Err(
+				ErrorKind::InvalidInvocation(
+					String::from("Incorrect frame count")).into());
+		}
+		let seq = &record.sequence[0];
+
+		// Convert to kmers and search in the index.
+		// When a kmer is found in the index, add it to the results together
+		// with how many times it matches.
+		(0..(seq.len() - k + 1))
+			.filter_map(|i| index.get(&seq[i..i + k]))
+			.flatten()
+			.map(|id| {
+				// This increments the id's count (or inserts 1)
+				// and returns the current value
+				*found.entry(id)
+					.and_modify(|c| *c += 1)
+					.or_insert(1)
+			})
+			.max() // Only add maximum hits
+			.map(|max_count| {
+				// If we have at least one result:
+				// 1. Empty the hashmap
+				let ids = found.drain()
+					// 2. Only take the results with maximum hits
+					.filter(|(_, count)| *count == max_count)
+					// 3. Select their ids
+					.map(|(id, _)| id)
+					// 4. Deduplicate
+					.collect::<HashSet<_>>()
+					.iter()
+					// 5. Copy id's for ownership
+					.map(|id| id.to_string())
+					.collect::<Vec<_>>();
+				// 6. Add to results
+				results.push((ids, max_count));
+			});
+	}
+
+	// If there were results, only fetch the ids with the most hits,
+	// otherwise return an empty record.
+	if let Some((_, max_count)) = results.iter().max_by_key(|(_, c)| c){
+		Ok(fasta::Record {
+			header: header.clone(),
+			sequence: results.iter()
+				.filter(|(_, count)| count == max_count)
+				.map(|(ids, _)| ids)
+				.flatten()
+				.map(|id| id.to_string())
+				.collect()
+		})
+	} else {
+		Ok(fasta::Record {
+			header: header.clone(),
+			sequence: Vec::new()
+		})
+
+	}
+
+
+}
+
+fn kmer2ids(args: args::KmerToIds) -> Result<()> {
+	let index = file2index(args.index_file, true)?;
+	let input = std::io::stdin();
+	let k = args.length;
+	let all_records=  args.all_records;
+	let writer = Mutex::new(fasta::Writer::new(io::stdout(), "\n", false));
+	fasta::Reader::new(input, true)
+		.records()
+		.chunked(args.frames)
+		.par_bridge()
+		.map(|chunk| {
+			let chunk = chunk?;
+			let record = most_likely_for_framechunk(chunk, k, &index)?;
+			if all_records || !record.sequence.is_empty() {
+				writer.lock().unwrap().write_record(record)
+			} else {
+				Ok(())
+			}
+		})
+		.collect()
 }
