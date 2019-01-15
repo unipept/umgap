@@ -1,7 +1,5 @@
 #!/usr/bin/env ruby
 require 'mysql2'
-require 'gnuplot'
-require 'byebug'
 require 'set'
 
 UNIPROT_BIOCYC_REF_FILE = '/home/rien/Unipept/data/biocyc.tsv'
