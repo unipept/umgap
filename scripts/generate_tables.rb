@@ -12,15 +12,7 @@ SQL = Mysql2::Client.new host: 'localhost',
                          database: 'biocyc'
 
 def split_in_kmers(sequence, k)
-  sections = sequence.length / k
-  k.times.map do |start|
-    sections.times
-            .map do |i|
-              cur = start + i*k
-              sequence[cur..(cur+k-1)]
-            end
-            .select {|kmer| kmer.length == k}
-  end
+  (sequence.length - k + 1).times.map{|s| sequence[s..(s+k-1)]}
 end
 
 def write_tsv(file, headers, values)
@@ -104,9 +96,16 @@ def write_prot_pwy_tsv
     JOIN DBID AS PWYID
       ON PWY.WID = PWYID.OtherWID;
   })
+  #write_tsv 'prot_pwy.tsv',
+  #          ["PROT_NAME", "PROT_ID", "ERXN_ID", "RXN_ID", "EC", "PWY_ID", "PWY_NAME"],
+  #          prot_pwy.map(&:values)
+  prot_pwy_hash = Hash.new{ |hash, k| hash[k] = [] }
+  prot_pwy.each do |row|
+    prot_pwy_hash[row["PROT_ID"]] << row["PWY_ID"]
+  end
   write_tsv 'prot_pwy.tsv',
-            ["PROT_NAME", "PROT_ID", "ERXN_ID", "RXN_ID", "EC", "PWY_ID", "PWY_NAME"],
-            prot_pwy.map(&:values)
+            ["PROT_ID", "PWY_IDS"],
+            prot_pwy.transform_values{ |pwy_ids| pwy_ids.join(',') }
 end
 
 def protein_sequences
@@ -161,7 +160,7 @@ end
 def kmer_prots(protseq, k)
   kmers = Hash.new{ |hash, k| hash[k] = [] }
   protseq.each do |prot_name, prot_id, sequence|
-    Set.new(split_in_kmers(sequence, k).flatten).each do |kmer|
+    split_in_kmers(sequence, k).uniq.each do |kmer|
       kmers[kmer] << prot_id
     end
   end
@@ -238,6 +237,9 @@ def kmer_pathways(kmer_rxns)
         pathways.merge(rxn_pwy[rxn_id])
       end
     end
+
+    # Remove superpathways of which a subpathway
+    # is already mapped to this kmer
     to_remove = []
     pathways.each do |pw|
       while parent.include?(pw)
@@ -246,11 +248,11 @@ def kmer_pathways(kmer_rxns)
       end
     end
     pathways -= to_remove
-    if pathways.count == 0
-      byebug
+
+    if pathways.count.positive?
+      [kmer, pathways.to_a]
     end
-    [kmer, pathways.to_a]
-  end
+  end.reject(&:nil?)
 end
 
 # Returns a hash { n => [k1, k2, ..., km]  } with n the amount of values the 
@@ -324,12 +326,12 @@ rxnkmers = kmer_reactions(protkmers).select{|k,prots| prots.any?}
 puts 'Calculating pathway kmers'
 pwykmers = kmer_pathways(rxnkmers)
 
-puts 'Calculation & writing pathway-kmer matchcount'
+#puts 'Calculation & writing pathway-kmer matchcount'
 
-kmer_pwy_matchcount = matchcount_kmers(pwykmers)
-write_tsv 'kmer_pwy_matchcount.tsv',
-          ["Matchcount", "Count (total: #{pwykmers.length})", "Percentage"],
-          kmer_matches_count(kmer_pwy_matchcount)
+#kmer_pwy_matchcount = matchcount_kmers(pwykmers)
+#write_tsv 'kmer_pwy_matchcount.tsv',
+#          ["Matchcount", "Count (total: #{pwykmers.length})", "Percentage"],
+#          kmer_matches_count(kmer_pwy_matchcount)
 
 puts 'Sorting & writing kmer_pwys.tsv'
 write_tsv 'kmer_pwys.tsv',
@@ -337,17 +339,17 @@ write_tsv 'kmer_pwys.tsv',
           kmer_values_joined_sorted(pwykmers)
 
 # Reaction Pathways
-puts 'Writing reaction pathways'
-rxn_pwy = reaction_pathways
-write_tsv 'rxn_pwy.tsv',
-          ['RXN_ID', 'PWY_IDS'],
-          rxn_pwy.map{|rxn, pwys| [rxn, pwys.join(',')]}
+#puts 'Writing reaction pathways'
+#rxn_pwy = reaction_pathways
+#write_tsv 'rxn_pwy.tsv',
+#          ['RXN_ID', 'PWY_IDS'],
+#          rxn_pwy.map{|rxn, pwys| [rxn, pwys.join(',')]}
 
 puts 'Writing pathway names'
 write_pwy_names
 
-puts 'Writing protein reactions'
-write_prot_rxn_tsv
+#puts 'Writing protein reactions'
+#write_prot_rxn_tsv
 
 puts 'Writing protein pathways'
 write_prot_pwy_tsv
