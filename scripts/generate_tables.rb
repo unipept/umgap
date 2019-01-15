@@ -74,13 +74,13 @@ end
 def write_prot_pwy_tsv
   # prot -> enzrxn -> rxn -> pwy_rxn -> pwy
   prot_pwy = SQL.query(%q{
-    SELECT PID.XID AS PROTID,
+    SELECT PID.XID AS PROT_ID,
            P.WID AS PROT,
            E.WID AS ERXN,
            R.WID AS RXN,
            COALESCE(R.ECNumber, R.ECNumberProposed) AS EC,
            PWY.WID AS PWY,
-           PWYID.XID AS PWYID
+           PWYID.XID AS PWY_ID
     FROM DBID AS PID
     JOIN Protein AS P
       ON PID.OtherWID = P.WID
@@ -104,7 +104,7 @@ def write_prot_pwy_tsv
   end
   write_tsv 'prot_pwy.tsv',
             ["PROT_ID", "PWY_IDS"],
-            prot_pwy.transform_values{ |pwy_ids| pwy_ids.join(',') }
+            prot_pwy_hash.transform_values{ |pwy_ids| pwy_ids.join(',') }
 end
 
 def protein_sequences
@@ -347,9 +347,9 @@ write_tsv 'kmer_pwys.tsv',
           kmer_values_joined_sorted(pwykmers)
 
 # Reaction Pathways
-#puts 'Writing reaction pathways'
-#rxn_pwy = reaction_pathways
-#write_tsv 'rxn_pwy.tsv',
-#          ['RXN_ID', 'PWY_IDS'],
-#          rxn_pwy.map{|rxn, pwys| [rxn, pwys.join(',')]}
+puts 'Writing reaction pathways'
+rxn_pwy = reaction_pathways
+write_tsv 'rxn_pwy.tsv',
+          ['RXN_ID', 'PWY_IDS'],
+          rxn_pwy.map{|rxn, pwys| [rxn, pwys.join(',')]}
 
