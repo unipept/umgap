@@ -389,6 +389,10 @@ pub struct SnapRank {
 	#[structopt(short = "r", long = "rank", default_value = "species")]
 	pub rank: Rank,
 
+	/// Include invalidated taxa
+	#[structopt(short = "i", long = "invalid")]
+	pub invalid: bool,
+
 	/// The NCBI taxonomy tsv-file
 	#[structopt(parse(from_os_str))]
 	pub taxon_file: PathBuf,
@@ -415,7 +419,7 @@ pub struct Taxonomy {
 /// Aggregates taxa to a JSON tree for usage in the unipept visualisations.
 #[derive(Debug, StructOpt)]
 pub struct JsonTree {
-	/// The rank to show
+	/// Exclude taxons with unnamed rank
 	#[structopt(short = "r", long = "ranked")]
 	pub ranked_only: bool,
 
