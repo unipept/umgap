@@ -442,7 +442,7 @@ fn snaprank(args: args::SnapRank) -> Result<()> {
 	let tree	 = taxon::TaxonTree::new(&taxons);
 	let by_id	= taxon::TaxonList::new(taxons);
 	let snapping = tree.filter_ancestors(|tid|
-		by_id.get(tid).map(|t| t.rank == args.rank).unwrap_or(false)
+		by_id.get(tid).map(|t| t.rank == args.rank && (args.invalid || t.valid)).unwrap_or(false)
 	);
 
 	// Read and count taxon ranks
