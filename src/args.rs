@@ -262,6 +262,11 @@ pub struct PeptToLca {
 	/// reads) will keep sequences of the same reads together.
 	#[structopt(short = "c", long = "chunksize", default_value = "240")]
 	pub chunk_size: usize,
+
+	/// How much threads can be used for parallelization. Default is to let the
+	/// underlying library select the thread count automatically.
+	#[structopt(short = "j", long = "thread-count")]
+	pub thread_count: Option<usize>,
 }
 
 /// Reads all the records in a specified FASTA file and queries the
@@ -301,6 +306,11 @@ pub struct ProtToKmerToLca {
 	/// reads) will keep sequences of the same reads together.
 	#[structopt(short = "c", long = "chunksize", default_value = "240")]
 	pub chunk_size: usize,
+
+	/// How much threads can be used for parallelization. Default is to let the
+	/// underlying library select the thread count automatically.
+	#[structopt(short = "j", long = "thread-count")]
+	pub thread_count: Option<usize>,
 }
 
 /// Reads all the records in a specified FASTA file and queries the
@@ -576,6 +586,11 @@ pub struct KmerToIds {
 	/// Show all records, even those with no results
 	#[structopt(short = "a", long = "all-records")]
 	pub all_records: bool,
+
+	/// How much threads can be used for parallelization. Default is to let the
+	/// underlying library select the thread count automatically.
+	#[structopt(short = "j", long = "thread-count")]
+	pub thread_count: Option<usize>,
 }
 
 /// Query id's in an index file
@@ -588,6 +603,11 @@ pub struct QueryIndex {
 	/// How much records to group together
 	#[structopt(short = "c", long = "chunksize", default_value = "240")]
 	pub chunk_size: usize,
+
+	/// How much threads can be used for parallelization. Default is to let the
+	/// underlying library select the thread count automatically.
+	#[structopt(short = "j", long = "thread-count")]
+	pub thread_count: Option<usize>,
 }
 
 

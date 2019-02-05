@@ -26,6 +26,7 @@ error_chain! {
 		ParseI(num::ParseIntError) #[doc = "Parse Integer"];
 		ParseF(num::ParseFloatError) #[doc = "Parse Float"];
 		Regex(regex::Error) #[doc = "Regex"];
+		Rayon(rayon::ThreadPoolBuildError) #[doc = "Rayon"];
 	}
 	errors {
 		/// Invalid invocation

@@ -122,6 +122,7 @@ fn translate(args: args::Translate) -> Result<()> {
 }
 
 fn pept2lca(args: args::PeptToLca) -> Result<()> {
+	args.thread_count.map_or(Ok(()), |count| set_num_threads(count))?;
 	let fst = if args.fst_in_memory {
 		let bytes = fs::read(args.fst_file)?;
 		fst::Map::from_bytes(bytes)?
@@ -188,6 +189,7 @@ fn stream_prot2kmer2lca<R,W>(input: R, output: W, fst: &fst::Map, k: usize, chun
 }
 
 fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
+	args.thread_count.map_or(Ok(()), |count| set_num_threads(count))?;
 	let fst = if args.fst_in_memory {
 		let bytes = fs::read(&args.fst_file)?;
 		fst::Map::from_bytes(bytes)?
@@ -846,6 +848,7 @@ fn most_likely_for_framechunk(records: Vec<fasta::Record>,
 }
 
 fn kmer2ids(args: args::KmerToIds) -> Result<()> {
+	args.thread_count.map_or(Ok(()), |count| set_num_threads(count))?;
 	let index = file2index(args.index_file, true)?;
 	let input = std::io::stdin();
 	let k = args.length;
@@ -868,6 +871,7 @@ fn kmer2ids(args: args::KmerToIds) -> Result<()> {
 }
 
 fn query_index(args: args::QueryIndex) -> Result<()> {
+	args.thread_count.map_or(Ok(()), |count| set_num_threads(count))?;
 	let index = file2index(args.index_file, true)?;
 	let input = std::io::stdin();
 	let writer = Mutex::new(fasta::Writer::new(io::stdout(), "\n", false));
@@ -901,4 +905,9 @@ fn query_index(args: args::QueryIndex) -> Result<()> {
 			records.into_iter().map(|record| writer.write_record(record)).collect()
 		})
 		.collect()
+}
+
+fn set_num_threads(num: usize) -> Result<()> {
+	rayon::ThreadPoolBuilder::new().num_threads(num).build_global()?;
+	Ok(())
 }
