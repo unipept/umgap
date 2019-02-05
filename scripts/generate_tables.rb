@@ -100,7 +100,7 @@ def write_prot_pwy_tsv
   #          prot_pwy.map(&:values)
   prot_pwy_hash = Hash.new{ |hash, k| hash[k] = [] }
   prot_pwy.each do |row|
-    prot_pwy_hash[row["PROT_ID"]] << row["PWY_ID"]
+    prot_pwy_hash[row["PROT"]] << row["PWY"]
   end
   write_tsv 'prot_pwy.tsv',
             ["PROT_ID", "PWY_IDS"],
@@ -287,6 +287,8 @@ write_pwy_names
 
 puts 'Writing protein pathways'
 write_prot_pwy_tsv
+
+exit
 
 puts 'Writing prot_seq.tsv'
 protseq = protein_sequences

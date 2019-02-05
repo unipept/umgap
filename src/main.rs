@@ -75,6 +75,7 @@ quick_main!(|| -> Result<()> {
 		args::Opt::BuildIndex            => buildindex(),
 		args::Opt::CountRecords          => countrecords(),
 		args::Opt::KmerToIds(args)       => kmer2ids(args),
+		args::Opt::QueryIndex(args)      => query_index(args),
 	}
 });
 
@@ -862,6 +863,42 @@ fn kmer2ids(args: args::KmerToIds) -> Result<()> {
 			} else {
 				Ok(())
 			}
+		})
+		.collect()
+}
+
+fn query_index(args: args::QueryIndex) -> Result<()> {
+	let index = file2index(args.index_file, true)?;
+	let input = std::io::stdin();
+	let writer = Mutex::new(fasta::Writer::new(io::stdout(), "\n", false));
+	fasta::Reader::new(input, true)
+		.records()
+		.chunked(args.chunk_size)
+		.par_bridge()
+		.map(|chunk| {
+			let chunk = chunk?;
+			let records: Vec<fasta::Record> = chunk.into_iter()
+				.map(|mut record| {
+					record.sequence = record.sequence
+						.iter()
+						// 1. Search id in the index
+						.map(|id| index.get(id))
+						// 2. Flatten the results twice
+						.flatten()
+						.flatten()
+						// 3. Deduplicate
+						.collect::<HashSet<_>>()
+						.iter()
+						// 5. Copy id's for ownership
+						.map(|id| id.to_string())
+						.collect();
+					record
+				})
+				.filter(|record| !record.sequence.is_empty())
+				.collect();
+			let mut writer = writer.lock().unwrap();
+			// 6. Writeout transformed records
+			records.into_iter().map(|record| writer.write_record(record)).collect()
 		})
 		.collect()
 }

@@ -195,9 +195,13 @@ pub enum Opt {
 	#[structopt(name = "countrecords")]
 	CountRecords,
 
-	/// Index a TSV-file with kmers
+	/// Index a TSV-file with kmers TODO: better name
 	#[structopt(name = "kmer2ids")]
 	KmerToIds(KmerToIds),
+
+	/// Index a TSV-file with ids TODO: better name
+	#[structopt(name = "queryindex")]
+	QueryIndex(QueryIndex),
 }
 
 /// Translates DNA into Amino Acid Sequences.
@@ -572,6 +576,18 @@ pub struct KmerToIds {
 	/// Show all records, even those with no results
 	#[structopt(short = "a", long = "all-records")]
 	pub all_records: bool,
+}
+
+/// Query id's in an index file
+#[derive(Debug, StructOpt)]
+pub struct QueryIndex {
+	/// TSV-file to query
+	#[structopt(parse(from_os_str))]
+	pub index_file: PathBuf,
+
+	/// How much records to group together
+	#[structopt(short = "c", long = "chunksize", default_value = "240")]
+	pub chunk_size: usize,
 }
 
 
