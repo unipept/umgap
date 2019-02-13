@@ -198,6 +198,10 @@ pub enum Opt {
 	/// Index a TSV-file with ids TODO: better name
 	#[structopt(name = "queryindex")]
 	QueryIndex(QueryIndex),
+
+	/// Report the results of a pathway analysis
+	#[structopt(name = "reportpathways")]
+	ReportPathways(ReportPathways),
 }
 
 /// Translates DNA into Amino Acid Sequences.
@@ -608,6 +612,14 @@ pub struct QueryIndex {
 	/// Map unknown sequences to 0 instead of ignoring them
 	#[structopt(short = "o", long = "one-on-one")]
 	pub one_on_one: bool,
+}
+
+/// Report the results of a pathway analysis
+#[derive(Debug, StructOpt)]
+pub struct ReportPathways {
+	/// File with pathway info
+	#[structopt(parse(from_os_str))]
+	pub pathway_info_file: PathBuf,
 }
 
 

@@ -75,6 +75,7 @@ quick_main!(|| -> Result<()> {
 		args::Opt::BuildIndex            => buildindex(),
 		args::Opt::CountRecords          => countrecords(),
 		args::Opt::QueryIndex(args)      => query_index(args),
+		args::Opt::ReportPathways(args)  => report_pathways(args),
 	}
 });
 
@@ -772,77 +773,6 @@ fn file2index(file: PathBuf, header: bool) -> Result<HashMap<String, Vec<String>
 	}).collect()
 }
 
-fn most_likely_for_framechunk(records: Vec<fasta::Record>,
-							  k: usize,
-							  index: &HashMap<String, Vec<String>>)
--> Result<fasta::Record> {
-	// List of resulting id's and how many times we've encountered them
-	let mut results: Vec<(Vec<String>, usize)> = Vec::new();
-	// HashMap we'll reuse to count the ids we have found
-	let mut found: HashMap<&String, usize> = HashMap::new();
-	let header = &records[0].header;
-
-	for record in &records {
-		if header != &record.header {
-			return Err(
-				ErrorKind::InvalidInvocation(
-					String::from("Incorrect frame count")).into());
-		}
-		let seq = &record.sequence[0];
-
-		// Convert to kmers and search in the index.
-		// When a kmer is found in the index, add it to the results together
-		// with how many times it matches.
-		(0..(seq.len() - k + 1))
-			.filter_map(|i| index.get(&seq[i..i + k]))
-			.flatten()
-			.map(|id| {
-				// This increments the id's count (or inserts 1)
-				// and returns the current value
-				*found.entry(id)
-					.and_modify(|c| *c += 1)
-					.or_insert(1)
-			})
-			.max() // Only add maximum hits
-			.map(|max_count| {
-				// If we have at least one result:
-				// 1. Empty the hashmap
-				let ids = found.drain()
-					// 2. Only take the results with maximum hits
-					.filter(|(_, count)| *count == max_count)
-					// 3. Select their ids
-					.map(|(id, _)| id)
-					// 4. Deduplicate
-					.collect::<HashSet<_>>()
-					.iter()
-					// 5. Copy id's for ownership
-					.map(|id| id.to_string())
-					.collect::<Vec<_>>();
-				// 6. Add to results
-				results.push((ids, max_count));
-			});
-	}
-
-	// If there were results, only fetch the ids with the most hits,
-	// otherwise return an empty record.
-	if let Some((_, max_count)) = results.iter().max_by_key(|(_, c)| c){
-		Ok(fasta::Record {
-			header: header.clone(),
-			sequence: results.iter()
-				.filter(|(_, count)| count == max_count)
-				.map(|(ids, _)| ids)
-				.flatten()
-				.map(|id| id.to_string())
-				.collect()
-		})
-	} else {
-		Ok(fasta::Record {
-			header: header.clone(),
-			sequence: Vec::new()
-		})
-	}
-}
-
 fn query_index(args: args::QueryIndex) -> Result<()> {
 	args.thread_count.map_or(Ok(()), |count| set_num_threads(count))?;
 	let index = file2index(args.index_file, true)?;
@@ -882,6 +812,43 @@ fn query_index(args: args::QueryIndex) -> Result<()> {
 		})
 		.collect()
 }
+
+fn report_pathways(args: args::ReportPathways) -> Result<()> {
+	let mut pathwaydb: HashMap<String, (String, String)> = HashMap::new();
+	let mut lines = BufReader::new(File::open(args.pathway_info_file)?).lines();
+	lines.next(); // Skip header
+	for line in lines {
+		let line = line?;
+		let mut split = line.split('\t');
+		let id: String = String::from(split.next().ok_or("Empty line")?);
+		let values = (String::from(split.next().ok_or("No XID")?),
+					  String::from(split.next().ok_or("No name")?));
+		pathwaydb.insert(id, values);
+	}
+
+	let mut counts: HashMap<String, usize> = HashMap::new();
+	for record in fasta::Reader::new(std::io::stdin(), false).records() {
+		let record = record?;
+		for ids in record.sequence {
+			for id in ids.split(',') {
+				let counter = counts.entry(String::from(id)).or_insert(0);
+				*counter += 1;
+			}
+		}
+	}
+	let unknown = (String::from("unknown"), String::from("unknown"));
+	let mut counted = counts.drain().collect::<Vec<(String, usize)>>();
+	counted.sort_unstable_by_key(|(_id, count)| *count);
+	counted.reverse();
+	println!("#MATCHES\tPWY_ID\tPWY_XID\tPWY_NAME");
+	for (id, count) in counted {
+			let (xid, name) = pathwaydb.get(&id).unwrap_or(&unknown);
+			println!("{}\t{}\t{}\t{}", count, id, xid, name);
+	}
+	Ok(())
+}
+
+
 
 fn set_num_threads(num: usize) -> Result<()> {
 	rayon::ThreadPoolBuilder::new().num_threads(num).build_global()?;
