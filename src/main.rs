@@ -74,7 +74,6 @@ quick_main!(|| -> Result<()> {
 		args::Opt::PrintIndex(args)      => printindex(args),
 		args::Opt::BuildIndex            => buildindex(),
 		args::Opt::CountRecords          => countrecords(),
-		args::Opt::KmerToIds(args)       => kmer2ids(args),
 		args::Opt::QueryIndex(args)      => query_index(args),
 	}
 });
@@ -841,33 +840,7 @@ fn most_likely_for_framechunk(records: Vec<fasta::Record>,
 			header: header.clone(),
 			sequence: Vec::new()
 		})
-
 	}
-
-
-}
-
-fn kmer2ids(args: args::KmerToIds) -> Result<()> {
-	args.thread_count.map_or(Ok(()), |count| set_num_threads(count))?;
-	let index = file2index(args.index_file, true)?;
-	let input = std::io::stdin();
-	let k = args.length;
-	let all_records=  args.all_records;
-	let writer = Mutex::new(fasta::Writer::new(io::stdout(), "\n", false));
-	fasta::Reader::new(input, true)
-		.records()
-		.chunked(args.frames)
-		.par_bridge()
-		.map(|chunk| {
-			let chunk = chunk?;
-			let record = most_likely_for_framechunk(chunk, k, &index)?;
-			if all_records || !record.sequence.is_empty() {
-				writer.lock().unwrap().write_record(record)
-			} else {
-				Ok(())
-			}
-		})
-		.collect()
 }
 
 fn query_index(args: args::QueryIndex) -> Result<()> {
@@ -875,7 +848,13 @@ fn query_index(args: args::QueryIndex) -> Result<()> {
 	let index = file2index(args.index_file, true)?;
 	let input = std::io::stdin();
 	let writer = Mutex::new(fasta::Writer::new(io::stdout(), "\n", false));
-	fasta::Reader::new(input, true)
+	let default = if args.one_on_one {
+		Some(vec![String::from("0")])
+	} else {
+		None
+	};
+	let default = default.as_ref();
+	fasta::Reader::new(input, false)
 		.records()
 		.chunked(args.chunk_size)
 		.par_bridge()
@@ -886,22 +865,19 @@ fn query_index(args: args::QueryIndex) -> Result<()> {
 					record.sequence = record.sequence
 						.iter()
 						// 1. Search id in the index
-						.map(|id| index.get(id))
-						// 2. Flatten the results twice
+						.map(|id| index.get(id).or(default))
+						// 2. Ignore None's
 						.flatten()
-						.flatten()
-						// 3. Deduplicate
-						.collect::<HashSet<_>>()
-						.iter()
-						// 5. Copy id's for ownership
-						.map(|id| id.to_string())
+						// 3. Join results
+						.map(|id| id.join(","))
 						.collect();
 					record
 				})
+				// 4. Filter empty records
 				.filter(|record| !record.sequence.is_empty())
 				.collect();
 			let mut writer = writer.lock().unwrap();
-			// 6. Writeout transformed records
+			// 5. Writeout transformed records
 			records.into_iter().map(|record| writer.write_record(record)).collect()
 		})
 		.collect()

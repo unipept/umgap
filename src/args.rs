@@ -195,10 +195,6 @@ pub enum Opt {
 	#[structopt(name = "countrecords")]
 	CountRecords,
 
-	/// Index a TSV-file with kmers TODO: better name
-	#[structopt(name = "kmer2ids")]
-	KmerToIds(KmerToIds),
-
 	/// Index a TSV-file with ids TODO: better name
 	#[structopt(name = "queryindex")]
 	QueryIndex(QueryIndex),
@@ -608,6 +604,10 @@ pub struct QueryIndex {
 	/// underlying library select the thread count automatically.
 	#[structopt(short = "j", long = "thread-count")]
 	pub thread_count: Option<usize>,
+
+	/// Map unknown sequences to 0 instead of ignoring them
+	#[structopt(short = "o", long = "one-on-one")]
+	pub one_on_one: bool,
 }
 
 
