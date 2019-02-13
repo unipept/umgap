@@ -288,8 +288,6 @@ write_pwy_names
 puts 'Writing protein pathways'
 write_prot_pwy_tsv
 
-exit
-
 puts 'Writing prot_seq.tsv'
 protseq = protein_sequences
 write_tsv 'prot_seq.tsv',
