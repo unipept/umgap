@@ -1,5 +1,6 @@
 //! Module for DNA related code.
 
+pub mod compact;
 pub mod translation;
 
 /// A Deoxyribose nucleotide.

@@ -28,6 +28,9 @@ extern crate strum;
 #[macro_use]
 extern crate strum_macros;
 
+extern crate num_bigint;
+extern crate num_traits;
+
 pub mod agg;
 pub mod args;
 pub mod dna;
