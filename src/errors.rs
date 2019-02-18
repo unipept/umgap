@@ -10,12 +10,14 @@ extern crate fst;
 extern crate regex;
 
 use agg;
+use dna::compact;
 use dna::translation;
 use taxon;
 
 error_chain! {
 	links {
 		Taxon(taxon::Error, taxon::ErrorKind) #[doc = "Error propagated from Taxon"];
+		Compact(compact::Error, compact::ErrorKind) #[doc = "Error propagated from DNA compact"];
 		Translation(translation::Error, translation::ErrorKind) #[doc = "Error propagated from Translation"];
 		Aggregation(agg::Error, agg::ErrorKind) #[doc = "Error propagated from Aggregation"];
 	}
