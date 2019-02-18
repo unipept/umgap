@@ -38,6 +38,7 @@ use rayon::prelude::*;
 
 extern crate umgap;
 use umgap::dna::Strand;
+use umgap::dna::compact;
 use umgap::dna::translation::TranslationTable;
 use umgap::io::fasta;
 use umgap::io::fastq;
@@ -71,7 +72,7 @@ quick_main!(|| -> Result<()> {
 		args::Opt::Report(args)          => report(args),
 		args::Opt::BestOf(args)          => bestof(args),
 		args::Opt::PrintIndex(args)      => printindex(args),
-		args::Opt::BuildIndex            => buildindex(),
+		args::Opt::BuildIndex(args)            => buildindex(args),
 		args::Opt::CountRecords          => countrecords(),
 	}
 });
@@ -715,7 +716,7 @@ fn printindex(args: args::PrintIndex) -> Result<()> {
 	Ok(())
 }
 
-fn buildindex() -> Result<()> {
+fn buildindex(args: args::BuildIndex) -> Result<()> {
 	let mut reader = csv::ReaderBuilder::new()
 	                                    .has_headers(false)
 	                                    .delimiter(b'\t')
@@ -725,7 +726,11 @@ fn buildindex() -> Result<()> {
 
 	for record in reader.deserialize() {
 		let (kmer, lca): (String, u64) = record?;
-		index.insert(kmer, lca)?;
+		if args.compact {
+			index.insert(compact::to_compact(kmer.as_bytes())?, lca)?;
+		} else {
+			index.insert(kmer, lca)?;
+		}
 	}
 
 	index.finish()?;

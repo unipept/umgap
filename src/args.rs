@@ -189,7 +189,7 @@ pub enum Opt {
 
 	/// Write an FST index of stdin on stdout.
 	#[structopt(name = "buildindex")]
-	BuildIndex,
+	BuildIndex(BuildIndex),
 
 	/// Count the amount of FASTA records from stdin
 	#[structopt(name = "countrecords")]
@@ -548,6 +548,14 @@ pub struct PrintIndex {
 	/// An FST to query
 	#[structopt(parse(from_os_str))]
 	pub fst_file: PathBuf,
+}
+
+/// Write an FST index of stdin on stdout.
+#[derive(Debug, StructOpt)]
+pub struct BuildIndex {
+	/// Whether to use compact representation for the FST
+	#[structopt(short = "c", long = "compact")]
+	pub compact: bool,
 }
 
 error_chain! {

@@ -24,7 +24,7 @@ lazy_static! {
 }
 
 /// Convert an amino acid sequence to a more compact representation.
-pub fn to_compact(aa_seq: Vec<u8>) -> Result<Vec<u8>> {
+pub fn to_compact(aa_seq: &[u8]) -> Result<Vec<u8>> {
 	let mut compact: BigUint = Zero::zero();
 	let mut multiplier: BigUint = One::one();
 	for i in 0..aa_seq.len() {
@@ -61,7 +61,7 @@ mod test {
 	fn test_convert_to() -> () {
 		let aa_bytes = Vec::from(AA_SEQ.as_bytes());
 
-		let compact_bytes = to_compact(aa_bytes);
+		let compact_bytes = to_compact(&aa_bytes);
 		assert!(compact_bytes.is_ok());
 	}
 
@@ -69,7 +69,7 @@ mod test {
 	fn test_conversion() -> () {
 		let aa_bytes = Vec::from(AA_SEQ.as_bytes());
 
-		let compact_bytes = to_compact(aa_bytes);
+		let compact_bytes = to_compact(&aa_bytes);
 		assert!(compact_bytes.is_ok());
 
 		let compact_bytes = compact_bytes.unwrap();
