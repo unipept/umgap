@@ -388,6 +388,7 @@ error_chain! {
 mod tests {
     use super::*;
 	use rank::Rank;
+	use strum::IntoEnumIterator;
     use fixtures;
 
     #[test]
@@ -443,7 +444,7 @@ mod tests {
 	fn test_lineage() {
 		let list  = fixtures::taxon_list();
 		let by_id = fixtures::by_id();
-		let lineage = by_id.lineage(185751);
+		let lineage = by_id.lineage(185751).unwrap();
 		for rank in Rank::iter() {
 			if rank == Rank::Superkingdom {
 				assert_eq!(lineage[rank].as_ref(), Some(&list[3]));
