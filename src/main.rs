@@ -5,6 +5,7 @@ use std::io::Write;
 use std::io::BufRead;
 use std::borrow::Cow;
 use std::fs;
+use std::str;
 use std::collections::HashSet;
 use std::collections::HashMap;
 use std::ops;
@@ -152,7 +153,7 @@ fn pept2lca(args: args::PeptToLca) -> Result<()> {
 		.collect()
 }
 
-fn stream_prot2kmer2lca<R,W>(input: R, output: W, fst: &fst::Map, k: usize, chunk_size: usize, default: Option<u64>) -> Result<()> where R: Read + Send, W: Write + Send{
+fn stream_prot2kmer2lca<R,W>(input: R, output: W, fst: &fst::Map, k: usize, chunk_size: usize, default: Option<u64>, compact: bool) -> Result<()> where R: Read + Send, W: Write + Send{
 	let output_mutex = Mutex::new(output);
 	fasta::Reader::new(input, true)
 		.records()
@@ -166,7 +167,15 @@ fn stream_prot2kmer2lca<R,W>(input: R, output: W, fst: &fst::Map, k: usize, chun
 				if let Some(prot) = read.sequence.get(0).filter(|p| p.len() >= k) {
 					chunk_output.push_str(&format!(">{}\n", read.header));
 					let mut lcas = (0..(prot.len() - k + 1))
-						.map(|i| &prot[i..i + k])
+						.map(|i| {
+							if compact {
+								compact::to_compact(&prot[i..i + k].as_bytes())
+									.map(|bytes| str::from_utf8(&bytes).unwrap_or(""))
+									.unwrap_or("")
+							} else {
+								&prot[i..i + k]
+							}
+						})
 						.filter_map(|kmer| fst.get(kmer).map(Some).unwrap_or(default))
 						.map(|lca| lca.to_string())
 						.collect::<Vec<_>>()
@@ -205,7 +214,8 @@ fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
 									 &fst,
 									 args.length,
 									 args.chunk_size,
-									 default)
+									 default,
+									 args.compact)
 			}).for_each(|result| {
 				match result {
 					Ok(_)  => println!("Connection finished succesfully."),
@@ -219,7 +229,8 @@ fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
 							 &fst,
 							 args.length,
 							 args.chunk_size,
-							 default)
+							 default,
+							 false)
 	}
 }
 

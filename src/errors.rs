@@ -12,6 +12,7 @@ extern crate regex;
 use agg;
 use dna::compact;
 use dna::translation;
+use std::str;
 use taxon;
 
 error_chain! {
@@ -25,6 +26,7 @@ error_chain! {
 		Csv(csv::Error) #[doc = "CSV"];
 		Fst(fst::Error) #[doc = "Fst"];
 		Io(io::Error) #[doc = "IO"];
+		UTF8(str::Utf8Error) #[doc = "UTF8"];
 		ParseI(num::ParseIntError) #[doc = "Parse Integer"];
 		ParseF(num::ParseFloatError) #[doc = "Parse Float"];
 		Regex(regex::Error) #[doc = "Regex"];

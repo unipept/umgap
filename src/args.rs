@@ -272,6 +272,10 @@ pub struct ProtToKmerToLca {
 	#[structopt(parse(from_os_str))]
 	pub fst_file: PathBuf,
 
+	/// Whether the FST uses compact keys
+	#[structopt(short = "C", long = "compact")]
+	pub compact: bool,
+
 	/// Instead of reading from stdin and writing to stdout, create a Unix
 	/// socket to communicate with using OpenBSD's netcat (`nc -NU <socket>`).
 	/// This is especially useful in combination with the `--in-memory` flag:
