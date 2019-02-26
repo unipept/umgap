@@ -170,10 +170,9 @@ fn stream_prot2kmer2lca<R,W>(input: R, output: W, fst: &fst::Map, k: usize, chun
 						.map(|i| {
 							if compact {
 								compact::to_compact(&prot[i..i + k].as_bytes())
-									.map(|bytes| str::from_utf8(&bytes).unwrap_or(""))
-									.unwrap_or("")
+									.unwrap_or(Vec::new())
 							} else {
-								&prot[i..i + k]
+								Vec::from(prot[i..i + k].as_bytes())
 							}
 						})
 						.filter_map(|kmer| fst.get(kmer).map(Some).unwrap_or(default))
