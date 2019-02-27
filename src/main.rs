@@ -8,6 +8,7 @@ use std::fs;
 use std::str;
 use std::collections::HashSet;
 use std::collections::HashMap;
+use std::collections::BinaryHeap;
 use std::ops;
 use std::cmp;
 use std::io::Read;
@@ -734,14 +735,22 @@ fn buildindex(args: args::BuildIndex) -> Result<()> {
 
 	let mut index = fst::MapBuilder::new(io::stdout())?;
 
-	for record in reader.deserialize() {
-		let (kmer, lca): (String, u64) = record?;
-		if args.compact {
-			index.insert(compact::to_compact(kmer.as_bytes())?, lca)?;
-		} else {
+	if args.compact {
+		let mut heap = BinaryHeap::new();
+		for record in reader.deserialize() {
+			let (kmer, lca): (Vec<u8>, u64) = record?;
+			heap.push((compact::to_compact(&kmer)?, lca));
+		}
+		for (k, v) in heap.drain() {
+			index.insert(k, v)?;
+		}
+	} else {
+		for record in reader.deserialize() {
+			let (kmer, lca): (String, u64) = record?;
 			index.insert(kmer, lca)?;
 		}
 	}
+
 
 	index.finish()?;
 
