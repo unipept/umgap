@@ -738,8 +738,8 @@ fn buildindex(args: args::BuildIndex) -> Result<()> {
 	if args.compact {
 		let mut heap = BinaryHeap::new();
 		for record in reader.deserialize() {
-			let (kmer, lca): (Vec<u8>, u64) = record?;
-			heap.push((compact::to_compact(&kmer)?, lca));
+			let (kmer, lca): (String, u64) = record?;
+			heap.push((compact::to_compact(&kmer.as_bytes())?, lca));
 		}
 		for (k, v) in heap.drain() {
 			index.insert(k, v)?;
