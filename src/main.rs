@@ -5,10 +5,8 @@ use std::io::Write;
 use std::io::BufRead;
 use std::borrow::Cow;
 use std::fs;
-use std::str;
 use std::collections::HashSet;
 use std::collections::HashMap;
-use std::collections::BinaryHeap;
 use std::ops;
 use std::cmp;
 use std::io::Read;
@@ -736,12 +734,13 @@ fn buildindex(args: args::BuildIndex) -> Result<()> {
 	let mut index = fst::MapBuilder::new(io::stdout())?;
 
 	if args.compact {
-		let mut heap = BinaryHeap::new();
+		let mut records = Vec::new();
 		for record in reader.deserialize() {
 			let (kmer, lca): (String, u64) = record?;
-			heap.push((compact::to_compact(&kmer.as_bytes())?, lca));
+			records.push((compact::to_compact(&kmer.as_bytes())?, lca));
 		}
-		for (k, v) in heap.drain() {
+		records.sort_unstable();
+		for (k, v) in records.drain(0..) {
 			index.insert(k, v)?;
 		}
 	} else {
