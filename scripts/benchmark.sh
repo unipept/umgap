@@ -132,6 +132,14 @@ sort_fasta(){
         sed "s/~/\n/"                 # Restore sequences
 }
 
+set_cpus(){
+    enabled_cpus="$1"
+    # current PID and all background PID's
+    for pid in $$ $(jobs -lp | tr '\n' ' '); do
+        taskset -apc "$enabled_cpus" "$pid"
+    done
+}
+
 time_part(){
     cmd="$1"
     input="$2"
@@ -215,11 +223,11 @@ benchmark_strong_scaling() {
         cpus+=($i)
         enabled_cpus=$(IFS=, ; echo "${cpus[*]}")
         echo "[$(date)] Strong scaling of $tool with cpus: $enabled_cpus"
-        taskset -apc "$enabled_cpus" $$
+        set_cpus "$enabled_cpus"
         echo -en "$i\t" >> "$logfile"
         cat $input | time_tool "$tool" "$in" >/dev/null 2>> "$logfile"
     done
-    taskset -apc "0-$maxcpu" $$
+    set_cpus "0-$maxcpu"
 }
 
 benchmark_weak_scaling() {
@@ -250,11 +258,11 @@ benchmark_weak_scaling() {
         sed -n "1,${end}p" $input_full > partial_input
 
         echo "[$(date)] Weak scaling of $tool with cpus $enabled_cpus and $end lines"
-        taskset -apc "$enabled_cpus" $$
+        set_cpus "$enabled_cpus"
         echo -en "$(($i+1))\t" >> "$logfile"
         cat $input | time_tool "$tool" "$in" >/dev/null 2>> "$logfile"
     done
-    taskset -apc "0-$maxcpu" $$
+    set_cpus "0-$maxcpu"
 }
 
 function benchmark_full_analysis(){
