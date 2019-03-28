@@ -199,9 +199,10 @@ pub enum Opt {
 	#[structopt(name = "lookup")]
 	Lookup(Lookup),
 
-	/// Aggregate results by picking the ID with the most occurences per read
-	#[structopt(name = "majorityvote")]
-	MajorityVote(MajorityVote),
+	/// Aggregate results per read by picking the sequence with the most
+	/// occurences.
+	#[structopt(name = "aggregate")]
+	Aggregate(Aggregate),
 
 	/// Report the results of a pathway analysis
 	#[structopt(name = "reportpathways")]
@@ -626,9 +627,11 @@ pub struct Lookup {
 	pub has_header: bool,
 }
 
-/// Aggregate results by picking the ID with the most occurences per read
+/// Aggregate results per read by picking the sequence with the most
+/// occurences. When multiple sequences occur the most, one is arbitrarily (but
+/// deterministically) selected.
 #[derive(Debug, StructOpt)]
-pub struct MajorityVote {
+pub struct Aggregate {
 	/// Split lists on the same line (treat items as if they were on different
 	/// lines)
 	#[structopt(short = "s", long = "split-lists")]

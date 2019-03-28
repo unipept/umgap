@@ -76,7 +76,7 @@ quick_main!(|| -> Result<()> {
 		args::Opt::BuildIndex            => buildindex(),
 		args::Opt::CountRecords          => countrecords(),
 		args::Opt::Lookup(args)          => lookup(args),
-		args::Opt::MajorityVote(args)    => majorityvote(args),
+		args::Opt::Aggregate(args)       => aggregate(args),
 		args::Opt::ReportPathways(args)  => report_pathways(args),
 	}
 });
@@ -832,7 +832,7 @@ fn item_counts<I, V>(iter: I) -> Vec<(V, usize)>
 	return counted
 }
 
-fn majorityvote(args: args::MajorityVote) -> Result<()> {
+fn aggregate(args: args::Aggregate) -> Result<()> {
 	let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
 	fasta::Reader::new(std::io::stdin(), false)
 		.records()
