@@ -74,7 +74,8 @@ quick_main!(|| -> Result<()> {
 		args::Opt::PrintIndex(args)      => printindex(args),
 		args::Opt::BuildIndex            => buildindex(),
 		args::Opt::CountRecords          => countrecords(),
-		args::Opt::QueryIndex(args)      => query_index(args),
+		args::Opt::Lookup(args)          => lookup(args),
+		args::Opt::MajorityVote(args)    => majorityvote(args),
 		args::Opt::ReportPathways(args)  => report_pathways(args),
 	}
 });
@@ -755,7 +756,8 @@ fn countrecords() -> Result<()> {
 	Ok(())
 }
 
-fn file2index(file: PathBuf, header: bool) -> Result<HashMap<String, Vec<String>>> {
+fn file2index(file: PathBuf, header: bool, delimiter: &String)
+	-> Result<HashMap<String, Vec<String>>> {
 	let mut lines = BufReader::new(File::open(file)?).lines();
 
 	// Skip header
@@ -765,7 +767,7 @@ fn file2index(file: PathBuf, header: bool) -> Result<HashMap<String, Vec<String>
 
 	lines.map(|line| {
 		let line = line?;
-		let mut split = line.split('\t');
+		let mut split = line.split(delimiter);
 		let kmer: String = String::from(split.next().ok_or("Empty line")?);
 		let ids = split.next().ok_or("No second value")?;
 		let ids = ids.split(',').map(String::from).collect();
@@ -773,9 +775,9 @@ fn file2index(file: PathBuf, header: bool) -> Result<HashMap<String, Vec<String>
 	}).collect()
 }
 
-fn query_index(args: args::QueryIndex) -> Result<()> {
+fn lookup(args: args::Lookup) -> Result<()> {
 	args.thread_count.map_or(Ok(()), |count| set_num_threads(count))?;
-	let index = file2index(args.index_file, true)?;
+	let index = file2index(args.lookup_file, args.has_header, &args.delimiter)?;
 	let input = std::io::stdin();
 	let writer = Mutex::new(fasta::Writer::new(io::stdout(), "\n", false));
 	let default = if args.one_on_one {
@@ -809,6 +811,49 @@ fn query_index(args: args::QueryIndex) -> Result<()> {
 			let mut writer = writer.lock().unwrap();
 			// 5. Writeout transformed records
 			records.into_iter().map(|record| writer.write_record(record)).collect()
+		})
+		.collect()
+}
+
+fn item_counts<I, V>(iter: I) -> Vec<(V, usize)>
+	where
+		I: Iterator<Item=V>,
+		V: std::cmp::Eq + std::hash::Hash + std::cmp::Ord,
+{
+	let mut counts: HashMap<V, usize> = HashMap::new();
+	for item in iter {
+		let counter = counts.entry(item).or_insert(0);
+		*counter += 1;
+	}
+	let mut counted = counts.drain().collect::<Vec<(V, usize)>>();
+	counted.sort_unstable_by_key(|(_id, count)| *count);
+	counted.reverse();
+	return counted
+}
+
+fn majorityvote(args: args::MajorityVote) -> Result<()> {
+	let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
+	fasta::Reader::new(std::io::stdin(), false)
+		.records()
+		.map(|record| {
+			let record = record?;
+			let counts: Vec<(&str, usize)> = if args.split_lists {
+				let item_iter = record.sequence
+					.iter()
+					.flat_map(|seq| seq.split(&args.list_delimiter));
+				item_counts(item_iter)
+			} else {
+				let item_iter = record.sequence
+					.iter()
+					.map(|s| s.as_str());
+				item_counts(item_iter)
+			};
+			let sequence = counts.first()
+				.map_or_else(Vec::new, |(item, _count)| vec![String::from(*item)]);
+			writer.write_record(fasta::Record{
+				header: record.header,
+				sequence
+			})
 		})
 		.collect()
 }

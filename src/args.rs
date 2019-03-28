@@ -195,9 +195,13 @@ pub enum Opt {
 	#[structopt(name = "countrecords")]
 	CountRecords,
 
-	/// Index a TSV-file with ids TODO: better name
-	#[structopt(name = "queryindex")]
-	QueryIndex(QueryIndex),
+	/// Look up id's in a DSV (delimiter-separated value) file
+	#[structopt(name = "lookup")]
+	Lookup(Lookup),
+
+	/// Aggregate results by picking the ID with the most occurences per read
+	#[structopt(name = "majorityvote")]
+	MajorityVote(MajorityVote),
 
 	/// Report the results of a pathway analysis
 	#[structopt(name = "reportpathways")]
@@ -593,12 +597,16 @@ pub struct KmerToIds {
 	pub thread_count: Option<usize>,
 }
 
-/// Query id's in an index file
+/// Look up id's in a DSV (delimiter-separated value) file
 #[derive(Debug, StructOpt)]
-pub struct QueryIndex {
-	/// TSV-file to query
+pub struct Lookup {
+	/// DSV-file to query
 	#[structopt(parse(from_os_str))]
-	pub index_file: PathBuf,
+	pub lookup_file: PathBuf,
+
+	/// Which delimiter the DSV uses (default: "\t")
+	#[structopt(short = "d", long = "delimiter", default_value = "\t")]
+	pub delimiter: String,
 
 	/// How much records to group together
 	#[structopt(short = "c", long = "chunksize", default_value = "240")]
@@ -612,6 +620,27 @@ pub struct QueryIndex {
 	/// Map unknown sequences to 0 instead of ignoring them
 	#[structopt(short = "o", long = "one-on-one")]
 	pub one_on_one: bool,
+
+	/// Skip first line
+	#[structopt(short = "h", long = "header")]
+	pub has_header: bool,
+}
+
+/// Aggregate results by picking the ID with the most occurences per read
+#[derive(Debug, StructOpt)]
+pub struct MajorityVote {
+	/// Split lists on the same line (treat items as if they were on different
+	/// lines)
+	#[structopt(short = "s", long = "split-lists")]
+	pub split_lists: bool,
+
+	/// Specify the delimiter to split lines on (default: ",")
+	#[structopt(short = "d", long = "delimiter", default_value = ",")]
+	pub list_delimiter: String,
+
+	/// How much results to aggregate to, (default: 1)
+	#[structopt(short = "t", long = "top", default_value = "1")]
+	pub top: usize,
 }
 
 /// Report the results of a pathway analysis
