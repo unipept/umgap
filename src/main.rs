@@ -8,6 +8,7 @@ use std::fs::{self, File};
 use std::path::PathBuf;
 use std::collections::HashSet;
 use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::ops;
 use std::cmp;
 use std::io::Read;
@@ -757,7 +758,7 @@ fn countrecords() -> Result<()> {
 }
 
 fn file2index(file: PathBuf, header: bool, delimiter: &String)
-	-> Result<HashMap<String, Vec<String>>> {
+	-> Result<HashMap<String, String>> {
 	let mut lines = BufReader::new(File::open(file)?).lines();
 
 	// Skip header
@@ -767,10 +768,9 @@ fn file2index(file: PathBuf, header: bool, delimiter: &String)
 
 	lines.map(|line| {
 		let line = line?;
-		let mut split = line.split(delimiter);
+		let mut split = line.splitn(2, delimiter);
 		let kmer: String = String::from(split.next().ok_or("Empty line")?);
-		let ids = split.next().ok_or("No second value")?;
-		let ids = ids.split(',').map(String::from).collect();
+		let ids = String::from(split.next().ok_or("No second value")?);
 		Ok((kmer, ids))
 	}).collect()
 }
@@ -781,7 +781,7 @@ fn lookup(args: args::Lookup) -> Result<()> {
 	let input = std::io::stdin();
 	let writer = Mutex::new(fasta::Writer::new(io::stdout(), "\n", false));
 	let default = if args.one_on_one {
-		Some(vec![String::from("0")])
+		Some(String::from("0"))
 	} else {
 		None
 	};
@@ -796,12 +796,12 @@ fn lookup(args: args::Lookup) -> Result<()> {
 				.map(|mut record| {
 					record.sequence = record.sequence
 						.iter()
-						// 1. Search id in the index
+						// Look up id in the index
 						.map(|id| index.get(id).or(default))
-						// 2. Ignore None's
+						// Ignore None's
 						.flatten()
-						// 3. Join results
-						.map(|id| id.join(","))
+						// Copy results
+						.map(|result| result.to_owned())
 						.collect();
 					record
 				})
@@ -820,12 +820,13 @@ fn item_counts<I, V>(iter: I) -> Vec<(V, usize)>
 		I: Iterator<Item=V>,
 		V: std::cmp::Eq + std::hash::Hash + std::cmp::Ord,
 {
-	let mut counts: HashMap<V, usize> = HashMap::new();
+	// Use a BTreeMap for determinism
+	let mut counts: BTreeMap<V, usize> = BTreeMap::new();
 	for item in iter {
 		let counter = counts.entry(item).or_insert(0);
 		*counter += 1;
 	}
-	let mut counted = counts.drain().collect::<Vec<(V, usize)>>();
+	let mut counted = counts.into_iter().collect::<Vec<(V, usize)>>();
 	counted.sort_unstable_by_key(|(_id, count)| *count);
 	counted.reverse();
 	return counted
