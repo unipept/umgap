@@ -75,6 +75,7 @@ quick_main!(|| -> Result<()> {
 		args::Opt::PrintIndex(args)      => printindex(args),
 		args::Opt::BuildIndex            => buildindex(),
 		args::Opt::CountRecords          => countrecords(),
+		args::Opt::Counts                => counts(),
 		args::Opt::Lookup(args)          => lookup(args),
 		args::Opt::Aggregate(args)       => aggregate(args),
 		args::Opt::ReportPathways(args)  => report_pathways(args),
@@ -754,6 +755,17 @@ fn countrecords() -> Result<()> {
 	}
 	println!("Records: {}", records);
 	println!("Sequence items: {}", sequences);
+	Ok(())
+}
+
+fn counts() -> Result<()> {
+	let sequence_iter = fasta::Reader::new(io::stdin(), false)
+		.records()
+		.flatten()
+		.flat_map(|r| r.sequence.into_iter());
+	for (item, count) in item_counts(sequence_iter) {
+		println!("{}\t{}", count, item);
+	}
 	Ok(())
 }
 

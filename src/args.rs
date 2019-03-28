@@ -195,6 +195,10 @@ pub enum Opt {
 	#[structopt(name = "countrecords")]
 	CountRecords,
 
+	/// Count how much each sequence occurs
+	#[structopt(name = "counts")]
+	Counts,
+
 	/// Look up id's in a DSV (delimiter-separated value) file
 	#[structopt(name = "lookup")]
 	Lookup(Lookup),
