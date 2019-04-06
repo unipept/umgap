@@ -77,6 +77,7 @@ quick_main!(|| -> Result<()> {
 		args::Opt::CountRecords          => countrecords(),
 		args::Opt::Counts                => counts(),
 		args::Opt::Lookup(args)          => lookup(args),
+		args::Opt::KmerLookup(args)      => kmer_lookup(args),
 		args::Opt::Aggregate(args)       => aggregate(args),
 		args::Opt::ReportPathways(args)  => report_pathways(args),
 	}
@@ -815,6 +816,49 @@ fn lookup(args: args::Lookup) -> Result<()> {
 						// Copy results
 						.map(|result| result.to_owned())
 						.collect();
+					record
+				})
+				// 4. Filter empty records
+				.filter(|record| !record.sequence.is_empty())
+				.collect();
+			let mut writer = writer.lock().unwrap();
+			// 5. Writeout transformed records
+			records.into_iter().map(|record| writer.write_record(record)).collect()
+		})
+		.collect()
+}
+
+fn kmer_lookup(args: args::KmerLookup) -> Result<()> {
+	args.thread_count.map_or(Ok(()), |count| set_num_threads(count))?;
+	let index = file2index(args.lookup_file, args.has_header, &args.delimiter)?;
+	let input = std::io::stdin();
+	let writer = Mutex::new(fasta::Writer::new(io::stdout(), "\n", false));
+	let default = if args.one_on_one {
+		Some(String::from("0"))
+	} else {
+		None
+	};
+	let k = args.kmer_length;
+	let default = default.as_ref();
+	fasta::Reader::new(input, false)
+		.records()
+		.chunked(args.chunk_size)
+		.par_bridge()
+		.map(|chunk| {
+			let chunk = chunk?;
+			let records: Vec<fasta::Record> = chunk.into_iter()
+				.map(|mut record| {
+					record.sequence = record.sequence
+						.first()
+						.map(|seq| {
+							(0..(seq.len() - k + 1))
+								.map(|i| &seq[i..i + k])
+								.map(|kmer| index.get(kmer).or(default))
+								.flatten()
+								.map(|result| result.to_owned())
+								.collect::<Vec<_>>()
+						})
+						.unwrap_or(Vec::new());
 					record
 				})
 				// 4. Filter empty records

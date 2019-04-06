@@ -203,6 +203,10 @@ pub enum Opt {
 	#[structopt(name = "lookup")]
 	Lookup(Lookup),
 
+	/// Split input into kmers and look them up in a DSV (delimiter-separated value) file
+	#[structopt(name = "kmerlookup")]
+	KmerLookup(KmerLookup),
+
 	/// Aggregate results per read by picking the sequence with the most
 	/// occurences.
 	#[structopt(name = "aggregate")]
@@ -629,6 +633,39 @@ pub struct Lookup {
 	/// Skip first line
 	#[structopt(short = "h", long = "header")]
 	pub has_header: bool,
+}
+
+/// Split input into kmers and look them up in a DSV (delimiter-separated value) file
+#[derive(Debug, StructOpt)]
+pub struct KmerLookup {
+	/// DSV-file to query
+	#[structopt(parse(from_os_str))]
+	pub lookup_file: PathBuf,
+
+	/// Which delimiter the DSV uses (default: "\t")
+	#[structopt(short = "d", long = "delimiter", default_value = "\t")]
+	pub delimiter: String,
+
+	/// How much records to group together
+	#[structopt(short = "c", long = "chunksize", default_value = "240")]
+	pub chunk_size: usize,
+
+	/// How much threads can be used for parallelization. Default is to let the
+	/// underlying library select the thread count automatically.
+	#[structopt(short = "j", long = "thread-count")]
+	pub thread_count: Option<usize>,
+
+	/// Map unknown sequences to 0 instead of ignoring them
+	#[structopt(short = "o", long = "one-on-one")]
+	pub one_on_one: bool,
+
+	/// Skip first line
+	#[structopt(short = "h", long = "header")]
+	pub has_header: bool,
+
+	/// The K in K-mers
+	#[structopt(short = "k", long = "length", default_value = "9")]
+	pub kmer_length: usize,
 }
 
 /// Aggregate results per read by picking the sequence with the most
