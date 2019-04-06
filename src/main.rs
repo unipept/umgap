@@ -853,11 +853,13 @@ fn aggregate(args: args::Aggregate) -> Result<()> {
 			let counts: Vec<(&str, usize)> = if args.split_lists {
 				let item_iter = record.sequence
 					.iter()
+					.filter(|s| s != &"0")
 					.flat_map(|seq| seq.split(&args.list_delimiter));
 				item_counts(item_iter)
 			} else {
 				let item_iter = record.sequence
 					.iter()
+					.filter(|s| s != &"0")
 					.map(|s| s.as_str());
 				item_counts(item_iter)
 			};
