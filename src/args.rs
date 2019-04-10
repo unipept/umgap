@@ -666,6 +666,11 @@ pub struct KmerLookup {
 	/// The K in K-mers
 	#[structopt(short = "k", long = "length", default_value = "9")]
 	pub kmer_length: usize,
+
+	/// Instead of reading from stdin and writing to stdout, create a Unix
+	/// socket to communicate with using OpenBSD's netcat (`nc -NU <socket>`).
+	#[structopt(parse(from_os_str), short = "s", long = "socket")]
+	pub socket: Option<PathBuf>,
 }
 
 /// Aggregate results per read by picking the sequence with the most

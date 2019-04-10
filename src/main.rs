@@ -828,21 +828,17 @@ fn lookup(args: args::Lookup) -> Result<()> {
 		.collect()
 }
 
-fn kmer_lookup(args: args::KmerLookup) -> Result<()> {
-	args.thread_count.map_or(Ok(()), |count| set_num_threads(count))?;
-	let index = file2index(args.lookup_file, args.has_header, &args.delimiter)?;
-	let input = std::io::stdin();
-	let writer = Mutex::new(fasta::Writer::new(io::stdout(), "\n", false));
-	let default = if args.one_on_one {
-		Some(String::from("0"))
-	} else {
-		None
-	};
-	let k = args.kmer_length;
-	let default = default.as_ref();
-	fasta::Reader::new(input, false)
+fn stream_kmer_lookup<R,W>(input: R,
+						   output: W,
+						   index: &HashMap<String, String>,
+						   k: usize,
+						   chunk_size: usize,
+						   default: Option<&String>
+	) -> Result<()> where R: Read + Send, W: Write + Send{
+	let output_mutex = Mutex::new(fasta::Writer::new(output, "\n", false));
+	fasta::Reader::new(input, true)
 		.records()
-		.chunked(args.chunk_size)
+		.chunked(chunk_size)
 		.par_bridge()
 		.map(|chunk| {
 			let chunk = chunk?;
@@ -864,11 +860,51 @@ fn kmer_lookup(args: args::KmerLookup) -> Result<()> {
 				// 4. Filter empty records
 				.filter(|record| !record.sequence.is_empty())
 				.collect();
-			let mut writer = writer.lock().unwrap();
+			let mut writer = output_mutex.lock().unwrap();
 			// 5. Writeout transformed records
 			records.into_iter().map(|record| writer.write_record(record)).collect()
 		})
 		.collect()
+}
+
+
+fn kmer_lookup(args: args::KmerLookup) -> Result<()> {
+	args.thread_count.map_or(Ok(()), |count| set_num_threads(count))?;
+	let index = file2index(args.lookup_file, args.has_header, &args.delimiter)?;
+	let default = if args.one_on_one {
+		Some(String::from("0"))
+	} else {
+		None
+	};
+	let k = args.kmer_length;
+	let chunk_size = args.chunk_size;
+	let default = default.as_ref();
+
+	if let Some(socket_addr) = &args.socket {
+		let listener = UnixListener::bind(socket_addr)?;
+		println!("Socket created, listening for connections.");
+		listener.incoming()
+			.map(|stream| {
+				println!("Connection accepted. Processing...");
+				let stream = stream?;
+				stream_kmer_lookup(&stream,
+								   &stream,
+								   &index,
+								   k,
+								   chunk_size,
+								   default)
+			}).for_each(|result| {
+				match result {
+					Ok(_)  => println!("Connection finished succesfully."),
+					Err(e) => println!("Connection died with an error: {}", e),
+				}
+			});
+		Ok(())
+	} else {
+		let input = std::io::stdin();
+		let output = std::io::stdout();
+		stream_kmer_lookup(input, output, &index, k, chunk_size, default)
+	}
 }
 
 fn item_counts<I, V>(iter: I) -> Vec<(V, usize)>
