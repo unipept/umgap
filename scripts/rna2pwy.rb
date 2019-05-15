@@ -1,8 +1,6 @@
 #!/bin/env ruby
-require 'byebug'
 
 K = 9
-
 KMER_PWY_FILE = 'kmer_pwys.tsv'
 KMER_PROT_FILE = 'kmer_prots.tsv'
 
@@ -24,7 +22,7 @@ def each_record(&block)
     raise 'No header' unless header.start_with?('>')
     seqs = [stdin_line]
     5.times do
-      raise 'Header mismatch' if header != stdin_line # header should be the same
+      raise 'Header mismatch' if header != stdin_line
       seqs << stdin_line
     end
     yield Record.new(header, seqs)
@@ -45,12 +43,13 @@ end
 KMER_HASH = kmer_hash(KMER_PWY_FILE)
 
 # Split into kmers
-def split_in_kmers(sequence, k)
-  (sequence.length - k + 1).times.map{|s| sequence[s..(s+k-1)]}
+def split_in_kmers(sequence)
+  (sequence.length - K + 1).times.map{|s| sequence[s..(s+K-1)]}
 end
 
-# Map a sequence to ids using kmers and return the kmers that occur the most
-# frequent  and returns [max_count, [list of ids occuring max_count times]]
+# Map a sequence to ids using kmers and return the kmers that occur
+# the most frequent and returns
+# [max_count, [list of ids occuring max_count times]]
 def seq_to_ids(sequence)
   id_counts = split_in_kmers(sequence)
     .map{ |kmer| KMER_HASH[kmer] }
@@ -67,10 +66,15 @@ end
 # Takes a list of sequences, tries to map each sequence to
 # ids ands then takes the sequence wiith the highest amount of hits
 def most_likely_id(sequences)
-  ids_counts = sequences.map { |seq| seq_to_ids(seq) }.reject(&:nil?).to_h
+  ids_counts = sequences.map{ |seq| seq_to_ids(seq) }
+                        .reject(&:nil?)
+                        .to_h
   max_count = ids_counts.values.max
   if max_count
-    ids = ids_counts.select{ |ids, count| count == max_count }.keys.flatten.uniq
+    ids = ids_counts.select{ |ids, count| count == max_count }
+                    .keys
+                    .flatten
+                    .uniq
     [ids, max_count]
   end
 end
@@ -90,6 +94,4 @@ each_record do |record|
     end
   end
 end
-
-
 

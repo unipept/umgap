@@ -2,7 +2,7 @@
 require 'mysql2'
 require 'set'
 
-UNIPROT_BIOCYC_REF_FILE = '/home/rien/Unipept/data/biocyc.tsv'
+UNIPROT_BIOCYC_REF_FILE = ARGV[0]
 
 SQL = Mysql2::Client.new host: 'localhost',
                          username: 'biocyc',
@@ -95,9 +95,6 @@ def write_prot_pwy_tsv
     JOIN DBID AS PWYID
       ON PWY.WID = PWYID.OtherWID;
   })
-  #write_tsv 'prot_pwy.tsv',
-  #          ["PROT_NAME", "PROT_ID", "ERXN_ID", "RXN_ID", "EC", "PWY_ID", "PWY_NAME"],
-  #          prot_pwy.map(&:values)
   prot_pwy_hash = Hash.new{ |hash, k| hash[k] = [] }
   prot_pwy.each do |row|
     prot_pwy_hash[row["PROT"]] << row["PWY"]
@@ -254,7 +251,8 @@ def kmer_pathways(kmer_rxns)
   end.reject(&:nil?)
 end
 
-# Returns a hash { n => [k1, k2, ..., km]  } with n the amount of values the 
+# Returns a hash { n => [k1, k2, ..., km]  }
+# with n the amount of values the
 # kmers k1 .. km are matched with.
 def matchcount_kmers(kmers_values)
   counts = Hash.new
@@ -267,15 +265,6 @@ def matchcount_kmers(kmers_values)
     end
   end
   return counts
-end
-
-# Returns an array of [n, m, p] where m is the amount of kmers (p percent of the total kmers)
-# that match with n values.
-def kmer_matches_count(kmer_values)
-  total = kmer_values.values.sum(&:length)
-  kmer_values.to_a
-    .map{|matches, values| [matches, values.length, values.length.to_f / total.to_f]}
-    .sort
 end
 
 def kmer_values_joined_sorted(kmers)
@@ -303,13 +292,6 @@ protkmers = kmer_prots(protseq, k)
 puts 'Writing protein reactions'
 write_prot_rxn_tsv
 
-#puts 'Calculation & writing kmer matchcount'
-
-#kmer_prot_matchcount = matchcount_kmers(protkmers)
-#write_tsv 'kmer_prot_matchcount.tsv',
-#          ["Matchcount", "Count (total: #{protkmers.length})", "Percentage"],
-#          kmer_matches_count(kmer_prot_matchcount)
-
 puts 'Sorting & writing kmer_prots.tsv'
 write_tsv 'kmer_prots.tsv',
           ['KMER', 'PROT_IDS'],
@@ -319,27 +301,14 @@ write_tsv 'kmer_prots.tsv',
 puts 'Calculating reaction kmers'
 rxnkmers = kmer_reactions(protkmers).select{|k,prots| prots.any?}
 
-#puts 'Calculation & writing reaction-kmer matchcount'
-#kmer_rxn_matchcount = matchcount_kmers(rxnkmers)
-#write_tsv 'kmer_rxn_matchcount.tsv',
-#          ["Matchcount", "Count (total: #{rxnkmers.length})", "Percentage"],
-#          kmer_matches_count(kmer_rxn_matchcount)
-
-#puts 'Sorting & writing kmer_rxns.tsv'
-#write_tsv 'kmer_rxns.tsv',
-#          ['KMER', 'RXN_IDS'],
-#          kmer_values_joined_sorted(rxnkmers)
+puts 'Sorting & writing kmer_rxns.tsv'
+write_tsv 'kmer_rxns.tsv',
+          ['KMER', 'RXN_IDS'],
+          kmer_values_joined_sorted(rxnkmers)
 
 # Pathway KMERS
 puts 'Calculating pathway kmers'
 pwykmers = kmer_pathways(rxnkmers)
-
-#puts 'Calculation & writing pathway-kmer matchcount'
-
-#kmer_pwy_matchcount = matchcount_kmers(pwykmers)
-#write_tsv 'kmer_pwy_matchcount.tsv',
-#          ["Matchcount", "Count (total: #{pwykmers.length})", "Percentage"],
-#          kmer_matches_count(kmer_pwy_matchcount)
 
 puts 'Sorting & writing kmer_pwys.tsv'
 write_tsv 'kmer_pwys.tsv',

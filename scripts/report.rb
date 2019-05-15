@@ -2,8 +2,6 @@
 
 Record = Struct.new :header, :sequences
 
-#INPUT = File.open('test.fasta')
-#INPUT = File.open(ARGV[0])
 INPUT = STDIN
 
 def stdin_line
@@ -27,7 +25,7 @@ def each_record(&block)
 end
 
 
-PWY_NAMES = File.open('scripts/pwy_name.tsv')
+PWY_NAMES = File.open('pwy_name.tsv')
                 .readlines
                 .map{|line| line.strip.split("\t")}
                 .map{|id,xid,name| [id.to_i, [xid, name]]}
@@ -35,13 +33,15 @@ PWY_NAMES = File.open('scripts/pwy_name.tsv')
 
 puts "#MATCHES, PWY_ID, PWY_XID, PWY_NAME"
 enum_for(:each_record)
-  .map{|record| record.sequences.map{|seq| seq.split(",").map(&:to_i) }}
+  .map{ |record|
+    record.sequences.map{ |seq| seq.split(",").map(&:to_i) }
+  }
   .flatten
   .group_by(&:itself)
   .transform_values(&:count)
   .to_a
-  .sort_by { |pwy, count| -count }
-  .each do |pwy, count|
+  .sort_by{ |pwy, count| -count }
+  .each{ |pwy, count|
     xid, name = PWY_NAMES[pwy]
     puts [count, pwy, xid, name].join("\t")
-  end
+  }
