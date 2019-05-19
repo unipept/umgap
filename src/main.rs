@@ -136,60 +136,18 @@ fn pept2lca(args: args::PeptToLca) -> Result<()> {
 
 	let default = if args.one_on_one { Some(0) } else { None };
 
-	fasta::Reader::new(io::stdin(), false)
-		.records()
-		.chunked(args.chunk_size)
-		.par_bridge()
-		.map(|chunk| {
-			let chunk = chunk?;
-			let mut chunk_output = String::new();
-			for read in chunk {
-				chunk_output.push_str(&format!(">{}\n", read.header));
-				for seq in read.sequence {
-					if let Some(lca) = fst.get(&seq).map(Some).unwrap_or(default) {
-						chunk_output.push_str(&format!("{}\n", lca));
-					}
-				}
-			}
-			// TODO: make this the result of the map
-			// and print using a Writer
-			print!("{}", chunk_output);
-			Ok(())
-		})
-		.collect()
-}
+	let transform = |record: fasta::Record|{
+		fasta::Record{
+			header: record.header,
+			sequence: record.sequence
+				.into_iter()
+				.filter_map(|seq| fst.get(&seq).or(default))
+				.map(|lca| lca.to_string())
+				.collect()
+		}
+	};
 
-fn stream_prot2kmer2lca<R,W>(input: R, output: W, fst: &fst::Map, k: usize, chunk_size: usize, default: Option<u64>) -> Result<()> where R: Read + Send, W: Write + Send{
-	let output_mutex = Mutex::new(output);
-	fasta::Reader::new(input, true)
-		.records()
-		.chunked(chunk_size)
-		.par_bridge()
-		.map(|chunk| {
-			let chunk = chunk?;
-			let mut chunk_output = String::new();
-			for read in chunk {
-				// Ignore empty reads and reads with a length smaller than k
-				if let Some(prot) = read.sequence.get(0).filter(|p| p.len() >= k) {
-					chunk_output.push_str(&format!(">{}\n", read.header));
-					let mut lcas = (0..(prot.len() - k + 1))
-						.map(|i| &prot[i..i + k])
-						.filter_map(|kmer| fst.get(kmer).map(Some).unwrap_or(default))
-						.map(|lca| lca.to_string())
-						.collect::<Vec<_>>()
-						.join("\n");
-					if !lcas.is_empty(){
-						lcas.push('\n');
-					}
-					chunk_output.push_str(&lcas);
-				}
-			}
-			// TODO: make this the result of the map
-			// and print using a Writer
-			output_mutex.lock().unwrap().write(chunk_output.as_bytes())?;
-			Ok(())
-		})
-		.collect()
+	transform_records(io::stdin(), io::stdout(), &transform, args.chunk_size)
 }
 
 fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
@@ -200,34 +158,30 @@ fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
 	} else {
 		unsafe { fst::Map::from_path(&args.fst_file) }?
 	};
+	let k = args.length;
 	let default = if args.one_on_one { Some(0) } else { None };
+
+	let transform = |record: fasta::Record|{
+		fasta::Record{
+			header: record.header,
+			sequence: record.sequence
+				.first()
+				.map(|seq| {
+					(0..(seq.len() - k + 1))
+						.map(|i| &seq[i..i + k])
+						.map(|kmer| fst.get(&kmer).or(default))
+						.flatten()
+						.map(|lca| lca.to_string())
+						.collect()
+				})
+				.unwrap_or(Vec::new())
+		}
+	};
+
 	if let Some(socket_addr) = &args.socket {
-		let listener = UnixListener::bind(socket_addr)?;
-		println!("Socket created, listening for connections.");
-		listener.incoming()
-			.map(|stream| {
-				println!("Connection accepted. Processing...");
-				let stream = stream?;
-				stream_prot2kmer2lca(&stream,
-									 &stream,
-									 &fst,
-									 args.length,
-									 args.chunk_size,
-									 default)
-			}).for_each(|result| {
-				match result {
-					Ok(_)  => println!("Connection finished succesfully."),
-					Err(e) => println!("Connection died with an error: {}", e),
-				}
-			});
-		Ok(())
+		daemonize(socket_addr, &transform, args.chunk_size)
 	} else {
-		stream_prot2kmer2lca(io::stdin(),
-							 io::stdout(),
-							 &fst,
-							 args.length,
-							 args.chunk_size,
-							 default)
+		transform_records(io::stdin(), io::stdout(), &transform, args.chunk_size)
 	}
 }
 
@@ -770,101 +724,31 @@ fn counts() -> Result<()> {
 	Ok(())
 }
 
-fn file2index(file: PathBuf, header: bool, delimiter: &String)
-	-> Result<HashMap<String, String>> {
-	let mut lines = BufReader::new(File::open(file)?).lines();
-
-	// Skip header
-	if header {
-		lines.next();
-	}
-
-	lines.map(|line| {
-		let line = line?;
-		let mut split = line.splitn(2, delimiter);
-		let kmer: String = String::from(split.next().ok_or("Empty line")?);
-		let ids = String::from(split.next().ok_or("No second value")?);
-		Ok((kmer, ids))
-	}).collect()
-}
 
 fn lookup(args: args::Lookup) -> Result<()> {
 	args.thread_count.map_or(Ok(()), |count| set_num_threads(count))?;
 	let index = file2index(args.lookup_file, args.has_header, &args.delimiter)?;
-	let input = std::io::stdin();
-	let writer = Mutex::new(fasta::Writer::new(io::stdout(), "\n", false));
 	let default = if args.one_on_one {
 		Some(String::from("0"))
 	} else {
 		None
 	};
 	let default = default.as_ref();
-	fasta::Reader::new(input, false)
-		.records()
-		.chunked(args.chunk_size)
-		.par_bridge()
-		.map(|chunk| {
-			let chunk = chunk?;
-			let records: Vec<fasta::Record> = chunk.into_iter()
-				.map(|mut record| {
-					record.sequence = record.sequence
-						.iter()
-						// Look up id in the index
-						.map(|id| index.get(id).or(default))
-						// Ignore None's
-						.flatten()
-						// Copy results
-						.map(|result| result.to_owned())
-						.collect();
-					record
-				})
-				// 4. Filter empty records
-				.filter(|record| !record.sequence.is_empty())
-				.collect();
-			let mut writer = writer.lock().unwrap();
-			// 5. Writeout transformed records
-			records.into_iter().map(|record| writer.write_record(record)).collect()
-		})
-		.collect()
-}
-
-fn stream_kmer_lookup<R,W>(input: R,
-						   output: W,
-						   index: &HashMap<String, String>,
-						   k: usize,
-						   chunk_size: usize,
-						   default: Option<&String>
-	) -> Result<()> where R: Read + Send, W: Write + Send{
-	let output_mutex = Mutex::new(fasta::Writer::new(output, "\n", false));
-	fasta::Reader::new(input, true)
-		.records()
-		.chunked(chunk_size)
-		.par_bridge()
-		.map(|chunk| {
-			let chunk = chunk?;
-			let records: Vec<fasta::Record> = chunk.into_iter()
-				.map(|mut record| {
-					record.sequence = record.sequence
-						.first()
-						.map(|seq| {
-							(0..(seq.len() - k + 1))
-								.map(|i| &seq[i..i + k])
-								.map(|kmer| index.get(kmer).or(default))
-								.flatten()
-								.map(|result| result.to_owned())
-								.collect::<Vec<_>>()
-						})
-						.unwrap_or(Vec::new());
-					record
-				})
-				// 4. Filter empty records
-				.filter(|record| !record.sequence.is_empty())
-				.collect();
-			let mut writer = output_mutex.lock().unwrap();
-			// 5. Writeout transformed records
-			records.into_iter().map(|record| writer.write_record(record)).collect()
-		})
-		.collect()
+	let transform = |record: fasta::Record| {
+		fasta::Record {
+			header: record.header,
+			sequence: record.sequence
+				.iter()
+				// Look up id in the index
+				.map(|id| index.get(id).or(default))
+				// Ignore None's
+				.flatten()
+				// Copy results
+				.map(|result| result.to_owned())
+				.collect()
+		}
+	};
+	transform_records(io::stdin(), io::stdout(), &transform, args.chunk_size)
 }
 
 
@@ -880,30 +764,29 @@ fn kmer_lookup(args: args::KmerLookup) -> Result<()> {
 	let chunk_size = args.chunk_size;
 	let default = default.as_ref();
 
+	let transform = |record: fasta::Record| {
+		fasta::Record {
+			header: record.header,
+			sequence: record.sequence
+				.first()
+				.map(|seq| {
+					(0..(seq.len() - k + 1))
+						.map(|i| &seq[i..i + k])
+						.map(|kmer| index.get(kmer).or(default))
+						.flatten()
+						.map(|result| result.to_owned())
+						.collect::<Vec<_>>()
+				})
+				.unwrap_or(Vec::new())
+		}
+	};
+
 	if let Some(socket_addr) = &args.socket {
-		let listener = UnixListener::bind(socket_addr)?;
-		println!("Socket created, listening for connections.");
-		listener.incoming()
-			.map(|stream| {
-				println!("Connection accepted. Processing...");
-				let stream = stream?;
-				stream_kmer_lookup(&stream,
-								   &stream,
-								   &index,
-								   k,
-								   chunk_size,
-								   default)
-			}).for_each(|result| {
-				match result {
-					Ok(_)  => println!("Connection finished succesfully."),
-					Err(e) => println!("Connection died with an error: {}", e),
-				}
-			});
-		Ok(())
+		daemonize(socket_addr, &transform, chunk_size)
 	} else {
 		let input = std::io::stdin();
 		let output = std::io::stdout();
-		stream_kmer_lookup(input, output, &index, k, chunk_size, default)
+		transform_records(input, output, &transform, chunk_size)
 	}
 }
 
@@ -988,7 +871,70 @@ fn report_pathways(args: args::ReportPathways) -> Result<()> {
 	Ok(())
 }
 
+fn file2index(file: PathBuf, header: bool, delimiter: &String)
+	-> Result<HashMap<String, String>> {
+	let mut lines = BufReader::new(File::open(file)?).lines();
 
+	// Skip header
+	if header {
+		lines.next();
+	}
+
+	lines.map(|line| {
+		let line = line?;
+		let mut split = line.splitn(2, delimiter);
+		let kmer: String = String::from(split.next().ok_or("Empty line")?);
+		let ids = String::from(split.next().ok_or("No second value")?);
+		Ok((kmer, ids))
+	}).collect()
+}
+
+fn transform_records<R, W, F>(input: R,
+							  output: W,
+							  transform: &F,
+							  chunk_size: usize)
+	-> Result<()>
+	where R: Read + Send,
+		  W: Write + Send,
+		  F: Fn(fasta::Record) -> fasta::Record + Sync {
+	let output_mutex = Mutex::new(fasta::Writer::new(output, "\n", false));
+	fasta::Reader::new(input, false)
+		.records()
+		.chunked(chunk_size)
+		.par_bridge()
+		.map(|chunk| {
+			let chunk = chunk?;
+			let mut records = Vec::new();
+			for record in chunk {
+				records.push(transform(record));
+			}
+			let mut writer = output_mutex.lock().unwrap();
+			for record in records {
+				writer.write_record(record)?;
+			}
+			Ok(())
+		})
+		.collect()
+}
+
+fn daemonize<F>(socket_addr: &PathBuf, transform: F, chunk_size: usize)
+-> Result<()>
+	where F: Fn(fasta::Record) -> fasta::Record + Sync {
+	let listener = UnixListener::bind(socket_addr)?;
+	println!("Socket created, listening for connections.");
+	listener.incoming()
+		.map(|stream| {
+			println!("Connection accepted. Processing...");
+			let stream = stream?;
+			transform_records(&stream, &stream, &transform, chunk_size)
+		}).for_each(|result| {
+			match result {
+				Ok(_)  => println!("Connection finished succesfully."),
+				Err(e) => println!("Connection died with an error: {}", e),
+			}
+		});
+	Ok(())
+}
 
 fn set_num_threads(num: usize) -> Result<()> {
 	rayon::ThreadPoolBuilder::new().num_threads(num).build_global()?;
