@@ -85,7 +85,7 @@ impl FromStr for Taxon {
     /// ```
     #[cfg_attr(rustfmt, rustfmt_skip)]
     fn from_str(s: &str) -> Result<Self> {
-        let split: Vec<&str> = s.trim_right().split('\t').collect();
+        let split: Vec<&str> = s.trim_end().split('\t').collect();
 
         if split.len() != 5 { bail!("Taxon requires five fields"); }
         match (split[0].parse::<TaxonId>(),
