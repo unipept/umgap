@@ -211,10 +211,6 @@ pub enum Opt {
 	/// occurences.
 	#[structopt(name = "aggregate")]
 	Aggregate(Aggregate),
-
-	/// Report the results of a pathway analysis
-	#[structopt(name = "reportpathways")]
-	ReportPathways(ReportPathways),
 }
 
 /// Translates DNA into Amino Acid Sequences.
@@ -690,14 +686,6 @@ pub struct Aggregate {
 	/// How much results to aggregate to, (default: 1)
 	#[structopt(short = "t", long = "top", default_value = "1")]
 	pub top: usize,
-}
-
-/// Report the results of a pathway analysis
-#[derive(Debug, StructOpt)]
-pub struct ReportPathways {
-	/// File with pathway info
-	#[structopt(parse(from_os_str))]
-	pub pathway_info_file: PathBuf,
 }
 
 

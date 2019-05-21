@@ -1,9 +1,9 @@
 #![cfg_attr(rustfmt, rustfmt_skip)]
 
 use std::io::{self, Write};
-use std::io::{BufRead,BufReader};
+use std::io::BufRead;
 use std::borrow::Cow;
-use std::fs::{self, File};
+use std::fs;
 use std::collections::{HashSet, HashMap};
 use std::ops;
 use std::cmp;
@@ -70,7 +70,6 @@ quick_main!(|| -> Result<()> {
 		args::Opt::Lookup(args)          => lookup(args),
 		args::Opt::KmerLookup(args)      => kmer_lookup(args),
 		args::Opt::Aggregate(args)       => aggregate(args),
-		args::Opt::ReportPathways(args)  => report_pathways(args),
 	}
 });
 
@@ -821,39 +820,4 @@ fn aggregate(args: args::Aggregate) -> Result<()> {
 			})
 		})
 		.collect()
-}
-
-fn report_pathways(args: args::ReportPathways) -> Result<()> {
-	let mut pathwaydb: HashMap<String, (String, String)> = HashMap::new();
-	let mut lines = BufReader::new(File::open(args.pathway_info_file)?).lines();
-	lines.next(); // Skip header
-	for line in lines {
-		let line = line?;
-		let mut split = line.split('\t');
-		let id: String = String::from(split.next().ok_or("Empty line")?);
-		let values = (String::from(split.next().ok_or("No XID")?),
-					  String::from(split.next().ok_or("No name")?));
-		pathwaydb.insert(id, values);
-	}
-
-	let mut counts: HashMap<String, usize> = HashMap::new();
-	for record in fasta::Reader::new(std::io::stdin(), false).records() {
-		let record = record?;
-		for ids in record.sequence {
-			for id in ids.split(',') {
-				let counter = counts.entry(String::from(id)).or_insert(0);
-				*counter += 1;
-			}
-		}
-	}
-	let unknown = (String::from("unknown"), String::from("unknown"));
-	let mut counted = counts.drain().collect::<Vec<(String, usize)>>();
-	counted.sort_unstable_by_key(|(_id, count)| *count);
-	counted.reverse();
-	println!("#MATCHES\tPWY_ID\tPWY_XID\tPWY_NAME");
-	for (id, count) in counted {
-			let (xid, name) = pathwaydb.get(&id).unwrap_or(&unknown);
-			println!("{}\t{}\t{}\t{}", count, id, xid, name);
-	}
-	Ok(())
 }
