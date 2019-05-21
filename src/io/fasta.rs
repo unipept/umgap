@@ -8,6 +8,9 @@ use std::io::Lines;
 use std::io::Read;
 use std::io::Write;
 use std::iter::Peekable;
+use std::sync::Mutex;
+
+use rayon::prelude::*;
 
 use errors;
 use errors::Result;
@@ -174,4 +177,35 @@ impl<'a, W: Write> Writer<'a, W> {
 		}
 		Ok(())
 	}
+}
+
+/// Parse FASTA-records from the input, transform these records using the given
+/// transform function in paralllel (in chunks with the given chunk size), and
+/// write the trasformed records to the output.
+pub fn transform_records<R, W, F>(input: R,
+                                  output: W,
+                                  transform: &F,
+                                  chunk_size: usize)
+                                  -> Result<()>
+	where R: Read + Send,
+	      W: Write + Send,
+	      F: Fn(Record) -> Record + Sync
+{
+	let output_mutex = Mutex::new(Writer::new(output, "\n", false));
+	Reader::new(input, false).records()
+	                         .chunked(chunk_size)
+	                         .par_bridge()
+	                         .map(|chunk| {
+		                         let chunk = chunk?;
+		                         let mut records = Vec::new();
+		                         for record in chunk {
+			                         records.push(transform(record));
+			                        }
+		                         let mut writer = output_mutex.lock().unwrap();
+		                         for record in records {
+			                         writer.write_record(record)?;
+			                        }
+		                         Ok(())
+		                        })
+	                         .collect()
 }

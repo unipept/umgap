@@ -1,19 +1,12 @@
 #![cfg_attr(rustfmt, rustfmt_skip)]
 
-use std::io;
-use std::io::Write;
+use std::io::{self, Write};
 use std::io::{BufRead,BufReader};
 use std::borrow::Cow;
 use std::fs::{self, File};
-use std::path::PathBuf;
-use std::collections::HashSet;
-use std::collections::HashMap;
-use std::collections::BTreeMap;
+use std::collections::{HashSet, HashMap};
 use std::ops;
 use std::cmp;
-use std::io::Read;
-use std::os::unix::net::UnixListener;
-use std::sync::Mutex;
 
 extern crate clap;
 
@@ -35,8 +28,6 @@ extern crate structopt;
 use structopt::StructOpt;
 
 extern crate strum;
-extern crate rayon;
-use rayon::prelude::*;
 
 extern crate umgap;
 use umgap::dna::Strand;
@@ -126,7 +117,7 @@ fn translate(args: args::Translate) -> Result<()> {
 }
 
 fn pept2lca(args: args::PeptToLca) -> Result<()> {
-	args.thread_count.map_or(Ok(()), |count| set_num_threads(count))?;
+	args.thread_count.map_or(Ok(()), |count| utils::set_num_threads(count))?;
 	let fst = if args.fst_in_memory {
 		let bytes = fs::read(args.fst_file)?;
 		fst::Map::from_bytes(bytes)?
@@ -146,12 +137,14 @@ fn pept2lca(args: args::PeptToLca) -> Result<()> {
 				.collect()
 		}
 	};
-
-	transform_records(io::stdin(), io::stdout(), &transform, args.chunk_size)
+	fasta::transform_records(io::stdin(),
+							 io::stdout(),
+							 &transform,
+							 args.chunk_size)
 }
 
 fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
-	args.thread_count.map_or(Ok(()), |count| set_num_threads(count))?;
+	args.thread_count.map_or(Ok(()), |count| utils::set_num_threads(count))?;
 	let fst = if args.fst_in_memory {
 		let bytes = fs::read(&args.fst_file)?;
 		fst::Map::from_bytes(bytes)?
@@ -179,9 +172,12 @@ fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
 	};
 
 	if let Some(socket_addr) = &args.socket {
-		daemonize(socket_addr, &transform, args.chunk_size)
+		utils::daemonize(socket_addr, &transform, args.chunk_size)
 	} else {
-		transform_records(io::stdin(), io::stdout(), &transform, args.chunk_size)
+		fasta::transform_records(io::stdin(),
+								 io::stdout(),
+								 &transform,
+								 args.chunk_size)
 	}
 }
 
@@ -718,7 +714,7 @@ fn counts() -> Result<()> {
 		.records()
 		.flatten()
 		.flat_map(|r| r.sequence.into_iter());
-	for (item, count) in item_counts(sequence_iter) {
+	for (item, count) in utils::item_counts(sequence_iter) {
 		println!("{}\t{}", count, item);
 	}
 	Ok(())
@@ -726,8 +722,10 @@ fn counts() -> Result<()> {
 
 
 fn lookup(args: args::Lookup) -> Result<()> {
-	args.thread_count.map_or(Ok(()), |count| set_num_threads(count))?;
-	let index = file2index(args.lookup_file, args.has_header, &args.delimiter)?;
+	args.thread_count.map_or(Ok(()), |count| utils::set_num_threads(count))?;
+	let index = utils::file2index(args.lookup_file,
+								  args.has_header,
+								  &args.delimiter)?;
 	let default = if args.one_on_one {
 		Some(String::from("0"))
 	} else {
@@ -748,13 +746,18 @@ fn lookup(args: args::Lookup) -> Result<()> {
 				.collect()
 		}
 	};
-	transform_records(io::stdin(), io::stdout(), &transform, args.chunk_size)
+	fasta::transform_records(io::stdin(),
+							 io::stdout(),
+							 &transform,
+							 args.chunk_size)
 }
 
 
 fn kmer_lookup(args: args::KmerLookup) -> Result<()> {
-	args.thread_count.map_or(Ok(()), |count| set_num_threads(count))?;
-	let index = file2index(args.lookup_file, args.has_header, &args.delimiter)?;
+	args.thread_count.map_or(Ok(()), |count| utils::set_num_threads(count))?;
+	let index = utils::file2index(args.lookup_file,
+								  args.has_header,
+								  &args.delimiter)?;
 	let default = if args.one_on_one {
 		Some(String::from("0"))
 	} else {
@@ -782,29 +785,13 @@ fn kmer_lookup(args: args::KmerLookup) -> Result<()> {
 	};
 
 	if let Some(socket_addr) = &args.socket {
-		daemonize(socket_addr, &transform, chunk_size)
+		utils::daemonize(socket_addr, &transform, chunk_size)
 	} else {
-		let input = std::io::stdin();
-		let output = std::io::stdout();
-		transform_records(input, output, &transform, chunk_size)
+		fasta::transform_records(io::stdin(),
+								 io::stdout(),
+								 &transform,
+								 chunk_size)
 	}
-}
-
-fn item_counts<I, V>(iter: I) -> Vec<(V, usize)>
-	where
-		I: Iterator<Item=V>,
-		V: std::cmp::Eq + std::hash::Hash + std::cmp::Ord,
-{
-	// Use a BTreeMap for determinism
-	let mut counts: BTreeMap<V, usize> = BTreeMap::new();
-	for item in iter {
-		let counter = counts.entry(item).or_insert(0);
-		*counter += 1;
-	}
-	let mut counted = counts.into_iter().collect::<Vec<(V, usize)>>();
-	counted.sort_unstable_by_key(|(_id, count)| *count);
-	counted.reverse();
-	return counted
 }
 
 fn aggregate(args: args::Aggregate) -> Result<()> {
@@ -818,13 +805,13 @@ fn aggregate(args: args::Aggregate) -> Result<()> {
 					.iter()
 					.filter(|s| s != &"0")
 					.flat_map(|seq| seq.split(&args.list_delimiter));
-				item_counts(item_iter)
+				utils::item_counts(item_iter)
 			} else {
 				let item_iter = record.sequence
 					.iter()
 					.filter(|s| s != &"0")
 					.map(|s| s.as_str());
-				item_counts(item_iter)
+				utils::item_counts(item_iter)
 			};
 			let sequence = counts.first()
 				.map_or_else(Vec::new, |(item, _count)| vec![String::from(*item)]);
@@ -868,75 +855,5 @@ fn report_pathways(args: args::ReportPathways) -> Result<()> {
 			let (xid, name) = pathwaydb.get(&id).unwrap_or(&unknown);
 			println!("{}\t{}\t{}\t{}", count, id, xid, name);
 	}
-	Ok(())
-}
-
-fn file2index(file: PathBuf, header: bool, delimiter: &String)
-	-> Result<HashMap<String, String>> {
-	let mut lines = BufReader::new(File::open(file)?).lines();
-
-	// Skip header
-	if header {
-		lines.next();
-	}
-
-	lines.map(|line| {
-		let line = line?;
-		let mut split = line.splitn(2, delimiter);
-		let kmer: String = String::from(split.next().ok_or("Empty line")?);
-		let ids = String::from(split.next().ok_or("No second value")?);
-		Ok((kmer, ids))
-	}).collect()
-}
-
-fn transform_records<R, W, F>(input: R,
-							  output: W,
-							  transform: &F,
-							  chunk_size: usize)
-	-> Result<()>
-	where R: Read + Send,
-		  W: Write + Send,
-		  F: Fn(fasta::Record) -> fasta::Record + Sync {
-	let output_mutex = Mutex::new(fasta::Writer::new(output, "\n", false));
-	fasta::Reader::new(input, false)
-		.records()
-		.chunked(chunk_size)
-		.par_bridge()
-		.map(|chunk| {
-			let chunk = chunk?;
-			let mut records = Vec::new();
-			for record in chunk {
-				records.push(transform(record));
-			}
-			let mut writer = output_mutex.lock().unwrap();
-			for record in records {
-				writer.write_record(record)?;
-			}
-			Ok(())
-		})
-		.collect()
-}
-
-fn daemonize<F>(socket_addr: &PathBuf, transform: F, chunk_size: usize)
--> Result<()>
-	where F: Fn(fasta::Record) -> fasta::Record + Sync {
-	let listener = UnixListener::bind(socket_addr)?;
-	println!("Socket created, listening for connections.");
-	listener.incoming()
-		.map(|stream| {
-			println!("Connection accepted. Processing...");
-			let stream = stream?;
-			transform_records(&stream, &stream, &transform, chunk_size)
-		}).for_each(|result| {
-			match result {
-				Ok(_)  => println!("Connection finished succesfully."),
-				Err(e) => println!("Connection died with an error: {}", e),
-			}
-		});
-	Ok(())
-}
-
-fn set_num_threads(num: usize) -> Result<()> {
-	rayon::ThreadPoolBuilder::new().num_threads(num).build_global()?;
 	Ok(())
 }
