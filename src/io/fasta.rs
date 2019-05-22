@@ -192,20 +192,18 @@ pub fn transform_records<R, W, F>(input: R,
 	      F: Fn(Record) -> Record + Sync
 {
 	let output_mutex = Mutex::new(Writer::new(output, "\n", false));
-	Reader::new(input, false).records()
-	                         .chunked(chunk_size)
-	                         .par_bridge()
-	                         .map(|chunk| {
-		                         let chunk = chunk?;
-		                         let mut records = Vec::new();
-		                         for record in chunk {
-			                         records.push(transform(record));
-			                        }
-		                         let mut writer = output_mutex.lock().unwrap();
-		                         for record in records {
-			                         writer.write_record(record)?;
-			                        }
-		                         Ok(())
-		                        })
-	                         .collect()
+	let reader = Reader::new(input, false);
+	reader.records()
+	      .chunked(chunk_size)
+	      .par_bridge()
+	      .map(|chunk| {
+		      let records = chunk?.into_iter()
+		                          .map(|record| transform(record))
+		                          .collect::<Vec<Record>>();
+		      let mut writer = output_mutex.lock().unwrap();
+		      records.into_iter()
+		             .map(|record| writer.write_record(record))
+		             .collect()
+		     })
+	      .collect()
 }
