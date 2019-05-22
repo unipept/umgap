@@ -722,7 +722,7 @@ fn counts() -> Result<()> {
 
 fn lookup(args: args::Lookup) -> Result<()> {
 	args.thread_count.map_or(Ok(()), |count| utils::set_num_threads(count))?;
-	let index = utils::file2index(args.lookup_file,
+	let index = utils::file2index(args.index_file,
 								  args.has_header,
 								  &args.delimiter)?;
 	let default = if args.one_on_one {
@@ -754,7 +754,7 @@ fn lookup(args: args::Lookup) -> Result<()> {
 
 fn kmer_lookup(args: args::KmerLookup) -> Result<()> {
 	args.thread_count.map_or(Ok(()), |count| utils::set_num_threads(count))?;
-	let index = utils::file2index(args.lookup_file,
+	let index = utils::file2index(args.index_file,
 								  args.has_header,
 								  &args.delimiter)?;
 	let default = if args.one_on_one {

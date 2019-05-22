@@ -195,19 +195,20 @@ pub enum Opt {
 	#[structopt(name = "countrecords")]
 	CountRecords,
 
-	/// Count how much each sequence occurs
+	/// Read FASTA-records from stdin and create a frequency table from their
+	/// sequences.
 	#[structopt(name = "counts")]
 	Counts,
 
-	/// Look up id's in a DSV (delimiter-separated value) file
+	/// Look up FASTA-sequences in an index file
 	#[structopt(name = "lookup")]
 	Lookup(Lookup),
 
-	/// Split input into kmers and look them up in a DSV (delimiter-separated value) file
+	/// Split FASTA-sequences into kmers and look them up in an index file
 	#[structopt(name = "kmerlookup")]
 	KmerLookup(KmerLookup),
 
-	/// Aggregate results per read by picking the sequence with the most
+	/// Aggregate results per record by picking the sequence with the most
 	/// occurences.
 	#[structopt(name = "aggregate")]
 	Aggregate(Aggregate),
@@ -264,7 +265,7 @@ pub struct PeptToLca {
 	#[structopt(short = "m", long = "in-memory")]
 	pub fst_in_memory: bool,
 
-	/// How much reads to group together in one chunk, bigger chunks decrease
+	/// How much records to group together in one chunk, bigger chunks decrease
 	/// the overhead caused by multithreading. Because the output order is not
 	/// necessarily the same as the input order, having a chunk size which is
 	/// a multiple of 12 (all 6 translations multiplied by the two paired-end
@@ -295,7 +296,8 @@ pub struct ProtToKmerToLca {
 	pub fst_file: PathBuf,
 
 	/// Instead of reading from stdin and writing to stdout, create a Unix
-	/// socket to communicate with using OpenBSD's netcat (`nc -NU <socket>`).
+	/// socket to communicate with. This socket can be communicated with using
+	/// socat for example: (` socat - UNIX-CONNECT:<socket>`).
 	/// This is especially useful in combination with the `--in-memory` flag:
 	/// you only have to load the FST in memory once, after which you can query
 	/// it without having the loading time overhead each time.
@@ -308,7 +310,7 @@ pub struct ProtToKmerToLca {
 	#[structopt(short = "m", long = "in-memory")]
 	pub fst_in_memory: bool,
 
-	/// How much reads to group together in one chunk, bigger chunks decrease
+	/// How much records to group together in one chunk, bigger chunks decrease
 	/// the overhead caused by multithreading. Because the output order is not
 	/// necessarily the same as the input order, having a chunk size which is
 	/// a multiple of 12 (all 6 translations multiplied by the two paired-end
@@ -577,43 +579,24 @@ pub struct PrintIndex {
 	pub fst_file: PathBuf,
 }
 
-/// Map kmer to a list of ids using an index file
+/// Use the sequences of FASTA-records in stdin to look them up
+/// in the index file
 #[derive(Debug, StructOpt)]
-pub struct KmerToIds {
-	/// TSV-file to query
+pub struct Lookup {
+	/// Index file to query
 	#[structopt(parse(from_os_str))]
 	pub index_file: PathBuf,
 
-	/// The number of frames of which to pick the best
-	#[structopt(short = "f", long = "frames", default_value = "6")]
-	pub frames: usize,
-
-	/// Length of a kmer
-	#[structopt(short = "k", long = "length", default_value = "9")]
-	pub length: usize,
-
-	/// Show all records, even those with no results
-	#[structopt(short = "a", long = "all-records")]
-	pub all_records: bool,
-
-	/// How much threads can be used for parallelization. Default is to let the
-	/// underlying library select the thread count automatically.
-	#[structopt(short = "j", long = "thread-count")]
-	pub thread_count: Option<usize>,
-}
-
-/// Look up id's in a DSV (delimiter-separated value) file
-#[derive(Debug, StructOpt)]
-pub struct Lookup {
-	/// DSV-file to query
-	#[structopt(parse(from_os_str))]
-	pub lookup_file: PathBuf,
-
-	/// Which delimiter the DSV uses (default: "\t")
+	/// Which delimiter the index file uses to separate keys from values
+	/// (default: tab).
 	#[structopt(short = "d", long = "delimiter", default_value = "\t")]
 	pub delimiter: String,
 
-	/// How much records to group together
+	/// How much records to group together in one chunk, bigger chunks decrease
+	/// the overhead caused by multithreading. Because the output order is not
+	/// necessarily the same as the input order, having a chunk size which is
+	/// a multiple of 12 (all 6 translations multiplied by the two paired-end
+	/// reads) will keep sequences of the same reads together.
 	#[structopt(short = "c", long = "chunksize", default_value = "240")]
 	pub chunk_size: usize,
 
@@ -626,23 +609,29 @@ pub struct Lookup {
 	#[structopt(short = "o", long = "one-on-one")]
 	pub one_on_one: bool,
 
-	/// Skip first line
+	/// Skip first line of the index file
 	#[structopt(short = "h", long = "header")]
 	pub has_header: bool,
 }
 
-/// Split input into kmers and look them up in a DSV (delimiter-separated value) file
+/// Split the sequences of FASTA-records in stdin into kmers and look them up
+/// in the index file
 #[derive(Debug, StructOpt)]
 pub struct KmerLookup {
-	/// DSV-file to query
+	/// Index file to query
 	#[structopt(parse(from_os_str))]
-	pub lookup_file: PathBuf,
+	pub index_file: PathBuf,
 
-	/// Which delimiter the DSV uses (default: "\t")
+	/// Which delimiter the index file uses to separate keys from values
+	/// (default: tab).
 	#[structopt(short = "d", long = "delimiter", default_value = "\t")]
 	pub delimiter: String,
 
-	/// How much records to group together
+	/// How much records to group together in one chunk, bigger chunks decrease
+	/// the overhead caused by multithreading. Because the output order is not
+	/// necessarily the same as the input order, having a chunk size which is
+	/// a multiple of 12 (all 6 translations multiplied by the two paired-end
+	/// reads) will keep sequences of the same reads together.
 	#[structopt(short = "c", long = "chunksize", default_value = "240")]
 	pub chunk_size: usize,
 
@@ -655,7 +644,7 @@ pub struct KmerLookup {
 	#[structopt(short = "o", long = "one-on-one")]
 	pub one_on_one: bool,
 
-	/// Skip first line
+	/// Skip first line of the index file
 	#[structopt(short = "h", long = "header")]
 	pub has_header: bool,
 
@@ -664,12 +653,13 @@ pub struct KmerLookup {
 	pub kmer_length: usize,
 
 	/// Instead of reading from stdin and writing to stdout, create a Unix
-	/// socket to communicate with using OpenBSD's netcat (`nc -NU <socket>`).
+	/// socket to communicate with. This socket can be communicated with using
+	/// socat for example: (` socat - UNIX-CONNECT:<socket>`).
 	#[structopt(parse(from_os_str), short = "s", long = "socket")]
 	pub socket: Option<PathBuf>,
 }
 
-/// Aggregate results per read by picking the sequence with the most
+/// Aggregate results per record by picking the sequence with the most
 /// occurences. When multiple sequences occur the most, one is arbitrarily (but
 /// deterministically) selected.
 #[derive(Debug, StructOpt)]
@@ -682,10 +672,6 @@ pub struct Aggregate {
 	/// Specify the delimiter to split lines on (default: ",")
 	#[structopt(short = "d", long = "delimiter", default_value = ",")]
 	pub list_delimiter: String,
-
-	/// How much results to aggregate to, (default: 1)
-	#[structopt(short = "t", long = "top", default_value = "1")]
-	pub top: usize,
 }
 
 
