@@ -274,7 +274,8 @@ pub struct PeptToLca {
 	pub chunk_size: usize,
 
 	/// How much threads can be used for parallelization. Default is to let the
-	/// underlying library select the thread count automatically.
+	/// underlying library [rayon](https://docs.rs/rayon/latest/rayon/) select
+	/// the thread count automatically based on the number of logical CPUs.
 	#[structopt(short = "j", long = "thread-count")]
 	pub thread_count: Option<usize>,
 }
@@ -319,7 +320,8 @@ pub struct ProtToKmerToLca {
 	pub chunk_size: usize,
 
 	/// How much threads can be used for parallelization. Default is to let the
-	/// underlying library select the thread count automatically.
+	/// underlying library [rayon](https://docs.rs/rayon/latest/rayon/) select
+	/// the thread count automatically based on the number of logical CPUs.
 	#[structopt(short = "j", long = "thread-count")]
 	pub thread_count: Option<usize>,
 }
@@ -580,10 +582,13 @@ pub struct PrintIndex {
 }
 
 /// Use the sequences of FASTA-records in stdin to look them up
-/// in the index file
+/// in the index file.
 #[derive(Debug, StructOpt)]
 pub struct Lookup {
-	/// Index file to query
+	/// Index file to query. The format of this file is <key><delimiter><value>.
+	/// <key> kan be any string, but each key has to be unique.
+	/// <delimiter> can be set with -d (default is tab).
+	/// <value> can be any string and may contain <delimiter>.
 	#[structopt(parse(from_os_str))]
 	pub index_file: PathBuf,
 
@@ -601,13 +606,14 @@ pub struct Lookup {
 	pub chunk_size: usize,
 
 	/// How much threads can be used for parallelization. Default is to let the
-	/// underlying library select the thread count automatically.
+	/// underlying library [rayon](https://docs.rs/rayon/latest/rayon/) select
+	/// the thread count automatically based on the number of logical CPUs.
 	#[structopt(short = "j", long = "thread-count")]
 	pub thread_count: Option<usize>,
 
-	/// Map unknown sequences to 0 instead of ignoring them
-	#[structopt(short = "o", long = "one-on-one")]
-	pub one_on_one: bool,
+	/// Map unknown keys to the given default value instead of ignoring them
+	#[structopt(short = "f", long = "default")]
+	pub default: Option<String>,
 
 	/// Skip first line of the index file
 	#[structopt(short = "h", long = "header")]
@@ -618,7 +624,11 @@ pub struct Lookup {
 /// in the index file
 #[derive(Debug, StructOpt)]
 pub struct KmerLookup {
-	/// Index file to query
+	/// Index file to query. The format of this file is <key><delimiter><value>.
+	/// <key> kan be any string with a length of <kmer_length>, but each key
+	/// has to be unique.
+	/// <delimiter> can be set with -d (default is tab).
+	/// <value> can be any string and may contain <delimiter>.
 	#[structopt(parse(from_os_str))]
 	pub index_file: PathBuf,
 
@@ -636,13 +646,14 @@ pub struct KmerLookup {
 	pub chunk_size: usize,
 
 	/// How much threads can be used for parallelization. Default is to let the
-	/// underlying library select the thread count automatically.
+	/// underlying library [rayon](https://docs.rs/rayon/latest/rayon/) select
+	/// the thread count automatically based on the number of logical CPUs.
 	#[structopt(short = "j", long = "thread-count")]
 	pub thread_count: Option<usize>,
 
-	/// Map unknown sequences to 0 instead of ignoring them
-	#[structopt(short = "o", long = "one-on-one")]
-	pub one_on_one: bool,
+	/// Map unknown keys to the given default value instead of ignoring them
+	#[structopt(short = "f", long = "default")]
+	pub default: Option<String>,
 
 	/// Skip first line of the index file
 	#[structopt(short = "h", long = "header")]

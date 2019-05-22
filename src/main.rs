@@ -719,12 +719,7 @@ fn lookup(args: args::Lookup) -> Result<()> {
 	let index = utils::file2index(args.index_file,
 								  args.has_header,
 								  &args.delimiter)?;
-	let default = if args.one_on_one {
-		Some(String::from("0"))
-	} else {
-		None
-	};
-	let default = default.as_ref();
+	let default = args.default.as_ref();
 	let transform = |record: fasta::Record| {
 		fasta::Record {
 			header: record.header,
@@ -751,14 +746,9 @@ fn kmer_lookup(args: args::KmerLookup) -> Result<()> {
 	let index = utils::file2index(args.index_file,
 	                              args.has_header,
 	                              &args.delimiter)?;
-	let default = if args.one_on_one {
-		Some(String::from("0"))
-	} else {
-		None
-	};
 	let k = args.kmer_length;
 	let chunk_size = args.chunk_size;
-	let default = default.as_ref();
+	let default = args.default.as_ref();
 
 	let transform = |record: fasta::Record| {
 		fasta::Record {
