@@ -86,6 +86,15 @@ pub struct Record {
 	pub sequence: Vec<String>,
 }
 
+impl Record {
+	/// Creates an iterator over kmers in this record.
+	pub fn kmers<'a>(&'a self, k: usize) -> impl Iterator<Item = &'a str> {
+		self.sequence
+		    .iter()
+		    .flat_map(move |seq| (0..(seq.len() - k + 1)).map(move |i| &seq[i..i + k]))
+	}
+}
+
 /// Convenience struct which allows for iteration (e.g. using for..in).
 pub struct Records<R: Read> {
 	reader: Reader<R>,

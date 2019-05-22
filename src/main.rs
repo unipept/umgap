@@ -155,18 +155,12 @@ fn prot2kmer2lca(args: args::ProtToKmerToLca) -> Result<()> {
 
 	let transform = |record: fasta::Record|{
 		fasta::Record{
-			header: record.header,
-			sequence: record.sequence
-				.first()
-				.map(|seq| {
-					(0..(seq.len() - k + 1))
-						.map(|i| &seq[i..i + k])
-						.map(|kmer| fst.get(&kmer).or(default))
-						.flatten()
-						.map(|lca| lca.to_string())
-						.collect()
-				})
-				.unwrap_or(Vec::new())
+			header:   record.header.clone(),
+			sequence: record.kmers(k)
+				            .map(|kmer| fst.get(&kmer).or(default))
+				            .flatten()
+				            .map(|lca| lca.to_string())
+				            .collect::<Vec<String>>()
 		}
 	};
 
@@ -755,8 +749,8 @@ fn lookup(args: args::Lookup) -> Result<()> {
 fn kmer_lookup(args: args::KmerLookup) -> Result<()> {
 	args.thread_count.map_or(Ok(()), |count| utils::set_num_threads(count))?;
 	let index = utils::file2index(args.index_file,
-								  args.has_header,
-								  &args.delimiter)?;
+	                              args.has_header,
+	                              &args.delimiter)?;
 	let default = if args.one_on_one {
 		Some(String::from("0"))
 	} else {
@@ -768,18 +762,12 @@ fn kmer_lookup(args: args::KmerLookup) -> Result<()> {
 
 	let transform = |record: fasta::Record| {
 		fasta::Record {
-			header: record.header,
-			sequence: record.sequence
-				.first()
-				.map(|seq| {
-					(0..(seq.len() - k + 1))
-						.map(|i| &seq[i..i + k])
-						.map(|kmer| index.get(kmer).or(default))
-						.flatten()
-						.map(|result| result.to_owned())
-						.collect::<Vec<_>>()
-				})
-				.unwrap_or(Vec::new())
+			header: record.header.clone(),
+			sequence: record.kmers(k)
+				            .map(|kmer| index.get(kmer).or(default))
+				            .flatten()
+				            .map(|result| result.to_owned())
+				            .collect()
 		}
 	};
 
@@ -787,9 +775,9 @@ fn kmer_lookup(args: args::KmerLookup) -> Result<()> {
 		utils::daemonize(socket_addr, &transform, chunk_size)
 	} else {
 		fasta::transform_records(io::stdin(),
-								 io::stdout(),
-								 &transform,
-								 chunk_size)
+		                         io::stdout(),
+		                         &transform,
+		                         chunk_size)
 	}
 }
 
