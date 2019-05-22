@@ -189,8 +189,8 @@ impl<'a, W: Write> Writer<'a, W> {
 }
 
 /// Parse FASTA-records from the input, transform these records using the given
-/// transform function in paralllel (in chunks with the given chunk size), and
-/// write the trasformed records to the output.
+/// transform function in parallel (in chunks with the given chunk size), and
+/// write the transformed records to the output.
 pub fn transform_records<R, W, F>(input: R,
                                   output: W,
                                   transform: &F,
