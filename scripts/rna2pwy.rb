@@ -1,8 +1,16 @@
-#!/bin/env ruby
+#!/usr/bin/env ruby
+
+# Usage: ./rna2pwy.rb [FILE]
+#
+# Reads FASTA-records from stdin (or FILE if FILE is given) and tries to assign
+# a pathway to each sequence using the 'kmer_pwys.tsv' file in the current
+# directory. Per six sequences (resulting from six-frame-translation), one is
+# selected with the most assigned pathways as the final assigned pathway for 
+# the original read. A single FASTA-record will then be written to stdout with 
+# the pathway ID and how many kmers matched that pathway.
 
 K = 9
 KMER_PWY_FILE = 'kmer_pwys.tsv'
-KMER_PROT_FILE = 'kmer_prots.tsv'
 
 Record = Struct.new :header, :sequences
 
@@ -78,12 +86,6 @@ def most_likely_id(sequences)
     [ids, max_count]
   end
 end
-
-PWY_NAMES = File.open('pwy_name.tsv')
-                .readlines
-                .map{|line| line.strip.split("\t")}
-                .map{|id,name| [id.to_i,name]}
-                .to_h
 
 each_record do |record|
   ids, count = most_likely_id(record.sequences)

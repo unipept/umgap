@@ -2,6 +2,12 @@
 require 'mysql2'
 require 'set'
 
+# Usage: ./generate_tables.rb [UNIPROT_BIOCYC_REF_FILE]
+#
+# Using the sequences in UNIPROT_BIOCYC_REF_FILE and the BioCyc data loaded in
+# the MySQL database, this will generate the TSV-files which can be used for
+# a pathway analysis of metatranscriptomics data.
+
 UNIPROT_BIOCYC_REF_FILE = ARGV[0]
 
 SQL = Mysql2::Client.new host: 'localhost',

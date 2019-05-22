@@ -1,5 +1,12 @@
 #!/usr/bin/env ruby
 
+# Usage: ./report.rb
+#
+# Reads the FASTA-records from stdin and vuilds a frequency table of the pathway
+# id's. Uses 'pwy_name.tsv' to give meaningfull names to the pathway id's.
+
+PWY_NAME_FILE = 'pwy_name.tsv'
+
 Record = Struct.new :header, :sequences
 
 INPUT = STDIN
@@ -25,7 +32,7 @@ def each_record(&block)
 end
 
 
-PWY_NAMES = File.open('pwy_name.tsv')
+PWY_NAMES = File.open(PWY_NAME_FILE)
                 .readlines
                 .map{|line| line.strip.split("\t")}
                 .map{|id,xid,name| [id.to_i, [xid, name]]}
