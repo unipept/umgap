@@ -131,34 +131,6 @@ def protein_sequences
     .reject(&:nil?)
 end
 
-def write_rxn_pwys
-  # prot -> enzrxn -> rxn -> pwy_rxn -> pwy
-  prot_rxns = SQL.query(%q{
-    SELECT PID.XID AS PROTID,
-           P.WID AS PROT,
-           E.WID AS ERXN,
-           R.WID AS RXN
-    FROM DBID AS PID
-    JOIN Protein AS P
-      ON PID.OtherWID = P.WID
-    JOIN EnzymaticReaction AS E
-      ON P.WID = E.ProteinWID
-    JOIN Reaction AS R
-      ON E.ReactionWID = R.WID;
-  })
-  prot_rxns.each do |row|
-    name, id, erxn, rxn = row.values
-    rxn_pwys = SQL.query(%Q{
-        SELECT DBID.XID,
-               PWY.WID
-        FROM PathwayReaction as PR
-        WHERE PR.ReactionWID = #{id}
-        JOIN Pathway AS PWY
-          ON PR.PathwayWID = PWY.WID;
-      })
-  end
-end
-
 def kmer_prots(protseq, k)
   kmers = Hash.new{ |hash, k| hash[k] = [] }
   protseq.each do |prot_name, prot_id, sequence|
