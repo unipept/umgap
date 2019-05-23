@@ -777,24 +777,16 @@ fn aggregate(args: args::Aggregate) -> Result<()> {
 		.records()
 		.map(|record| {
 			let record = record?;
-			let counts: Vec<(&str, usize)> = if args.split_lists {
-				let item_iter = record.sequence
-					.iter()
-					.filter(|s| s != &"0")
-					.flat_map(|seq| seq.split(&args.list_delimiter));
-				utils::item_counts(item_iter)
-			} else {
-				let item_iter = record.sequence
-					.iter()
-					.filter(|s| s != &"0")
-					.map(|s| s.as_str());
-				utils::item_counts(item_iter)
-			};
-			let sequence = counts.first()
-				.map_or_else(Vec::new, |(item, _count)| vec![String::from(*item)]);
+			let item_iter = record.sequence
+				.iter()
+				.filter(|s| s != &"0")
+				.map(|s| s.as_str());
 			writer.write_record(fasta::Record{
-				header: record.header,
-				sequence
+				header:   record.header,
+				sequence: utils::item_counts(item_iter)
+					.first()
+					.filter(|(_v, c)| c >= &args.minimum)
+					.map_or_else(Vec::new, |(v, _c)| vec![String::from(*v)])
 			})
 		})
 		.collect()

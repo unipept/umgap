@@ -675,14 +675,9 @@ pub struct KmerLookup {
 /// deterministically) selected.
 #[derive(Debug, StructOpt)]
 pub struct Aggregate {
-	/// Split lists on the same line (treat items as if they were on different
-	/// lines)
-	#[structopt(short = "s", long = "split-lists")]
-	pub split_lists: bool,
-
-	/// Specify the delimiter to split lines on (default: ",")
-	#[structopt(short = "d", long = "delimiter", default_value = ",")]
-	pub list_delimiter: String,
+	/// Minimum amount of occurences before a sequence is selected
+	#[structopt(short = "m", long = "minimum", default_value = "0")]
+	pub minimum: usize,
 }
 
 
