@@ -718,7 +718,7 @@ fn lookup(args: args::Lookup) -> Result<()> {
 	args.thread_count.map_or(Ok(()), |count| utils::set_num_threads(count))?;
 	let index = utils::file2index(args.index_file,
 								  args.has_header,
-								  &args.delimiter)?;
+								  &args.separator)?;
 	let default = args.default.as_ref();
 	let transform = |record: fasta::Record| {
 		fasta::Record {
@@ -745,7 +745,7 @@ fn kmer_lookup(args: args::KmerLookup) -> Result<()> {
 	args.thread_count.map_or(Ok(()), |count| utils::set_num_threads(count))?;
 	let index = utils::file2index(args.index_file,
 	                              args.has_header,
-	                              &args.delimiter)?;
+	                              &args.separator)?;
 	let k = args.kmer_length;
 	let chunk_size = args.chunk_size;
 	let default = args.default.as_ref();

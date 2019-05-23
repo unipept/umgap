@@ -585,17 +585,17 @@ pub struct PrintIndex {
 /// in the index file.
 #[derive(Debug, StructOpt)]
 pub struct Lookup {
-	/// Index file to query. The format of this file is <key><delimiter><value>.
+	/// Index file to query. The format of this file is <key><separator><value>.
 	/// <key> kan be any string, but each key has to be unique.
-	/// <delimiter> can be set with -d (default is tab).
-	/// <value> can be any string and may contain <delimiter>.
+	/// <separator> can be set with -d (default is tab).
+	/// <value> can be any string and may contain <separator>.
 	#[structopt(parse(from_os_str))]
 	pub index_file: PathBuf,
 
-	/// Which delimiter the index file uses to separate keys from values
+	/// Which separator the index file uses to separate keys from values
 	/// (default: tab).
-	#[structopt(short = "d", long = "delimiter", default_value = "\t")]
-	pub delimiter: String,
+	#[structopt(short = "d", long = "separator", default_value = "\t")]
+	pub separator: String,
 
 	/// How much records to group together in one chunk, bigger chunks decrease
 	/// the overhead caused by multithreading. Because the output order is not
@@ -624,18 +624,18 @@ pub struct Lookup {
 /// in the index file
 #[derive(Debug, StructOpt)]
 pub struct KmerLookup {
-	/// Index file to query. The format of this file is <key><delimiter><value>.
+	/// Index file to query. The format of this file is <key><separator><value>.
 	/// <key> kan be any string with a length of <kmer_length>, but each key
 	/// has to be unique.
-	/// <delimiter> can be set with -d (default is tab).
-	/// <value> can be any string and may contain <delimiter>.
+	/// <separator> can be set with -d (default is tab).
+	/// <value> can be any string and may contain <separator>.
 	#[structopt(parse(from_os_str))]
 	pub index_file: PathBuf,
 
-	/// Which delimiter the index file uses to separate keys from values
+	/// Which separator the index file uses to separate keys from values
 	/// (default: tab).
-	#[structopt(short = "d", long = "delimiter", default_value = "\t")]
-	pub delimiter: String,
+	#[structopt(short = "d", long = "separator", default_value = "\t")]
+	pub separator: String,
 
 	/// How much records to group together in one chunk, bigger chunks decrease
 	/// the overhead caused by multithreading. Because the output order is not
