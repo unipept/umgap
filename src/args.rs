@@ -586,14 +586,13 @@ pub struct PrintIndex {
 #[derive(Debug, StructOpt)]
 pub struct Lookup {
 	/// Index file to query. The format of this file is <key><separator><value>.
-	/// <key> kan be any string, but each key has to be unique.
-	/// <separator> can be set with -d (default is tab).
-	/// <value> can be any string and may contain <separator>.
+	/// <key> kan be any string, but each key has to be unique
+	/// <separator> can be set with -d
+	/// <value> can be any string and may contain <separator>
 	#[structopt(parse(from_os_str))]
 	pub index_file: PathBuf,
 
 	/// Which separator the index file uses to separate keys from values
-	/// (default: tab).
 	#[structopt(short = "d", long = "separator", default_value = "\t")]
 	pub separator: String,
 
@@ -626,14 +625,13 @@ pub struct Lookup {
 pub struct KmerLookup {
 	/// Index file to query. The format of this file is <key><separator><value>.
 	/// <key> kan be any string with a length of <kmer_length>, but each key
-	/// has to be unique.
-	/// <separator> can be set with -d (default is tab).
-	/// <value> can be any string and may contain <separator>.
+	/// has to be unique
+	/// <separator> can be set with -d
+	/// <value> can be any string and may contain <separator>
 	#[structopt(parse(from_os_str))]
 	pub index_file: PathBuf,
 
 	/// Which separator the index file uses to separate keys from values
-	/// (default: tab).
 	#[structopt(short = "d", long = "separator", default_value = "\t")]
 	pub separator: String,
 
