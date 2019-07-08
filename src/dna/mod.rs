@@ -75,10 +75,23 @@ impl<'a> From<&'a [u8]> for Strand {
 	}
 }
 
+impl<'a> From<&'a Vec<String>> for Strand {
+	fn from(lines: &Vec<String>) -> Self {
+		Strand(lines.iter()
+		            .flat_map(|s| s.as_bytes())
+		            .map(Nucleotide::from)
+		            .collect())
+	}
+}
+
 impl Strand {
 	/// A reading frame of this strand, 1-indexed.
 	pub fn frame<'a>(&'a self, start: usize) -> Frame<'a> {
-		Frame(&self.0[start - 1..])
+		Frame(if self.0.len() > start - 1 {
+			&self.0[start - 1..]
+		} else {
+			&[]
+		})
 	}
 
 	/// The reverse strand of this one.

@@ -103,7 +103,7 @@ fn translate(args: args::Translate) -> Result<()> {
 		for record in fasta::Reader::new(io::stdin(), true).records() {
 			let fasta::Record { header, sequence } = record?;
 
-			let forward = Strand::from(sequence[0].as_bytes());
+			let forward = Strand::from(&sequence);
 			let reverse = forward.reversed();
 			for &(name, frame, reversed) in &frames {
 				let strand = if reversed { &reverse } else { &forward };
