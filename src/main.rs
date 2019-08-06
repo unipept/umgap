@@ -65,7 +65,7 @@ quick_main!(|| -> Result<()> {
 		args::Opt::Uniq(args)            => uniq(args),
 		args::Opt::FastqToFasta(args)    => fastq2fasta(args),
 		args::Opt::Taxonomy(args)        => taxonomy(args),
-		args::Opt::SnapRank(args)        => snaprank(args),
+		args::Opt::SnapTaxon(args)       => snaptaxon(args),
 		args::Opt::JsonTree(args)        => jsontree(args),
 		args::Opt::SeedExtend(args)      => seedextend(args),
 		args::Opt::Report(args)          => report(args),
@@ -483,18 +483,21 @@ fn taxonomy(args: args::Taxonomy) -> Result<()> {
 	 Ok(())
 }
 
-fn snaprank(args: args::SnapRank) -> Result<()> {
+fn snaptaxon(args: args::SnapTaxon) -> Result<()> {
 	let taxons = taxon::read_taxa_file(&args.taxon_file)?;
-	if args.rank == rank::Rank::NoRank {
+	if args.rank.map(|r| r == rank::Rank::NoRank).unwrap_or(false) {
 		return Err(ErrorKind::InvalidInvocation("Snap to an actual rank.".into()).into());
 	}
 
 	// Parsing the taxons
-	let tree	 = taxon::TaxonTree::new(&taxons);
-	let by_id	= taxon::TaxonList::new(taxons);
-	let snapping = tree.filter_ancestors(|tid|
-		by_id.get(tid).map(|t| t.rank == args.rank && (args.invalid || t.valid)).unwrap_or(false)
-	);
+	let tree = taxon::TaxonTree::new(&taxons);
+	let by_id = taxon::TaxonList::new(taxons);
+	let snapping = tree.filter_ancestors(|tid| {
+		args.taxons.contains(&tid) ||
+		by_id.get(tid)
+			.map(|t| (args.invalid || t.valid) && args.rank.map(|r| t.rank == r).unwrap_or(false))
+			.unwrap_or(false)
+	});
 
 	// Read and count taxon ranks
 	let stdin = io::stdin();

@@ -5,6 +5,7 @@ use std::path::PathBuf;
 use std::str::FromStr;
 
 use rank::Rank;
+use taxon::TaxonId;
 
 /// A reading frame
 #[allow(missing_docs)]
@@ -162,9 +163,9 @@ pub enum Opt {
 	#[structopt(name = "taxonomy")]
 	Taxonomy(Taxonomy),
 
-	/// Snap taxa to a specified rank.
-	#[structopt(name = "snaprank")]
-	SnapRank(SnapRank),
+	/// Snap taxa to a specified rank or one of the specified taxa.
+	#[structopt(name = "snaptaxon")]
+	SnapTaxon(SnapTaxon),
 
 	/// Interleaves a number of FASTQ files into a single FASTA output.
 	#[structopt(name = "fastq2fasta")]
@@ -443,12 +444,16 @@ pub struct FastqToFasta {
 	pub input: Vec<PathBuf>,
 }
 
-/// Snap taxa to a specified rank.
+/// Snap taxa to a specified rank or one of the specified taxa.
 #[derive(Debug, StructOpt)]
-pub struct SnapRank {
-	/// The rank to show
-	#[structopt(short = "r", long = "rank", default_value = "species")]
-	pub rank: Rank,
+pub struct SnapTaxon {
+	/// The rank to snap towards.
+	#[structopt(short = "r", long = "rank")]
+	pub rank: Option<Rank>,
+
+	/// A taxon to snap towards (allow multiple times).
+	#[structopt(short = "t", long = "taxons")]
+	pub taxons: Vec<TaxonId>,
 
 	/// Include invalidated taxa
 	#[structopt(short = "i", long = "invalid")]
