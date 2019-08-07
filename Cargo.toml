@@ -13,6 +13,7 @@ readme = "README.md"
 keywords = ["metagenomics", "transcriptonomics", "bio", "DNA", "unipept"]
 categories = ["command-line-utilities", "science"]
 license = "MIT"
+exclude = ["testdata/*"]
 
 [dependencies]
 structopt = "0.2"
