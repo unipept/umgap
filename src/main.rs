@@ -534,7 +534,7 @@ fn jsontree(args: args::JsonTree) -> Result<()> {
 	}
 
 	// Recursive json transformation
-	fn to_json(node: &tree::tree::Tree<usize>, aggnode: &tree::tree::Tree<usize>, by_id: &taxon::TaxonList) -> value::Value {
+	fn to_json(node: &tree::tree::Tree<usize>, aggnode: &tree::tree::Tree<usize>, by_id: &taxon::TaxonList, freq: usize) -> value::Value {
 		let root = by_id.get(node.root).unwrap();
 		json!({
 			"name": root.name,
@@ -546,14 +546,15 @@ fn jsontree(args: args::JsonTree) -> Result<()> {
 				"self_count": node.value
 			},
 			"children": node.children.iter().zip(aggnode.children.iter())
-			                         .map(|(n, s)| to_json(n, s, by_id))
+			                         .filter(|&(_n, s)| s.value > freq)
+			                         .map(|(n, s)| to_json(n, s, by_id, freq))
 			                         .collect::<Vec<_>>()
 		})
 	}
 
 	let tree = tree::tree::Tree::new(1, &by_id.ancestry(), &counts)?;
 	let aggtree = tree.aggregate(&ops::Add::add);
-	print!("{}", to_json(&tree, &aggtree, &by_id));
+	print!("{}", to_json(&tree, &aggtree, &by_id, args.min_frequency));
 
 	Ok(())
 }
@@ -660,6 +661,7 @@ fn report(args: args::Report) -> Result<()> {
 	}
 
 	let mut counts = counts.into_iter()
+	                       .filter(|&(_taxon, count)| count > args.min_frequency)
 	                       .map(|(taxon, count)| (count, taxon))
 	                       .collect::<Vec<(taxon::TaxonId, usize)>>();
 	counts.sort();

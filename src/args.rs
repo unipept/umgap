@@ -489,6 +489,10 @@ pub struct JsonTree {
 	#[structopt(short = "r", long = "ranked")]
 	pub ranked_only: bool,
 
+	/// The minimum frequency to be reported
+	#[structopt(short = "f", long = "frequency", default_value = "1")]
+	pub min_frequency: usize,
+
 	/// The NCBI taxonomy tsv-file
 	#[structopt(parse(from_os_str))]
 	pub taxon_file: PathBuf,
@@ -520,6 +524,10 @@ pub struct Report {
 	/// The rank to show
 	#[structopt(short = "r", long = "rank", default_value = "species")]
 	pub rank: Rank,
+
+	/// The minimum frequency to be reported
+	#[structopt(short = "f", long = "frequency", default_value = "1")]
+	pub min_frequency: usize,
 
 	/// The NCBI taxonomy tsv-file
 	#[structopt(parse(from_os_str))]
