@@ -7,6 +7,12 @@ authors = ["Felix Van der Jeugt <felix.vanderjeugt@gmail.com>",
            "Aranka Steyaert <Aranka.Steyaert@UGent.be>",
            "Rien Maertens <maertensrien@gmail.com>"]
 description = "The Unipept Metagenomics Analysis Pipeline"
+homepage = "https://unipept.ugent.be"
+repository = "https://github.com/unipept/umgap"
+readme = "README.md"
+keywords = ["metagenomics", "transcriptonomics", "bio", "DNA", "unipept"]
+categories = ["command-line-utilities", "science"]
+license = "MIT"
 
 [dependencies]
 structopt = "0.2"
