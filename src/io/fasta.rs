@@ -174,4 +174,12 @@ impl<'a, W: Write> Writer<'a, W> {
 		}
 		Ok(())
 	}
+
+	/// Write multiple records with [write_record_ref](#method.write_record_ref).
+	pub fn write_records(&mut self, records: impl IntoIterator<Item=Record>) -> Result<()> {
+		for record in records {
+			self.write_record(record)?;
+		}
+		Ok(())
+	}
 }

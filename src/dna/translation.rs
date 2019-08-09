@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::str;
 
 use dna::Nucleotide::*;
-use dna::{Frame, Nucleotide};
+use dna::{ReadFrame, Nucleotide};
 
 /// Represents a DNA codon.
 #[derive(Debug, PartialEq, Eq, Hash)]
@@ -132,7 +132,7 @@ impl TranslationTable {
 
 	/// Translate the given DNA frame to a peptide. Translate each start codon to methionine if
 	/// asked.
-	pub fn translate_frame(&self, methionine: bool, frame: Frame) -> Vec<u8> {
+	pub fn translate_frame(&self, methionine: bool, frame: ReadFrame) -> Vec<u8> {
 		frame.0
 		     .chunks(3)
 		     .filter(|t| t.len() == 3)

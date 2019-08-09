@@ -36,8 +36,11 @@ extern crate strum;
 extern crate rayon;
 use rayon::prelude::*;
 
+extern crate itertools;
+use itertools::process_results;
+
 extern crate umgap;
-use umgap::dna::Strand;
+use umgap::dna;
 use umgap::dna::translation::TranslationTable;
 use umgap::io::fasta;
 use umgap::io::fastq;
@@ -50,6 +53,7 @@ use umgap::tree;
 use umgap::utils;
 use umgap::args;
 use umgap::rank;
+use umgap::tools;
 
 
 quick_main!(|| -> Result<()> {
@@ -76,13 +80,33 @@ quick_main!(|| -> Result<()> {
 	}
 });
 
+// translate     :: Fasta<Read> -> Fasta<Peptide>
+// pept2lca      :: Fasta<Vec<Peptide>> -> Fasta<Vec<Taxon>>
+// prot2kmer2lca :: Fasta<Peptide> -> Fasta<Vec<Taxon>>
+// prot2tryp2lca :: Fasta<Peptide> -> Fasta<Vec<Taxon>>
+// taxa2agg      :: Fasta<Vec<Taxon>> -> Fasta<Taxon>
+// prot2pept     :: Fasta<Peptide> -> Fasta<Vec<Peptide>>
+// prot2kmer     :: Fasta<Peptide> -> Fasta<Vec<Peptide>>
+// filter        :: Fasta<Vec<Peptide>> -> Fasta<Vec<Peptide>>
+// uniq          :: Fasta<T> -> Fasta<T>
+// fastq2fasta   :: Vec<Fasta<Read>> -> Fasta<Read>
+// taxonomy      :: Fasta<Vec<Taxon>> -> Fasta<Vec<(lineage)>>
+// snaptaxon     :: Fasta<Vec<Taxon>> -> Fasta<Vec<Taxon>>
+// jsontree      :: Iterator<Taxon> -> JSON
+// seedextend    :: Fasta<Vec<Taxon>> -> Fasta<Vec<Taxon>>
+// report        :: Iterator<Taxon> -> CSV
+// bestof        :: Fasta<Vec<Taxon>> -> Fasta<Vec<Taxon>>
+// printindex    :: specialleken
+// buildindex    :: specialleken
+// countrecords  :: Fasta<Vec<T>> -> counts
+
 fn translate(args: args::Translate) -> Result<()> {
 	// Parsing the table
 	let table = args.table.parse::<&TranslationTable>()?;
 
 	// Which frames TODO ugly
-	let frames = if args.all_frames { vec![args::Frame::Forward1, args::Frame::Forward2, args::Frame::Forward3,
-	                                       args::Frame::Reverse1, args::Frame::Reverse2, args::Frame::Reverse3] }
+	let frames = if args.all_frames { vec![dna::Frame::Forward1, dna::Frame::Forward2, dna::Frame::Forward3,
+	                                       dna::Frame::Reverse1, dna::Frame::Reverse2, dna::Frame::Reverse3] }
 	                           else { args.frames };
 
 	// Split on show_tables
@@ -90,30 +114,23 @@ fn translate(args: args::Translate) -> Result<()> {
 		table.print();
 	} else {
 		let mut writer = fasta::Writer::new(io::stdout(), "", false);
-
-		// Parsing the frames
-		let frames = frames.iter().map(|&frame| match frame {
-		    args::Frame::Forward1 => (frame, 1, false),
-		    args::Frame::Forward2 => (frame, 2, false),
-		    args::Frame::Forward3 => (frame, 3, false),
-		    args::Frame::Reverse1 => (frame, 1, true),
-		    args::Frame::Reverse2 => (frame, 2, true),
-		    args::Frame::Reverse3 => (frame, 3, true),
-		}).collect::<Vec<(args::Frame, usize, bool)>>();
-
-		for record in fasta::Reader::new(io::stdin(), true).records() {
-			let fasta::Record { header, sequence } = record?;
-
-			let forward = Strand::from(&sequence);
-			let reverse = forward.reversed();
-			for &(name, frame, reversed) in &frames {
-				let strand = if reversed { &reverse } else { &forward };
-				writer.write_record(fasta::Record {
-				    header: if !args.append_name { header.clone() } else { header.clone() + "|" + &name.to_string() },
-				    sequence: vec![String::from_utf8(table.translate_frame(args.methionine, strand.frame(frame))).unwrap()]
-				})?;
-			}
-		}
+		writer.write_records(
+			process_results(fasta::Reader::new(io::stdin(), true).records(), |records|
+				tools::translate::translate(
+					&table,
+					&frames,
+					args.methionine,
+					args.append_name,
+					records.map(|fasta::Record { header, sequence }| tools::Record {
+						header: header,
+						content: if sequence.len() > 0 { sequence[0] } else { "".to_string() }
+					}),
+				)
+			)?.map(|tools::Record { header, content }| fasta::Record {
+				header: header,
+				sequence: vec![content],
+			})
+		)?;
 	}
 	Ok(())
 }

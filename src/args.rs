@@ -1,59 +1,11 @@
 //! Argument parsing for the UMGAP
 
-use std::fmt;
 use std::path::PathBuf;
 use std::str::FromStr;
 
 use rank::Rank;
 use taxon::TaxonId;
-
-/// A reading frame
-#[allow(missing_docs)]
-#[derive(Debug, Clone, Copy)]
-pub enum Frame {
-	Forward1,
-	Forward2,
-	Forward3,
-	Reverse1,
-	Reverse2,
-	Reverse3,
-}
-
-static FRAMES: &[&str] = &["1", "2", "3", "1R", "2R", "3R"];
-impl Frame {
-	fn variants() -> &'static [&'static str] {
-		FRAMES
-	}
-}
-
-impl FromStr for Frame {
-	type Err = Error;
-
-	fn from_str(s: &str) -> Result<Self> {
-		match s {
-			"1" => Ok(Frame::Forward1),
-			"2" => Ok(Frame::Forward2),
-			"3" => Ok(Frame::Forward3),
-			"1R" => Ok(Frame::Reverse1),
-			"2R" => Ok(Frame::Reverse2),
-			"3R" => Ok(Frame::Reverse3),
-			_ => Err(ErrorKind::ParseFrameError(s.to_string()).into()),
-		}
-	}
-}
-
-impl fmt::Display for Frame {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		write!(f, "{}", match *self {
-			Frame::Forward1 => "1",
-			Frame::Forward2 => "2",
-			Frame::Forward3 => "3",
-			Frame::Reverse1 => "1R",
-			Frame::Reverse2 => "2R",
-			Frame::Reverse3 => "3R",
-		})
-	}
-}
+use dna::Frame;
 
 /// An aggregation method
 #[allow(missing_docs)]
