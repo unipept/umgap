@@ -27,6 +27,25 @@ yesno() {
 	fi
 }
 
+# What to do if the XDG standard isn't there...
+if [ -z "$XDG_CONFIG_HOME" ]; then
+	if [ -d "$HOME/Library/Preferences/" -a "$HOME/Library/Application Support" ]; then
+		# mac
+		config_default="$HOME/Library/Preferences/Unipept"
+		data_default="$HOME/Library/Application Support/Unipept"
+	elif [ -d "$HOME/.config" -a -d "$HOME/.local/share" ]; then
+		# why weren't the XDG variables set then?
+		config_default="$HOME/.config/unipept"
+		data_default="$HOME/.local/share/unipept"
+	else
+		config_default="$HOME/.unipept"
+		data_default="$HOME/.unipept/data"
+	fi
+else
+	config_default="$XDG_CONFIG_HOME/unipept"
+	data_default="$XDG_DATA_HOME/unipept"
+fi
+
 
 DATASERVER='https://unipept.ugent.be/system/umgap'
 USAGE="
@@ -35,15 +54,15 @@ Setup the UMGAP by downloading the database and finding dependencies.
 Usage: $0 [options]
 
 Options:
-  -c dir   The configuration directory. Defaults to '$XDG_CONFIG_HOME/unipept'.
+  -c dir   The configuration directory. Defaults to '$config_default'.
   -f dir   Directory containing the FragGeneScan++ binary (FGSpp) and
            training data.
   -d dir   The data directory. The database files will be downloaded here.
-           Defaults to '$XDG_DATA_HOME/unipept'.
+           Defaults to '$data_default'.
   -y       Download all files of the latest version without asking.
 "
 
-while getopts c:f:t:n:y f; do
+while getopts c:f:d:y f; do
 	case "$f" in
 	c) configdir="$OPTARG" ;;
 	f) fgsppdir="$OPTARG" ;;
@@ -54,9 +73,8 @@ while getopts c:f:t:n:y f; do
 done
 
 # If no config directory is provided, use the default. Create it.
-#if [ -n "$configdir" -o -d "$XDG_CONFIG_HOME/unipept" ]; thenk
 if [ -z "$configdir" ]; then
-	configdir="$XDG_CONFIG_HOME/unipept"
+	configdir="$config_default"
 	if [ -d "$configdir" ]; then
 		echo "Using existing '$configdir' as config directory."
 	else
@@ -92,7 +110,7 @@ fi
 
 # If no data directory is provided, use the default. Create it.
 if [ -z "$datadir" ]; then
-	datadir="$XDG_DATA_HOME/unipept"
+	datadir="$data_default"
 	if [ -d "$datadir" ]; then
 		echo "Using existing '$datadir' as data directory."
 	else
@@ -100,7 +118,6 @@ if [ -z "$datadir" ]; then
 			crash "Please set a data directory with '-d'."
 		fi
 	fi
-	echo "Data directory not set, using $XDG_DATA_HOME/unipept."
 fi
 if [ ! -d "$datadir" ]; then
 	if mkdir -p "$datadir"; then

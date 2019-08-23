@@ -1,6 +1,18 @@
 #!/bin/sh
 set -e
 
+# What to do if the XDG standard isn't there...
+if [ -z "$XDG_CONFIG_HOME" ]; then
+	if [ -d "$HOME/Library/Preferences/" ]; then
+		config_default="$HOME/Library/Preferences/Unipept"
+	elif [ -d "$HOME/.config" ]; then
+		# why weren't the XDG variables set then?
+		config_default="$HOME/.config/unipept"
+	else
+		config_default="$HOME/.unipept"
+	fi
+fi
+
 USAGE="
 Some default configurations for the UMGAP.
 
@@ -22,7 +34,7 @@ Where:
 
 Options:
   -z        GZIP-compress before writing the output.
-  -c dir    The configuration directory. Defaults to '$XDG_CONFIG_HOME/unipept'
+  -c dir    The configuration directory. Defaults to '$config_default'
 
 Note: you can call this script with multiple samples, by just repeating above
 arguments. It will then share files loaded in memory in between samples to save
@@ -89,13 +101,11 @@ checkname() {
 configdir=""
 getconfigdir() {
 	if [ -n "$configdir" ]; then
-		printf '%s' "$configdir"
-	elif [ -d "$XDG_CONFIG_HOME/unipept" ]; then
-		printf '%s' "$XDG_CONFIG_HOME/unipept"
-	elif [ -d ~/.unipept ]; then
-		printf '%s' ~/.unipept
+		echo "$configdir"
+	elif [ -d "$config_default" ]; then
+		echo "$config_default"
 	else
-		crash "No configuration directory found. Please run umgap-setup."
+		crash "No configuration directory found. Please run umgap-setup or use the '-c' argument."
 	fi
 }
 

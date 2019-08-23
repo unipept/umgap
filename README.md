@@ -8,15 +8,11 @@ tools were developed at the Department of Applied Maths, Computer science and
 Statistics at [Ghent University].
 
 
-## Installation
-
-### From releases
-
-No proper releases are available yet, please install from source.
-
-### From source
+## Installation & Setup
 
 1. Install [Rust], according to [their installation instructions][rust-install].
+   The pipeline is developed for the latest stable release, but should work on
+   1.35 and higher.
 
 2. Clone this repository and go to the repository root.
 
@@ -32,12 +28,40 @@ No proper releases are available yet, please install from source.
    ```
 
    This will install the `umgap` command to `~/.cargo/bin` by default. Please
-   ensure this directory is in your `$PATH`.
+   ensure this directory is in your `$PATH`. You can check if the installation
+   was succesful by asking for the version:
+
+   ```sh
+   umgap -V
+   ```
 
 4. (optional) Install [FragGeneScanPlusPlus] to use as gene predictor in the
    pipeline.
 
-#### Updating
+5. Run [`scripts/umgap-setup.sh`](scripts/umgap-setup.sh) to interactively
+   configure the UMGAP and download the data files required for some steps of
+   the pipeline.
+
+   Depending on which type of analysis you are planning, you will need the
+   tryptic index file (less powerfull, but runs on any decent laptop) and the
+   9-mer index file (uses about 100GB disk space for storage and as much RAM
+   during operation. The exact size depends on the version.)
+
+6. (optional) Try the pipeline out on some test data! Running
+
+   ```sh
+   ./scripts/umgap-analyse.sh -1 testdata/A1.fq -2 testdata/A2.fq -t tryptic-sensitivity -o -
+   ```
+
+   should show you a FASTA-like file with a taxon id per header. If you didn't
+   download the tryptic index file but the 9-mer index file, use instead:
+
+   ```sh
+   ./scripts/umgap-analyse.sh -1 testdata/A1.fq -2 testdata/A2.fq -o -
+   ```
+
+
+### Updating
 
 A source install can be updated by pulling the repository to get the latest
 changes and running in the repository root:
@@ -47,24 +71,27 @@ cargo install --force --path .
 ```
 
 
-## Setup
-
-Some parts of the UMGAP requires (large) data files which are not installed
-alongside the command. While it is possible to download or even build these
-manually, it is advised to use the [setup script] provided in this repository.
-The script will interactively download the latest data files and check your
-FragGeneScanPlusPlus installation.
-
-
 ## Usage
 
 The UMGAP offers individual tools which integrate into a pipeline. Running
 `umgap help` will get you to the documentation of each tool, and the short
 [metagenomics casestudy] at the Unipept website displays their usage.
 
-This repository also offers 6 preconfigured pipelines in the [analyse script],
+This repository also offers 6 preconfigured pipelines
+([`scripts/umgap-analyse.sh`](scripts/umgap-analyse.sh))
 which should cover most usecases. Running the script without any arguments
-should get you started.
+should get you started. The preconfigured pipelines are:
+
+- `high-precision`: the default, focusses on high precision with very decent
+  sensitivity.
+- `max-precision`: focusses on very high precision, at the cost of sensitivity.
+- `high-sensitivity`: focusses on high sensitivity, with decent precision.
+- `max-sensitivity`: focusses on very high sensitivity, at the cost of
+  precision.
+- `tryptic-precision`: focusses on high precision, using a much smaller index
+  file, which makes it usable on a laptop.
+- `tryptic-sensitivity`: focusses on high sensitivity, using a much smaller
+  index file, which makes it usable on a laptop.
 
 
 ## Contributing
@@ -84,7 +111,5 @@ for more info.
 [metagenomics casestudy]: https://unipept.ugent.be/clidocs/casestudies/metagenomics
 [rust-install]: https://www.rust-lang.org/tools/install
 [FragGeneScanPlusPlus]: https://github.com/unipept/FragGeneScanPlusPlus
-[setup script]: scripts/umgap-setup.sh
-[analyse script]: scripts/umgap-analyse.sh
 [EditorConfig]: https://editorconfig.org/
 [RustFMT]: https://github.com/rust-lang/rustfmt
