@@ -12,6 +12,22 @@ crash() {
 	exit 1
 }
 
+# ask a yes/no question.
+yesno() {
+	if [ "$download_all" = "true" ]; then
+		true
+	else
+		question="$1 [y]/n "
+		read -p "$question" answer
+		while [ "$answer" != "y" -a "$answer" != "" -a "$answer" != "n" ]; do
+			echo "$answer is not a valid option."
+			read -p "$question" answer
+		done
+		[ "$answer" != "n" ]
+	fi
+}
+
+
 DATASERVER='https://unipept.ugent.be/system/umgap'
 USAGE="
 Setup the UMGAP by downloading the database and finding dependencies.
@@ -38,14 +54,23 @@ while getopts c:f:t:n:y f; do
 done
 
 # If no config directory is provided, use the default. Create it.
+#if [ -n "$configdir" -o -d "$XDG_CONFIG_HOME/unipept" ]; thenk
 if [ -z "$configdir" ]; then
-	echo "Config directory not set, using $XDG_CONFIG_HOME/unipept."
 	configdir="$XDG_CONFIG_HOME/unipept"
+	if [ -d "$configdir" ]; then
+		echo "Using existing '$configdir' as config directory."
+	else
+		if ! yesno "Use '$configdir' as configuration directory?"; then
+			crash "Please set a configuration directory with '-c'."
+		fi
+	fi
 fi
-if mkdir -p "$configdir"; then
-	echo "Created directory ${configdir}."
-else
-	crash 'Could not create the configuration directory.'
+if [ ! -d "$configdir" ]; then
+	if mkdir -p "$configdir"; then
+		echo "Created directory ${configdir}."
+	else
+		crash 'Could not create the configuration directory.'
+	fi
 fi
 
 # If FGSpp is found and works, link it in the config directory.
@@ -67,16 +92,25 @@ fi
 
 # If no data directory is provided, use the default. Create it.
 if [ -z "$datadir" ]; then
-	echo "Data directory not set, using $XDG_DATA_HOME/unipept."
 	datadir="$XDG_DATA_HOME/unipept"
+	if [ -d "$datadir" ]; then
+		echo "Using existing '$datadir' as data directory."
+	else
+		if ! yesno "Use '$datadir' as data directory?"; then
+			crash "Please set a data directory with '-d'."
+		fi
+	fi
+	echo "Data directory not set, using $XDG_DATA_HOME/unipept."
 fi
-if mkdir -p "$datadir"; then
-	echo "Created directory ${datadir}."
-	cd "$datadir"
-	datadir="$PWD" # make path absolute
-	cd - > /dev/null
-else
-	crash "Could not create the data directory."
+if [ ! -d "$datadir" ]; then
+	if mkdir -p "$datadir"; then
+		echo "Created directory ${datadir}."
+		cd "$datadir"
+		datadir="$PWD" # make path absolute
+		cd - > /dev/null
+	else
+		crash "Could not create the data directory."
+	fi
 fi
 
 # How can we download stuff
@@ -118,20 +152,6 @@ fi
 echo "Latest version is ${version}."
 
 # Checking the files for this version.
-yesno() {
-	if [ "$download_all" = "true" ]; then
-		true
-	else
-		question="$1 [y]/n "
-		read -p "$question" answer
-		while [ "$answer" != "y" -a "$answer" != "" -a "$answer" != "n" ]; do
-			echo "$answer is not a valid option."
-			read -p "$question" answer
-		done
-		[ "$answer" != "n" ]
-	fi
-}
-
 taxons="$DATASERVER/$version/taxons.tsv"
 if [ -h "$configdir/$version/taxons.tsv" ]; then
 	echo "Taxonomy is available at the latest version."
