@@ -47,19 +47,27 @@ Statistics at [Ghent University].
    9-mer index file (uses about 100GB disk space for storage and as much RAM
    during operation. The exact size depends on the version.)
 
-6. (optional) Try the pipeline out on some test data! Running
+6. (optional) Analyze some test data! Running
 
    ```sh
-   ./scripts/umgap-analyse.sh -1 testdata/A1.fq -2 testdata/A2.fq -t tryptic-sensitivity -o -
+   ./scripts/umgap-analyse.sh -1 testdata/A1.fq -2 testdata/A2.fq -t tryptic-sensitivity -o - | tee output.fa
    ```
 
    should show you a FASTA-like file with a taxon id per header. If you didn't
    download the tryptic index file but the 9-mer index file, use instead:
 
    ```sh
-   ./scripts/umgap-analyse.sh -1 testdata/A1.fq -2 testdata/A2.fq -o -
+   ./scripts/umgap-analyse.sh -1 testdata/A1.fq -2 testdata/A2.fq -o - | tee output.fa
    ```
 
+7. (optional) Visualize some test data! Running
+
+   ```sh
+   ./scripts/umgap-visualize.sh output.fa output.html
+   ```
+
+   will give you an HTML-file, which will show you a visualization of the test
+   data in your favorite browser.
 
 ### Updating
 
@@ -92,6 +100,10 @@ should get you started. The preconfigured pipelines are:
   file, which makes it usable on a laptop.
 - `tryptic-sensitivity`: focusses on high sensitivity, using a much smaller
   index file, which makes it usable on a laptop.
+
+Another script, [`scripts/umgap-visualize.sh`](scripts/umgap-visualize.sh) will
+help you to visualize the output of the pipeline. Again, running the script
+without any arguments prints the usage instructions.
 
 
 ## Contributing
