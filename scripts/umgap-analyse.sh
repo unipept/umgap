@@ -20,9 +20,9 @@ Usage: $0 -1 <fasta> [-t <type>] [-z] -o <output>
        $0 -1 <fastq1> -2 <fastq2> [-t <type>] [-z] -o <output>
 
 Where:
-  <input>   A (optionally GZIP-compressed) FASTA file of reads.
-  <input1>  A (optionally GZIP-compressed) FASTQ file of reads (first end).
-  <input2>  A (optionally GZIP-compressed) FASTQ file of reads (second end).
+  <fasta>   A (optionally GZIP-compressed) FASTA file of reads.
+  <fastq1>  A (optionally GZIP-compressed) FASTQ file of reads (first end).
+  <fastq2>  A (optionally GZIP-compressed) FASTQ file of reads (second end).
   <type>    The type of analysis, any of:
               - max-sensitivity
               - high-sensitivity
