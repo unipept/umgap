@@ -60,7 +60,7 @@ Statistics at [Ghent University].
    ./scripts/umgap-analyse.sh -1 testdata/A1.fq -2 testdata/A2.fq -o - | tee output.fa
    ```
 
-7. (optional) Visualize some test data! Running
+7. (optional) NOT YET INTEGRATED - Visualize some test data! Running
 
    ```sh
    ./scripts/umgap-visualize.sh output.fa output.html
