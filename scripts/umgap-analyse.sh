@@ -11,6 +11,8 @@ if [ -z "$XDG_CONFIG_HOME" ]; then
 	else
 		config_default="$HOME/.unipept"
 	fi
+else
+	config_default="$XDG_CONFIG_HOME/unipept"
 fi
 
 USAGE="
