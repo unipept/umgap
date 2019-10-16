@@ -1,10 +1,4 @@
 #!/bin/sh
-# - install rust? or ask to
-# - install umgap
-# - ask configdir (or use XDG/unipept or ~/.unipept)
-# - install FGSpp (or ask to) and find it (symlink in configdir)
-# - download taxons (ask location? to XDG_DATA_HOME/unipept) (symlink in configdir) (VERSION!)
-# - download indices (ask first: if, where) (symlink in configdir) (VERSION!)
 
 # print stuff to stderr and exits with fault
 crash() {
@@ -93,7 +87,9 @@ fi
 
 # If FGSpp is found and works, link it in the config directory.
 if [ -z "$fgsppdir" ]; then
-	echo 'FragGeneScan++ was not provided, only pipelines not using it will be available.'
+	if ! yesno 'FragGeneScan++ (-f) was not provided, only pipelines not using it will be available.'; then
+		crash 'Pass the location of FragGeneScan++ with -f.'
+	fi
 else
 	cd "$fgsppdir"
 	if ! printf '>a\nA' | ./FGSpp -s stdin -o stdout -w 0 -t illumina_10 -c 240 > /dev/null; then
@@ -167,6 +163,12 @@ if [ "$?" != 0 ]; then
 	crash 'Could not retrieve version from server.'
 fi
 echo "Latest version is ${version}."
+
+echo
+echo 'For any type of analysis, you need a taxonomony. For mapping tryptic or'
+echo '9-mer peptides to it, you need the respective index file of the same'
+echo 'version.'
+echo
 
 # Checking the files for this version.
 taxons="$DATASERVER/$version/taxons.tsv"
