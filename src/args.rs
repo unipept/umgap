@@ -560,6 +560,9 @@ pub struct SplitKmers {
 	/// The K in K-mers
 	#[structopt(short = "k", long = "length", default_value = "9")]
 	pub length: usize,
+	/// Print (K-1)-mer suffixes of the Kmers starting with this character
+	#[structopt(short = "p", long = "prefix", default_value = "")]
+	pub prefix: String,
 }
 
 error_chain! {

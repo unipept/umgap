@@ -717,6 +717,8 @@ fn printindex(args: args::PrintIndex) -> Result<()> {
 }
 
 fn splitkmers(args: args::SplitKmers) -> Result<()> {
+	let byte = args.prefix.as_bytes().first();
+
 	let mut reader = csv::ReaderBuilder::new()
 	                                    .has_headers(false)
 	                                    .delimiter(b'\t')
@@ -730,7 +732,11 @@ fn splitkmers(args: args::SplitKmers) -> Result<()> {
 		let (tid, sequence): (TaxonId, String) = record?;
 		if sequence.len() < args.length { continue }
 		for kmer in sequence.as_bytes().windows(args.length) {
-			writer.serialize((String::from_utf8_lossy(kmer), tid))?;
+			if byte.is_none() {
+				writer.serialize((String::from_utf8_lossy(kmer), tid))?;
+			} else if *byte.unwrap() == kmer[0] {
+				writer.serialize((String::from_utf8_lossy(&kmer[1..]), tid))?;
+			}
 		}
 	}
 
