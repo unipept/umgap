@@ -219,7 +219,7 @@ pub struct Translate {
 	#[structopt(
 	            short = "f",
 	            long = "frame",
-	            raw(possible_values = "&Frame::variants()")
+	            possible_values = &Frame::variants()
 	)]
 	pub frames: Vec<Frame>,
 
@@ -367,7 +367,7 @@ pub struct TaxaToAgg {
 	            short = "m",
 	            long = "method",
 	            default_value = "tree",
-	            raw(possible_values = "&Method::variants()")
+	            possible_values = &Method::variants()
 	)]
 	pub method: Method,
 
@@ -376,7 +376,7 @@ pub struct TaxaToAgg {
 	            short = "a",
 	            long = "aggregate",
 	            default_value = "hybrid",
-	            raw(possible_values = "&Strategy::variants()")
+	            possible_values = &Strategy::variants()
 	)]
 	pub strategy: Strategy,
 

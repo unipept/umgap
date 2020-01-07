@@ -284,7 +284,7 @@ fn taxa2agg(args: args::TaxaToAgg) -> Result<()> {
 	let by_id	= taxon::TaxonList::new(taxons);
 	let snapping = tree.snapping(&by_id, args.ranked_only);
 
-	let aggregator: Result<Box<agg::Aggregator>> = match (args.method, args.strategy) {
+	let aggregator: Result<Box<dyn agg::Aggregator>> = match (args.method, args.strategy) {
 		(args::Method::RangeMinimumQuery, args::Strategy::MaximumRootToLeafPath) => Ok(Box::new(rmq::rtl::RTLCalculator::new(tree.root, &by_id))),
 		(args::Method::RangeMinimumQuery, args::Strategy::LowestCommonAncestor) => Ok(Box::new(rmq::lca::LCACalculator::new(tree))),
 		(args::Method::RangeMinimumQuery, args::Strategy::Hybrid) => {
@@ -631,13 +631,13 @@ fn seedextend(args: args::SeedExtend) -> Result<()> {
 		}
 
 		// write it
-		try!(writer.write_record(fasta::Record {
+		writer.write_record(fasta::Record {
 			header: record.header,
 			sequence: seeds.into_iter()
 			               .flat_map(|(start, end)| taxons[start..end].into_iter())
 			               .map(|t| t.to_string())
 			               .collect()
-		}).map_err(|err| err.to_string()));
+		}).map_err(|err| err.to_string())?;
 	}
 	Ok(())
 }
