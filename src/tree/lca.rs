@@ -3,9 +3,9 @@
 use std::collections::HashMap;
 use std::ops::Add;
 
-use agg;
-use taxon::{TaxonId, TaxonList};
-use tree::tree::Tree;
+use crate::agg;
+use crate::taxon::{TaxonId, TaxonList};
+use crate::tree::tree::Tree;
 
 /// Struct capable of calculating the LCA of 2 nodes in a TaxonTree.
 pub struct LCACalculator {
@@ -41,8 +41,8 @@ impl agg::Aggregator for LCACalculator {
 #[cfg_attr(rustfmt, rustfmt_skip)]
 mod tests {
     use super::LCACalculator;
-    use agg::Aggregator;
-    use fixtures;
+    use crate::agg::Aggregator;
+    use crate::fixtures;
 
     #[test]
     fn test_two_on_same_path() {

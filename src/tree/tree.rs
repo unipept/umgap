@@ -4,8 +4,8 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::collections::VecDeque;
 
-use taxon;
-use taxon::TaxonId;
+use crate::taxon;
+use crate::taxon::TaxonId;
 
 /// A recursive tree of TaxonId's and a label.
 pub struct Tree<T: Default + Copy> {

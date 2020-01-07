@@ -3,13 +3,13 @@
 use std::collections::HashMap;
 use std::ops::Add;
 
-extern crate ordered_float;
 use self::ordered_float::NotNan;
+use ordered_float;
 
-use agg;
-use taxon::{TaxonId, TaxonList};
-use tree::lca::LCACalculator;
-use tree::tree::Tree;
+use crate::agg;
+use crate::taxon::{TaxonId, TaxonList};
+use crate::tree::lca::LCACalculator;
+use crate::tree::tree::Tree;
 
 
 /// Struct capable of aggregating of a list of nodes in a TaxonTree, using a
@@ -66,8 +66,8 @@ impl agg::Aggregator for MixCalculator {
 #[cfg_attr(rustfmt, rustfmt_skip)]
 mod tests {
     use super::MixCalculator;
-    use agg::Aggregator;
-    use fixtures;
+    use crate::agg::Aggregator;
+    use crate::fixtures;
 
     #[test]
     fn test_full_rtl() {

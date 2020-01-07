@@ -3,12 +3,12 @@
 use std::collections::HashMap;
 use std::collections::VecDeque;
 
-extern crate ordered_float;
 use self::ordered_float::NotNan;
+use ordered_float;
 
-use agg;
-use rmq::lca::LCACalculator;
-use taxon::{TaxonId, TaxonTree};
+use crate::agg;
+use crate::rmq::lca::LCACalculator;
+use crate::taxon::{TaxonId, TaxonTree};
 
 /// Struct capable of aggregating of a list of nodes in a TaxonTree, using a
 /// hybrid approach between MRL and LCA. It can either prefer MRL or LCA more,
@@ -92,8 +92,8 @@ impl agg::Aggregator for MixCalculator {
 #[cfg_attr(rustfmt, rustfmt_skip)]
 mod tests {
     use super::MixCalculator;
-    use agg::Aggregator;
-    use fixtures;
+    use crate::agg::Aggregator;
+    use crate::fixtures;
 
     #[test]
     fn test_full_rtl() {

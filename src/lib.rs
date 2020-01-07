@@ -19,11 +19,8 @@ extern crate assert_matches;
 #[macro_use]
 extern crate structopt;
 
-extern crate clap;
 
-extern crate regex;
-
-extern crate strum;
+use strum;
 
 #[macro_use]
 extern crate strum_macros;

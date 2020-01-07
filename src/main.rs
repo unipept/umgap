@@ -13,14 +13,14 @@ use std::io::Read;
 use std::os::unix::net::UnixListener;
 use std::sync::Mutex;
 
-extern crate clap;
 
-extern crate fst;
+
+use fst;
 use fst::Streamer;
 
-extern crate regex;
+use regex;
 
-extern crate csv;
+use csv;
 
 #[macro_use(quick_main)]
 extern crate error_chain;
@@ -29,14 +29,14 @@ extern crate error_chain;
 extern crate serde_json;
 use serde_json::value;
 
-extern crate structopt;
+
 use structopt::StructOpt;
 
-extern crate strum;
-extern crate rayon;
+
+
 use rayon::prelude::*;
 
-extern crate umgap;
+
 use umgap::dna::Strand;
 use umgap::dna::translation::TranslationTable;
 use umgap::io::fasta;

@@ -4,8 +4,8 @@ use std::fmt;
 use std::path::PathBuf;
 use std::str::FromStr;
 
-use rank::Rank;
-use taxon::TaxonId;
+use crate::rank::Rank;
+use crate::taxon::TaxonId;
 
 /// A reading frame
 #[allow(missing_docs)]
@@ -43,7 +43,7 @@ impl FromStr for Frame {
 }
 
 impl fmt::Display for Frame {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		write!(f, "{}", match *self {
 			Frame::Forward1 => "1",
 			Frame::Forward2 => "2",

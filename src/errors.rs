@@ -3,15 +3,15 @@
 use std::io;
 use std::num;
 
-extern crate csv;
+use csv;
 
-extern crate fst;
+use fst;
 
-extern crate regex;
+use regex;
 
-use agg;
-use dna::translation;
-use taxon;
+use crate::agg;
+use crate::dna::translation;
+use crate::taxon;
 
 error_chain! {
 	links {

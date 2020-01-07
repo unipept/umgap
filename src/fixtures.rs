@@ -1,5 +1,5 @@
-use rank::Rank;
-use taxon::*;
+use crate::rank::Rank;
+use crate::taxon::*;
 
 pub const ROOT: TaxonId = 1;
 pub fn taxon_list() -> Vec<Taxon> {

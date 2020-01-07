@@ -2,10 +2,10 @@
 
 use std::collections::HashMap;
 
-use agg;
-use rmq::rmq::RMQ;
-use taxon;
-use taxon::TaxonId;
+use crate::agg;
+use crate::rmq::rmq::RMQ;
+use crate::taxon;
+use crate::taxon::TaxonId;
 
 /// Struct capable of calculating the LCA of 2 nodes in a TaxonTree, using RMQ.
 pub struct LCACalculator {
@@ -89,10 +89,10 @@ impl agg::Aggregator for LCACalculator {
 #[cfg_attr(rustfmt, rustfmt_skip)]
 mod tests {
     use super::LCACalculator;
-    use agg::Aggregator;
-    use taxon::*;
-	use rank::Rank;
-    use fixtures;
+    use crate::agg::Aggregator;
+    use crate::taxon::*;
+    use crate::rank::Rank;
+    use crate::fixtures;
 
     #[test]
     fn test_two_on_same_path() {

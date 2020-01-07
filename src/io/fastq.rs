@@ -6,8 +6,8 @@ use std::io::BufRead;
 use std::io::Read;
 use std::iter::Peekable;
 
-use errors;
-use errors::Result;
+use crate::errors;
+use crate::errors::Result;
 
 /// Reads a FASTQ-formatted source (e.g. a file).
 pub struct Reader<R: Read> {
@@ -101,7 +101,7 @@ pub struct Record {
 }
 
 impl fmt::Display for Record {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		write!(
 		       f,
 		       "Record ({},{},{})",

@@ -9,8 +9,8 @@ use std::io::Read;
 use std::io::Write;
 use std::iter::Peekable;
 
-use errors;
-use errors::Result;
+use crate::errors;
+use crate::errors::Result;
 
 const BUFFER_SIZE: usize = 10_000_000; // 10MB
 const FASTA_WIDTH: usize = 70;

@@ -2,8 +2,8 @@
 
 use std::collections::HashMap;
 
-use taxon;
-use taxon::TaxonId;
+use crate::taxon;
+use crate::taxon::TaxonId;
 
 /// Allows to aggregate over a taxon tree.
 pub trait Aggregator {
@@ -50,12 +50,12 @@ error_chain! {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use fixtures;
-	use rmq;
-	use taxon::TaxonList;
-	use tree;
+	use crate::fixtures;
+	use crate::rmq;
+	use crate::taxon::TaxonList;
+	use crate::tree;
 
-	fn aggregators(by_id: &TaxonList) -> Vec<Box<Aggregator>> {
+	fn aggregators(by_id: &TaxonList) -> Vec<Box<dyn Aggregator>> {
 		vec![
 		     Box::new(rmq::lca::LCACalculator::new(fixtures::tree())),
 		     Box::new(rmq::rtl::RTLCalculator::new(fixtures::ROOT, by_id)),

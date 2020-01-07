@@ -11,7 +11,7 @@ use std::path::Path;
 use std::str::FromStr;
 use strum;
 
-use rank::*;
+use crate::rank::*;
 
 /// A unique identifier for a [Taxon](struct.Taxon.html).
 pub type TaxonId = usize;
@@ -387,9 +387,9 @@ error_chain! {
 #[cfg_attr(rustfmt, rustfmt_skip)]
 mod tests {
     use super::*;
-	use rank::Rank;
+	use crate::rank::Rank;
 	use strum::IntoEnumIterator;
-    use fixtures;
+    use crate::fixtures;
 
     #[test]
     fn test_taxon_parsing() {

@@ -14,6 +14,7 @@ keywords = ["metagenomics", "transcriptonomics", "bio", "DNA", "unipept"]
 categories = ["command-line-utilities", "science"]
 license = "MIT"
 exclude = ["testdata/*"]
+edition = "2018"
 
 [dependencies]
 clap = "2.33.0"
