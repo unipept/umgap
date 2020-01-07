@@ -191,6 +191,10 @@ pub enum Opt {
 	#[structopt(name = "splitkmers")]
 	SplitKmers(SplitKmers),
 
+	/// Groups a CSV by equal first fields (Kmers) and aggregates the second fields (taxon ids).
+	#[structopt(name = "joinkmers")]
+	JoinKmers(JoinKmers),
+
 	/// Write an FST index of stdin on stdout.
 	#[structopt(name = "buildindex")]
 	BuildIndex,
@@ -563,6 +567,14 @@ pub struct SplitKmers {
 	/// Print (K-1)-mer suffixes of the Kmers starting with this character
 	#[structopt(short = "p", long = "prefix", default_value = "")]
 	pub prefix: String,
+}
+
+/// Groups a CSV by equal first fields (Kmers) and aggregates the second fields (taxon ids).
+#[derive(Debug, StructOpt)]
+pub struct JoinKmers {
+	/// The NCBI taxonomy tsv-file
+	#[structopt(parse(from_os_str))]
+	pub taxon_file: PathBuf,
 }
 
 error_chain! {
