@@ -71,6 +71,7 @@ quick_main!(|| -> Result<()> {
 		args::Opt::Report(args)          => report(args),
 		args::Opt::BestOf(args)          => bestof(args),
 		args::Opt::PrintIndex(args)      => printindex(args),
+		args::Opt::SplitKmers(args)      => splitkmers(args),
 		args::Opt::BuildIndex            => buildindex(),
 		args::Opt::CountRecords          => countrecords(),
 	}
@@ -710,6 +711,27 @@ fn printindex(args: args::PrintIndex) -> Result<()> {
 
 	while let Some((k, v)) = stream.next() {
 		writer.serialize((String::from_utf8_lossy(k), v))?;
+	}
+
+	Ok(())
+}
+
+fn splitkmers(args: args::SplitKmers) -> Result<()> {
+	let mut reader = csv::ReaderBuilder::new()
+	                                    .has_headers(false)
+	                                    .delimiter(b'\t')
+	                                    .from_reader(io::stdin());
+
+	let mut writer = csv::WriterBuilder::new()
+	                                    .delimiter(b'\t')
+	                                    .from_writer(io::stdout());
+
+	for record in reader.deserialize() {
+		let (tid, sequence): (TaxonId, String) = record?;
+		if sequence.len() < args.length { continue }
+		for kmer in sequence.as_bytes().windows(args.length) {
+			writer.serialize((String::from_utf8_lossy(kmer), tid))?;
+		}
 	}
 
 	Ok(())

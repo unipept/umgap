@@ -225,5 +225,4 @@ mod tests {
 	fn test_number_of_codons() {
 		assert_eq!(64, CodonIterator::new().count());
 	}
-
 }

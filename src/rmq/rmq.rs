@@ -52,7 +52,7 @@ impl<T: Ord + Display> RMQ<T> {
 			      .min_by_key(|&(_, val)| val)
 			      .expect("So, it has come to this.")
 			      .0 + i * size()
-			    })
+		     })
 		     .collect()
 	}
 

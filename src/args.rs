@@ -187,6 +187,10 @@ pub enum Opt {
 	#[structopt(name = "printindex")]
 	PrintIndex(PrintIndex),
 
+	/// Splits each protein sequence in a FASTA format into a list of kmers.
+	#[structopt(name = "splitkmers")]
+	SplitKmers(SplitKmers),
+
 	/// Write an FST index of stdin on stdout.
 	#[structopt(name = "buildindex")]
 	BuildIndex,
@@ -548,6 +552,14 @@ pub struct PrintIndex {
 	/// An FST to query
 	#[structopt(parse(from_os_str))]
 	pub fst_file: PathBuf,
+}
+
+/// Splits each taxon id + protein sequence pair in a CSV format into a list of kmers.
+#[derive(Debug, StructOpt)]
+pub struct SplitKmers {
+	/// The K in K-mers
+	#[structopt(short = "k", long = "length", default_value = "9")]
+	pub length: usize,
 }
 
 error_chain! {

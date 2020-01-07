@@ -56,7 +56,7 @@ impl<T: Default + Copy> Tree<T> {
 			                         set.iter()
 			                            .map(|&tid| Tree::create(tid, children, taxons))
 			                            .collect()
-			                        })
+		                         })
 		                         .unwrap_or(Vec::new()) }
 	}
 
