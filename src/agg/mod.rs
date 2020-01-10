@@ -1,5 +1,7 @@
 //! Defines aggregation operations over a taxon tree.
 
+pub mod rank;
+
 use std::collections::HashMap;
 
 use crate::taxon;

@@ -120,7 +120,7 @@ pub fn read_taxa_file<P: AsRef<Path>>(filename: P) -> Result<Vec<Taxon>> {
 
 
 /// A newtype definition for a (pretty dense) list of taxons by ID.
-pub struct TaxonList(Vec<Option<Taxon>>);
+pub struct TaxonList(pub Vec<Option<Taxon>>);
 
 impl TaxonList {
 	/// Groups a list of taxons by their TaxonId.

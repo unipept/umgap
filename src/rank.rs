@@ -74,3 +74,9 @@ impl PartialOrd for Rank {
 		}
 	}
 }
+
+impl Ord for Rank {
+	fn cmp(&self, other: &Rank) -> Ordering {
+		self.index().cmp(&other.index())
+	}
+}
