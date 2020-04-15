@@ -77,6 +77,8 @@ getconfigdir() {
 		echo "$configdir"
 	elif [ -d "$config_default" ]; then
 		echo "$config_default"
+	elif [ -d /etc/umgap ]; then
+		echo /etc/umgap
 	else
 		crash "No configuration directory found. Please run umgap-setup or use the '-c' argument."
 	fi

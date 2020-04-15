@@ -10,9 +10,10 @@ Statistics at [Ghent University].
 
 ## Installation & Setup
 
-1. Install [Rust], according to [their installation instructions][rust-install].
-   The pipeline is developed for the latest stable release, but should work on
-   1.35 and higher.
+1. Install [Rust], according to [their installation instructions][rust-install],
+   or use your favourite package manager (e.g. `apt install rustc`). The
+   pipeline is developed for the latest stable release, but should work on 1.35
+   and higher.
 
 2. Clone this repository and go to the repository root.
 
@@ -24,12 +25,20 @@ Statistics at [Ghent University].
 3. Compile and install the UMGAP.
 
    ```sh
+   cargo build --release
    cargo install --path .
    ```
 
-   This will install the `umgap` command to `~/.cargo/bin` by default. Please
-   ensure this directory is in your `$PATH`. You can check if the installation
-   was succesful by asking for the version:
+   For a multiuser installation, instead of `cargo install`, use `install` to
+   place the umgap program and the wrapper script were all users can reach it:
+
+   ```sh
+   sudo install target/release/umgap scripts/umgap-analyse.sh /usr/bin
+   ```
+
+   `cargo install` will install the `umgap` command to `~/.cargo/bin` by
+   default. Please ensure this directory is in your `$PATH`. You can check if
+   the installation was succesful by asking for the version:
 
    ```sh
    umgap -V
@@ -46,6 +55,10 @@ Statistics at [Ghent University].
    tryptic index file (less powerfull, but runs on any decent laptop) and the
    9-mer index file (uses about 100GB disk space for storage and as much RAM
    during operation. The exact size depends on the version.)
+
+   Run `sudo scripts/umgap-setup.sh -c /etc/umgap -d <datamap>` instead to share
+   the datafiles between users. Make sure the `<datamap>` is accessible for the
+   end users.
 
 6. (optional) Analyze some test data! Running
 

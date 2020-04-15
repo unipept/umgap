@@ -199,15 +199,18 @@ fi
 
 if [ "$download_taxons" = "true" ]; then
 	download "$taxons" "$datadir/$version/taxons.tsv"
+	chmod 644 "$datadir/$version/taxons.tsv"
 	ln -s "$datadir/$version/taxons.tsv" "$configdir/$version/taxons.tsv"
 fi
 
 if [ "$download_tryptic" = "true" ]; then
 	download "$tryptic" "$datadir/$version/tryptic.fst"
+	chmod 644 "$datadir/$version/tryptic.fst"
 	ln -s "$datadir/$version/tryptic.fst" "$configdir/$version/tryptic.fst"
 fi
 
 if [ "$download_ninemer" = "true" ]; then
 	download "$ninemer" "$datadir/$version/ninemer.fst"
+	chmod 644 "$datadir/$version/ninemer.fst"
 	ln -s "$datadir/$version/ninemer.fst" "$configdir/$version/ninemer.fst"
 fi
