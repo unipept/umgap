@@ -45,7 +45,6 @@ use umgap::taxon;
 use umgap::errors::{Result, ErrorKind};
 use umgap::taxon::TaxonId;
 use umgap::agg;
-use umgap::agg::Aggregator;
 use umgap::rmq;
 use umgap::tree;
 use umgap::utils;
@@ -777,38 +776,8 @@ fn joinkmers(args: args::JoinKmers) -> Result<()> {
 	let taxons = taxon::read_taxa_file(args.taxon_file)?;
 
 	// Parsing the taxons
-	let tree = taxon::TaxonTree::new(&taxons);
-	let by_id = taxon::TaxonList::new(taxons);
-	let snapping = tree.snapping(&by_id, true);
-	let aggregator = tree::lca::LCACalculator::new(tree.root, &by_id);
-
-	let mut emit = |kmer: &str, tids: Vec<(TaxonId, f32)>| {
-		let counts = agg::count(tids.into_iter());
-		if let Ok(aggregate) = aggregator.aggregate(&counts) {
-			writer.serialize((kmer, snapping[aggregate].unwrap()))
-		} else {
-			Ok(())
-		}
-	};
-
-	// Iterate over records and emit groups
-	let mut current_kmer: Option<String> = Option::None;
-	let mut current_tids = vec!();
-	for record in reader.deserialize() {
-		let (kmer, tid): (String, TaxonId) = record?;
-		if let Some(c) = current_kmer {
-			if c != kmer {
-				emit(&c, current_tids)?;
-				current_tids = vec!();
-			}
-		} else {
-			current_tids = vec!();
-		}
-		current_kmer = Some(kmer);
-		current_tids.push((tid, 1.0));
-	}
-	if let Some(c) = current_kmer {
-		emit(&c, current_tids)?;
+	for record in agg::rank::RankAggregator::new(reader.deserialize().filter_map(|r| r.ok()), taxons) {
+		writer.serialize(record)?;
 	}
 
 	Ok(())

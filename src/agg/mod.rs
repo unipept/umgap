@@ -1,5 +1,6 @@
 //! Defines aggregation operations over a taxon tree.
 
+pub mod lineage;
 pub mod rank;
 
 use std::collections::HashMap;

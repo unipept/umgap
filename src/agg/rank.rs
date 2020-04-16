@@ -1,29 +1,30 @@
 //! A ranked-based method of Taxon aggregation
 
-use std::iter::{Iterator, Peekable};
 use std::cmp::min;
+use std::iter::{Iterator, Peekable};
 
 use crate::rank::Rank;
 use crate::taxon::{Taxon, TaxonId, TaxonList, TaxonTree};
 
 /// An Iterator which yields the aggregated pairs.
-pub struct RankAggregator {
-	records: Peekable<Box<dyn Iterator<Item=(String, TaxonId)>>>,
+pub struct RankAggregator<T: Iterator<Item = (String, TaxonId)>> {
+	records: Peekable<T>,
 	ancestors: Vec<Option<TaxonId>>,
-	ranks: Vec<Option<Rank>>
+	ranks: Vec<Option<Rank>>,
 }
 
-impl RankAggregator {
+impl<T: Iterator<Item = (String, TaxonId)>> RankAggregator<T> {
 	/// Uses a taxonomy constructed from taxa to aggregate. Assumes the
 	/// taxon with TaxonId 0 is absent or represents an "unknown" taxon.
-	pub fn new<T>(records: Box<dyn Iterator<Item=(String, TaxonId)>>, taxa: Vec<Taxon>) -> Self {
+	pub fn new(records: T, taxa: Vec<Taxon>) -> Self {
 		let taxon_tree = TaxonTree::new(&taxa);
 		let taxon_list = TaxonList::new_with_unknown(taxa, true);
-		RankAggregator {
-			records: records.peekable(),
-			ancestors: taxon_tree.snapping(&taxon_list, true),
-			ranks: taxon_list.0.iter().map(|mt| mt.as_ref().map(|t| t.rank)).collect()
-		}
+		RankAggregator { records: records.peekable(),
+		                 ancestors: taxon_tree.snapping(&taxon_list, true),
+		                 ranks: taxon_list.0
+		                                  .iter()
+		                                  .map(|mt| mt.as_ref().map(|t| t.rank))
+		                                  .collect() }
 	}
 
 	fn raise_to_rank(&self, taxon: TaxonId, target: Rank) -> Option<TaxonId> {
@@ -45,21 +46,24 @@ impl RankAggregator {
 	}
 }
 
-impl Iterator for RankAggregator {
+impl<T: Iterator<Item = (String, TaxonId)>> Iterator for RankAggregator<T> {
 	type Item = (String, TaxonId);
 
 	fn next(&mut self) -> Option<(String, TaxonId)> {
 		if let Some((sequence, initial_tid)) = self.records.next() {
 			let mut join_rank: Option<Rank> = None;
-			let (mut aggregate, mut aggregate_rank) = self.with_rank(initial_tid).expect("reeeeeeee");
+			let (mut aggregate, mut aggregate_rank) =
+				self.with_rank(initial_tid).expect("reeeeeeee");
 
 			while self.records.peek().map_or(false, |(s, _)| *s == sequence) {
 				let (_, next) = self.records.next().expect("we just peeked at it");
 				let (next_taxon, next_rank) = self.with_rank(next).expect("reeeeeee");
 
 				let compare_rank = min(next_rank, join_rank.unwrap_or(aggregate_rank));
-				let mut raised_aggregate = self.raise_to_rank(aggregate, compare_rank).expect("none if not?");
-				let mut raised_next = self.raise_to_rank(next_taxon, compare_rank).expect("none if not?");
+				let mut raised_aggregate = self.raise_to_rank(aggregate, compare_rank)
+				                               .expect("none if not?");
+				let mut raised_next = self.raise_to_rank(next_taxon, compare_rank)
+				                          .expect("none if not?");
 				if raised_aggregate != raised_next {
 					// samen stijgen tot gelijk, dit is nieuwe aggregate en join rank
 					while raised_aggregate != raised_next {
