@@ -769,9 +769,8 @@ fn joinkmers(args: args::JoinKmers) -> Result<()> {
 	                                    .delimiter(b'\t')
 	                                    .from_reader(io::stdin());
 
-	let mut writer = csv::WriterBuilder::new()
-	                                    .delimiter(b'\t')
-	                                    .from_writer(io::stdout());
+	let stdout = io::stdout();
+	let mut handle = stdout.lock();
 
 	let taxons = taxon::read_taxa_file(args.taxon_file)?;
 
@@ -784,7 +783,9 @@ fn joinkmers(args: args::JoinKmers) -> Result<()> {
 	let mut emit = |kmer: &str, tids: Vec<(TaxonId, f32)>| {
 		let counts = agg::count(tids.into_iter());
 		if let Ok(aggregate) = aggregator.aggregate(&counts) {
-			writer.serialize((kmer, snapping[aggregate].unwrap()))
+			let taxon = snapping[aggregate].unwrap();
+			let rank = by_id.get_or_unknown(taxon).unwrap().rank;
+			write!(handle, "{}\t{}\t{}\n", kmer, taxon, rank)
 		} else {
 			Ok(())
 		}
