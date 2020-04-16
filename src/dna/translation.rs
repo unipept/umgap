@@ -155,7 +155,7 @@ impl TranslationTable {
 				codon.2.into(),
 			]);
 		}
-		for (i, name) in ["AAs", "Starts", "Base1", "Base2", "Base3"].into_iter()
+		for (i, name) in ["AAs", "Starts", "Base1", "Base2", "Base3"].iter()
 		                                                             .enumerate()
 		{
 			println!(
