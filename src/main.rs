@@ -779,7 +779,7 @@ fn joinkmers(args: args::JoinKmers) -> Result<()> {
 	let tree = taxon::TaxonTree::new(&taxons);
 	let by_id = taxon::TaxonList::new(taxons);
 	let snapping = tree.snapping(&by_id, true);
-	let aggregator = tree::mix::MixCalculator::new(tree.root, &by_id, 0.95);
+	let aggregator = tree::mix::MixCalculator::new(tree.root, &by_id, 0.75);
 
 	let mut emit = |kmer: &str, tids: Vec<(TaxonId, f32)>| {
 		let counts = agg::count(tids.into_iter());
