@@ -8,7 +8,6 @@ use ordered_float;
 
 use crate::agg;
 use crate::taxon::{TaxonId, TaxonList};
-use crate::tree::lca::LCACalculator;
 use crate::tree::tree::Tree;
 
 
@@ -31,11 +30,9 @@ impl MixCalculator {
 	///   will be chosen as aggregation. If factor is 1, LCA will always be chosen; If factor is 0,
 	///   MRL.
 	pub fn new(root: TaxonId, taxonomy: &TaxonList, factor: f32) -> Self {
-		let LCACalculator { root: r,
-		                    parents: p, } = LCACalculator::new(root, taxonomy);
 		MixCalculator { factor: factor,
-		                root: r,
-		                parents: p }
+		                root: root,
+		                parents: taxonomy.ancestry() }
 	}
 }
 

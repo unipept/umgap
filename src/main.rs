@@ -777,13 +777,14 @@ fn joinkmers(args: args::JoinKmers) -> Result<()> {
 	// Parsing the Taxa file
 	let tree = taxon::TaxonTree::new(&taxons);
 	let by_id = taxon::TaxonList::new(taxons);
-	let snapping = tree.snapping(&by_id, true);
+	let ranksnapping = tree.snapping(&by_id, true);
+	let validsnapping = tree.snapping(&by_id, false);
 	let aggregator = tree::mix::MixCalculator::new(tree.root, &by_id, 0.75);
 
 	let mut emit = |kmer: &str, tids: Vec<(TaxonId, f32)>| {
 		let counts = agg::count(tids.into_iter());
 		if let Ok(aggregate) = aggregator.aggregate(&counts) {
-			let taxon = snapping[aggregate].unwrap();
+			let taxon = ranksnapping[aggregate].unwrap();
 			let rank = by_id.get_or_unknown(taxon).unwrap().rank;
 			write!(handle, "{}\t{}\t{}\n", kmer, taxon, rank)
 		} else {
@@ -805,7 +806,9 @@ fn joinkmers(args: args::JoinKmers) -> Result<()> {
 			current_tids = vec!();
 		}
 		current_kmer = Some(kmer);
-		current_tids.push((tid, 1.0));
+		if let Some(validancestor) = validsnapping[tid] {
+			current_tids.push((validancestor, 1.0));
+		}
 	}
 	if let Some(c) = current_kmer {
 		emit(&c, current_tids)?;
