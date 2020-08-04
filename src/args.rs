@@ -202,6 +202,10 @@ pub enum Opt {
 	/// Count the amount of FASTA records from stdin
 	#[structopt(name = "countrecords")]
 	CountRecords,
+
+	/// Visualizes the given list of taxons using the Unipept API
+	#[structopt(name = "visualize")]
+	Visualize(Visualize),
 }
 
 /// Translates DNA into Amino Acid Sequences.
@@ -342,12 +346,12 @@ pub struct ProtToTrypToLca {
 	#[structopt(short = "L", long = "maxlen", default_value = "50")]
 	pub max_length: usize,
 
-	/// The letters that a tryptic peptide must contain
-	#[structopt(short = "c", long = "contains", default_value = "")]
+	/// Keep only tryptic peptides containing these letters
+	#[structopt(short = "k", long = "keep", default_value = "")]
 	pub contains: String,
 
-	/// The letters that a tryptic peptide mustn't contain
-	#[structopt(short = "l", long = "lacks", default_value = "")]
+	/// Drop tryptic peptides containing these letters
+	#[structopt(short = "d", long = "drop", default_value = "")]
 	pub lacks: String,
 }
 
@@ -489,7 +493,6 @@ pub struct Taxonomy {
 	pub no_header: bool,
 }
 
-
 /// Aggregates taxa to a JSON tree for usage in the unipept visualisations.
 #[derive(Debug, StructOpt)]
 pub struct JsonTree {
@@ -575,6 +578,14 @@ pub struct JoinKmers {
 	/// The NCBI taxonomy tsv-file
 	#[structopt(parse(from_os_str))]
 	pub taxon_file: PathBuf,
+}
+
+/// Visualizes the given list of taxons using the Unipept API
+#[derive(Debug, StructOpt)]
+pub struct Visualize {
+	/// Host the result online and return the URL
+	#[structopt(short = "u", long = "url")]
+	pub url: bool,
 }
 
 error_chain! {

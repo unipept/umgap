@@ -29,10 +29,7 @@ extern crate error_chain;
 extern crate serde_json;
 use serde_json::value;
 
-
 use structopt::StructOpt;
-
-
 
 use rayon::prelude::*;
 
@@ -76,6 +73,7 @@ quick_main!(|| -> Result<()> {
 		args::Opt::JoinKmers(args)       => joinkmers(args),
 		args::Opt::BuildIndex            => buildindex(),
 		args::Opt::CountRecords          => countrecords(),
+		args::Opt::Visualize(args)       => visualize(args),
 	}
 });
 
@@ -831,5 +829,28 @@ fn countrecords() -> Result<()> {
 	}
 	println!("Records: {}", records);
 	println!("Sequence items: {}", sequences);
+	Ok(())
+}
+
+fn visualize(args: args::Visualize) -> Result<()> {
+	let mut taxa = HashMap::new();
+	for record in fasta::Reader::new(io::stdin(), false).records() {
+		let record = record?;
+		let taxon = record.sequence[0].parse::<TaxonId>()?;
+		*taxa.entry(taxon).or_insert(0) += 1;
+	}
+
+	let json = json!({
+		"counts": taxa,
+		"link": args.url.to_string(),
+	});
+
+	let client = reqwest::blocking::Client::new();
+	let res = client.post("http://api.unipept.ugent.be/api/v1/taxa2tree")
+	                .json(&json)
+	                .send()
+	                .map_err(|err| err.to_string())?;
+
+	print!("{}", res.text().map_err(|err| err.to_string())?);
 	Ok(())
 }
