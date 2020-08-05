@@ -1,8 +1,10 @@
 //! Contains the implementation of several programs used by the
 //! [Unipept pipeline](http://unipept.ugent.be/).
 
-#![doc(html_logo_url = "http://unipept.ugent.be/logo.png",
-       html_favicon_url = "http://unipept.ugent.be/favicon.ico")]
+#![doc(
+    html_logo_url = "http://unipept.ugent.be/logo.png",
+    html_favicon_url = "http://unipept.ugent.be/favicon.ico"
+)]
 #![deny(missing_docs)]
 #![recursion_limit = "128"]
 
@@ -18,7 +20,6 @@ extern crate assert_matches;
 
 #[macro_use]
 extern crate structopt;
-
 
 use strum;
 
