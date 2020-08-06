@@ -32,8 +32,7 @@ use rayon::prelude::*;
 use umgap::agg;
 use umgap::agg::Aggregator;
 use umgap::args;
-use umgap::dna::translation::TranslationTable;
-use umgap::dna::Strand;
+use umgap::commands;
 use umgap::errors::{ErrorKind, Result};
 use umgap::io::fasta;
 use umgap::io::fastq;
@@ -46,7 +45,7 @@ use umgap::utils;
 
 quick_main!(|| -> Result<()> {
     match args::Opt::from_args() {
-        args::Opt::Translate(args) => translate(args),
+        args::Opt::Translate(args) => commands::translate::translate(args),
         args::Opt::PeptToLca(args) => pept2lca(args),
         args::Opt::ProtToKmerToLca(args) => prot2kmer2lca(args),
         args::Opt::ProtToTrypToLca(args) => prot2tryp2lca(args),
@@ -70,67 +69,6 @@ quick_main!(|| -> Result<()> {
         args::Opt::Visualize(args) => visualize(args),
     }
 });
-
-fn translate(args: args::Translate) -> Result<()> {
-    // Parsing the table
-    let table = args.table.parse::<&TranslationTable>()?;
-
-    // Which frames TODO ugly
-    let frames = if args.all_frames {
-        vec![
-            args::Frame::Forward1,
-            args::Frame::Forward2,
-            args::Frame::Forward3,
-            args::Frame::Reverse1,
-            args::Frame::Reverse2,
-            args::Frame::Reverse3,
-        ]
-    } else {
-        args.frames
-    };
-
-    // Split on show_tables
-    if args.show_table {
-        table.print();
-    } else {
-        let mut writer = fasta::Writer::new(io::stdout(), "", false);
-
-        // Parsing the frames
-        let frames = frames
-            .iter()
-            .map(|&frame| match frame {
-                args::Frame::Forward1 => (frame, 1, false),
-                args::Frame::Forward2 => (frame, 2, false),
-                args::Frame::Forward3 => (frame, 3, false),
-                args::Frame::Reverse1 => (frame, 1, true),
-                args::Frame::Reverse2 => (frame, 2, true),
-                args::Frame::Reverse3 => (frame, 3, true),
-            })
-            .collect::<Vec<(args::Frame, usize, bool)>>();
-
-        for record in fasta::Reader::new(io::stdin(), true).records() {
-            let fasta::Record { header, sequence } = record?;
-
-            let forward = Strand::from(&sequence);
-            let reverse = forward.reversed();
-            for &(name, frame, reversed) in &frames {
-                let strand = if reversed { &reverse } else { &forward };
-                writer.write_record(fasta::Record {
-                    header: if !args.append_name {
-                        header.clone()
-                    } else {
-                        header.clone() + "|" + &name.to_string()
-                    },
-                    sequence: vec![String::from_utf8(
-                        table.translate_frame(args.methionine, strand.frame(frame)),
-                    )
-                    .unwrap()],
-                })?;
-            }
-        }
-    }
-    Ok(())
-}
 
 fn pept2lca(args: args::PeptToLca) -> Result<()> {
     let fst = if args.fst_in_memory {

@@ -1,63 +1,11 @@
 //! Argument parsing for the UMGAP
 
-use std::fmt;
 use std::path::PathBuf;
 use std::str::FromStr;
 
+use crate::commands;
 use crate::rank::Rank;
 use crate::taxon::TaxonId;
-
-/// A reading frame
-#[allow(missing_docs)]
-#[derive(Debug, Clone, Copy)]
-pub enum Frame {
-    Forward1,
-    Forward2,
-    Forward3,
-    Reverse1,
-    Reverse2,
-    Reverse3,
-}
-
-static FRAMES: &[&str] = &["1", "2", "3", "1R", "2R", "3R"];
-impl Frame {
-    fn variants() -> &'static [&'static str] {
-        FRAMES
-    }
-}
-
-impl FromStr for Frame {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self> {
-        match s {
-            "1" => Ok(Frame::Forward1),
-            "2" => Ok(Frame::Forward2),
-            "3" => Ok(Frame::Forward3),
-            "1R" => Ok(Frame::Reverse1),
-            "2R" => Ok(Frame::Reverse2),
-            "3R" => Ok(Frame::Reverse3),
-            _ => Err(ErrorKind::ParseFrameError(s.to_string()).into()),
-        }
-    }
-}
-
-impl fmt::Display for Frame {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{}",
-            match *self {
-                Frame::Forward1 => "1",
-                Frame::Forward2 => "2",
-                Frame::Forward3 => "3",
-                Frame::Reverse1 => "1R",
-                Frame::Reverse2 => "2R",
-                Frame::Reverse3 => "3R",
-            }
-        )
-    }
-}
 
 /// An aggregation method
 #[allow(missing_docs)]
@@ -121,7 +69,7 @@ impl FromStr for Strategy {
 pub enum Opt {
     /// Translates DNA into Amino Acid Sequences.
     #[structopt(name = "translate")]
-    Translate(Translate),
+    Translate(commands::translate::Translate),
 
     /// Looks up each line of input in a given FST index and outputs
     /// the result. Lines starting with a '>' are copied. Lines for
@@ -210,38 +158,6 @@ pub enum Opt {
     /// Visualizes the given list of taxons using the Unipept API
     #[structopt(name = "visualize")]
     Visualize(Visualize),
-}
-
-/// Translates DNA into Amino Acid Sequences.
-#[derive(Debug, StructOpt)]
-pub struct Translate {
-    /// Replace each start-codon with methionine
-    #[structopt(short = "m", long = "methionine")]
-    pub methionine: bool,
-
-    /// Read and output all six frames
-    #[structopt(short = "a", long = "all-frames", conflicts_with = "frame")]
-    pub all_frames: bool,
-
-    /// Adds a reading frame (1, 2, 3, 1R, 2R or 3R)
-    #[structopt(
-	            short = "f",
-	            long = "frame",
-	            possible_values = &Frame::variants()
-	)]
-    pub frames: Vec<Frame>,
-
-    /// Append a bar (|) and the name of the frame to the fasta header
-    #[structopt(short = "n", long = "append-name")]
-    pub append_name: bool,
-
-    /// Translation table to use
-    #[structopt(short = "t", long = "table", default_value = "1")]
-    pub table: String,
-
-    /// Print the selected table and exit
-    #[structopt(short = "s", long = "show-table")]
-    pub show_table: bool,
 }
 
 /// Looks up each line of input in a given FST index and outputs
@@ -594,11 +510,6 @@ pub struct Visualize {
 
 error_chain! {
     errors {
-        /// Unparseable Frame
-        ParseFrameError(frame: String) {
-            description("Unparseable frame")
-            display("Unparseable frame: {}", frame)
-        }
         /// Unparseable Method
         ParseMethodError(method: String) {
             description("Unparseable method")
