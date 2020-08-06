@@ -75,7 +75,7 @@ pub enum Opt {
     /// the result. Lines starting with a '>' are copied. Lines for
     /// which no mapping is found are ignored.
     #[structopt(name = "pept2lca")]
-    PeptToLca(PeptToLca),
+    PeptToLca(commands::pept2lca::PeptToLca),
 
     /// Reads all the records in a specified FASTA file and queries the
     /// k-mers in an FST for the LCA's.
@@ -158,34 +158,6 @@ pub enum Opt {
     /// Visualizes the given list of taxons using the Unipept API
     #[structopt(name = "visualize")]
     Visualize(Visualize),
-}
-
-/// Looks up each line of input in a given FST index and outputs
-/// the result. Lines starting with a '>' are copied. Lines for
-/// which no mapping is found are ignored.
-#[derive(Debug, StructOpt)]
-pub struct PeptToLca {
-    /// Map unknown sequences to 0 instead of ignoring them
-    #[structopt(short = "o", long = "one-on-one")]
-    pub one_on_one: bool,
-
-    /// An FST to query
-    #[structopt(parse(from_os_str))]
-    pub fst_file: PathBuf,
-
-    /// Load FST in memory instead of mmap'ing the file contents. This makes
-    /// querying significantly faster, but requires some time to load the FST
-    /// into memory.
-    #[structopt(short = "m", long = "in-memory")]
-    pub fst_in_memory: bool,
-
-    /// How much reads to group together in one chunk, bigger chunks decrease
-    /// the overhead caused by multithreading. Because the output order is not
-    /// necessarily the same as the input order, having a chunk size which is
-    /// a multiple of 12 (all 6 translations multiplied by the two paired-end
-    /// reads) will keep sequences of the same reads together.
-    #[structopt(short = "c", long = "chunksize", default_value = "240")]
-    pub chunk_size: usize,
 }
 
 /// Reads all the records in a specified FASTA file and queries the

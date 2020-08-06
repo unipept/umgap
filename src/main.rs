@@ -46,7 +46,7 @@ use umgap::utils;
 quick_main!(|| -> Result<()> {
     match args::Opt::from_args() {
         args::Opt::Translate(args) => commands::translate::translate(args),
-        args::Opt::PeptToLca(args) => pept2lca(args),
+        args::Opt::PeptToLca(args) => commands::pept2lca::pept2lca(args),
         args::Opt::ProtToKmerToLca(args) => prot2kmer2lca(args),
         args::Opt::ProtToTrypToLca(args) => prot2tryp2lca(args),
         args::Opt::TaxaToAgg(args) => taxa2agg(args),
@@ -69,39 +69,6 @@ quick_main!(|| -> Result<()> {
         args::Opt::Visualize(args) => visualize(args),
     }
 });
-
-fn pept2lca(args: args::PeptToLca) -> Result<()> {
-    let fst = if args.fst_in_memory {
-        let bytes = fs::read(args.fst_file)?;
-        fst::Map::from_bytes(bytes)?
-    } else {
-        unsafe { fst::Map::from_path(args.fst_file) }?
-    };
-
-    let default = if args.one_on_one { Some(0) } else { None };
-
-    fasta::Reader::new(io::stdin(), false)
-        .records()
-        .chunked(args.chunk_size)
-        .par_bridge()
-        .map(|chunk| {
-            let chunk = chunk?;
-            let mut chunk_output = String::new();
-            for read in chunk {
-                chunk_output.push_str(&format!(">{}\n", read.header));
-                for seq in read.sequence {
-                    if let Some(lca) = fst.get(&seq).map(Some).unwrap_or(default) {
-                        chunk_output.push_str(&format!("{}\n", lca));
-                    }
-                }
-            }
-            // TODO: make this the result of the map
-            // and print using a Writer
-            print!("{}", chunk_output);
-            Ok(())
-        })
-        .collect()
-}
 
 fn stream_prot2kmer2lca<R, W>(
     input: R,
