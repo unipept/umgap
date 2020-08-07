@@ -24,8 +24,6 @@ use serde_json::value;
 
 use structopt::StructOpt;
 
-use rayon::prelude::*;
-
 use umgap::agg;
 use umgap::agg::Aggregator;
 use umgap::args;
@@ -45,7 +43,7 @@ quick_main!(|| -> Result<()> {
         args::Opt::Translate(args) => commands::translate::translate(args),
         args::Opt::PeptToLca(args) => commands::pept2lca::pept2lca(args),
         args::Opt::ProtToKmerToLca(args) => commands::prot2kmer2lca::prot2kmer2lca(args),
-        args::Opt::ProtToTrypToLca(args) => prot2tryp2lca(args),
+        args::Opt::ProtToTrypToLca(args) => commands::prot2tryp2lca::prot2tryp2lca(args),
         args::Opt::TaxaToAgg(args) => taxa2agg(args),
         args::Opt::ProtToPept(args) => prot2pept(args),
         args::Opt::ProtToKmer(args) => prot2kmer(args),
@@ -66,62 +64,6 @@ quick_main!(|| -> Result<()> {
         args::Opt::Visualize(args) => visualize(args),
     }
 });
-
-fn prot2tryp2lca(args: args::ProtToTrypToLca) -> Result<()> {
-    let fst = if args.fst_in_memory {
-        let bytes = fs::read(&args.fst_file)?;
-        fst::Map::from_bytes(bytes)?
-    } else {
-        unsafe { fst::Map::from_path(&args.fst_file) }?
-    };
-    let default = if args.one_on_one { Some(0) } else { None };
-    let pattern = regex::Regex::new(&args.pattern)?;
-    let contains = args.contains.chars().collect::<HashSet<char>>();
-    let lacks = args.lacks.chars().collect::<HashSet<char>>();
-
-    fasta::Reader::new(io::stdin(), false)
-        .records()
-        .chunked(args.chunk_size)
-        .par_bridge()
-        .map(|chunk| {
-            let chunk = chunk?;
-            let mut chunk_output = String::new();
-            for read in chunk {
-                chunk_output.push_str(&format!(">{}\n", read.header));
-                for seq in read.sequence {
-                    // We will run the regex replacement twice, since a letter can be
-                    // matched twice (i.e. once after and once before the split).
-                    let first_run = pattern.replace_all(&seq, "$1\n$2");
-                    for peptide in pattern
-                        .replace_all(&first_run, "$1\n$2")
-                        .replace("*", "\n")
-                        .lines()
-                        .filter(|x| !x.is_empty())
-                        .filter(|seq| {
-                            let length = seq.len();
-                            length >= args.min_length && length <= args.max_length
-                        })
-                        .filter(|seq| {
-                            (contains.is_empty() && lacks.is_empty()) || {
-                                let set = seq.chars().collect::<HashSet<char>>();
-                                contains.intersection(&set).count() == contains.len()
-                                    && lacks.intersection(&set).count() == 0
-                            }
-                        })
-                    {
-                        if let Some(lca) = fst.get(&peptide).map(Some).unwrap_or(default) {
-                            chunk_output.push_str(&format!("{}\n", lca));
-                        }
-                    }
-                }
-            }
-            // TODO: make this the result of the map
-            // and print using a Writer
-            print!("{}", chunk_output);
-            Ok(())
-        })
-        .collect()
-}
 
 fn taxa2agg(args: args::TaxaToAgg) -> Result<()> {
     // Parsing the Taxa file
