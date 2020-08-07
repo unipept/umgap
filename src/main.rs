@@ -32,7 +32,6 @@ use umgap::errors::{ErrorKind, Result};
 use umgap::io::fasta;
 use umgap::io::fastq;
 use umgap::rank;
-use umgap::rmq;
 use umgap::taxon;
 use umgap::taxon::TaxonId;
 use umgap::tree;
@@ -44,7 +43,7 @@ quick_main!(|| -> Result<()> {
         args::Opt::PeptToLca(args) => commands::pept2lca::pept2lca(args),
         args::Opt::ProtToKmerToLca(args) => commands::prot2kmer2lca::prot2kmer2lca(args),
         args::Opt::ProtToTrypToLca(args) => commands::prot2tryp2lca::prot2tryp2lca(args),
-        args::Opt::TaxaToAgg(args) => taxa2agg(args),
+        args::Opt::TaxaToAgg(args) => commands::taxa2agg::taxa2agg(args),
         args::Opt::ProtToPept(args) => prot2pept(args),
         args::Opt::ProtToKmer(args) => prot2kmer(args),
         args::Opt::Filter(args) => filter(args),
@@ -64,87 +63,6 @@ quick_main!(|| -> Result<()> {
         args::Opt::Visualize(args) => visualize(args),
     }
 });
-
-fn taxa2agg(args: args::TaxaToAgg) -> Result<()> {
-    // Parsing the Taxa file
-    let taxons = taxon::read_taxa_file(args.taxon_file)?;
-
-    // Parsing the taxons
-    let tree = taxon::TaxonTree::new(&taxons);
-    let by_id = taxon::TaxonList::new(taxons);
-    let snapping = tree.snapping(&by_id, args.ranked_only);
-
-    let aggregator: Result<Box<dyn agg::Aggregator>> = match (args.method, args.strategy) {
-        (args::Method::RangeMinimumQuery, args::Strategy::MaximumRootToLeafPath) => {
-            Ok(Box::new(rmq::rtl::RTLCalculator::new(tree.root, &by_id)))
-        }
-        (args::Method::RangeMinimumQuery, args::Strategy::LowestCommonAncestor) => {
-            Ok(Box::new(rmq::lca::LCACalculator::new(tree)))
-        }
-        (args::Method::RangeMinimumQuery, args::Strategy::Hybrid) => {
-            writeln!(
-                &mut io::stderr(),
-                "Warning: this is a hybrid between LCA/MRTL, not LCA*/MRTL"
-            )
-            .unwrap();
-            Ok(Box::new(rmq::mix::MixCalculator::new(tree, args.factor)))
-        }
-        (args::Method::Tree, args::Strategy::LowestCommonAncestor) => {
-            Ok(Box::new(tree::lca::LCACalculator::new(tree.root, &by_id)))
-        }
-        (args::Method::Tree, args::Strategy::Hybrid) => Ok(Box::new(
-            tree::mix::MixCalculator::new(tree.root, &by_id, args.factor),
-        )),
-        (m, s) => Err(ErrorKind::InvalidInvocation(format!(
-            "{:?} and {:?} cannot be combined",
-            m, s
-        ))
-        .into()),
-    };
-    let aggregator = aggregator?;
-
-    fn with_score(pair: &String) -> Result<(TaxonId, f32)> {
-        let split = pair.split('=').collect::<Vec<_>>();
-        if split.len() != 2 {
-            Err("Taxon without score")?;
-        }
-        Ok((split[0].parse::<TaxonId>()?, split[1].parse::<f32>()?))
-    }
-
-    fn not_scored(tid: &String) -> Result<(TaxonId, f32)> {
-        Ok((tid.parse::<TaxonId>()?, 1.0))
-    }
-
-    let parser = if args.scored { with_score } else { not_scored };
-
-    let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
-
-    // Iterate over each read
-    for record in fasta::Reader::new(io::stdin(), false).records() {
-        // Parse the sequence of LCA's
-        let record = record?;
-        let taxons = record
-            .sequence
-            .iter()
-            .map(parser)
-            .collect::<Result<Vec<(TaxonId, f32)>>>()?;
-
-        // Create a frequency table of taxons for this read (taking into account the lower bound)
-        let counts = agg::count(taxons.into_iter().filter(|&(tid, _)| tid != 0));
-        let counts = agg::filter(counts, args.lower_bound);
-
-        writer.write_record(fasta::Record {
-            header: record.header,
-            sequence: if counts.is_empty() {
-                vec!["1".into()]
-            } else {
-                let aggregate = aggregator.aggregate(&counts)?;
-                vec![snapping[aggregate].unwrap().to_string()]
-            },
-        })?;
-    }
-    Ok(())
-}
 
 fn prot2pept(args: args::ProtToPept) -> Result<()> {
     let pattern = regex::Regex::new(&args.pattern)?;

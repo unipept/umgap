@@ -1,67 +1,10 @@
 //! Argument parsing for the UMGAP
 
 use std::path::PathBuf;
-use std::str::FromStr;
 
 use crate::commands;
 use crate::rank::Rank;
 use crate::taxon::TaxonId;
-
-/// An aggregation method
-#[allow(missing_docs)]
-#[derive(Debug)]
-pub enum Method {
-    Tree,
-    RangeMinimumQuery,
-}
-
-static METHODS: &[&str] = &["tree", "rmq"];
-impl Method {
-    fn variants() -> &'static [&'static str] {
-        METHODS
-    }
-}
-
-impl FromStr for Method {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self> {
-        match s {
-            "tree" => Ok(Method::Tree),
-            "rmq" => Ok(Method::RangeMinimumQuery),
-            _ => Err(ErrorKind::ParseMethodError(s.to_string()).into()),
-        }
-    }
-}
-
-/// An aggregation strategy
-#[allow(missing_docs)]
-#[derive(Debug)]
-pub enum Strategy {
-    LowestCommonAncestor,
-    Hybrid,
-    MaximumRootToLeafPath,
-}
-
-static STRATEGIES: &[&str] = &["lca*", "hybrid", "mrtl"];
-impl Strategy {
-    fn variants() -> &'static [&'static str] {
-        STRATEGIES
-    }
-}
-
-impl FromStr for Strategy {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self> {
-        match s {
-            "lca*" => Ok(Strategy::LowestCommonAncestor),
-            "hybrid" => Ok(Strategy::Hybrid),
-            "mrtl" => Ok(Strategy::MaximumRootToLeafPath),
-            _ => Err(ErrorKind::ParseStrategyError(s.to_string()).into()),
-        }
-    }
-}
 
 /// The Options enum for UMGAP arguments
 #[derive(Debug, StructOpt)]
@@ -89,7 +32,7 @@ pub enum Opt {
 
     /// Aggregates taxa to a single taxon.
     #[structopt(name = "taxa2agg")]
-    TaxaToAgg(TaxaToAgg),
+    TaxaToAgg(commands::taxa2agg::TaxaToAgg),
 
     /// Splits each protein sequence in a FASTA format into a list of (tryptic) peptides.
     #[structopt(name = "prot2pept")]
@@ -158,50 +101,6 @@ pub enum Opt {
     /// Visualizes the given list of taxons using the Unipept API
     #[structopt(name = "visualize")]
     Visualize(Visualize),
-}
-
-/// Aggregates taxa to a single taxon.
-#[derive(Debug, StructOpt)]
-pub struct TaxaToAgg {
-    /// Each taxon is followed by a score between 0 and 1
-    #[structopt(short = "s", long = "scored")]
-    pub scored: bool,
-
-    /// Restrict to taxa with a taxonomic rank
-    #[structopt(short = "r", long = "ranked")]
-    pub ranked_only: bool,
-
-    /// The method to use for aggregation
-    #[structopt(
-	            short = "m",
-	            long = "method",
-	            default_value = "tree",
-	            possible_values = &Method::variants()
-	)]
-    pub method: Method,
-
-    /// The method to use for aggregation
-    #[structopt(
-	            short = "a",
-	            long = "aggregate",
-	            default_value = "hybrid",
-	            possible_values = &Strategy::variants()
-	)]
-    pub strategy: Strategy,
-
-    /// The factor for the hybrid aggregation, from 0.0 (MRTL) to
-    /// 1.0 (LCA*)
-    #[structopt(short = "f", long = "factor", default_value = "0.25")]
-    pub factor: f32,
-
-    /// The smallest input frequency for a taxon to be included in
-    /// the aggregation
-    #[structopt(short = "l", long = "lower-bound", default_value = "0.0")]
-    pub lower_bound: f32,
-
-    /// The NCBI taxonomy tsv-file
-    #[structopt(parse(from_os_str))]
-    pub taxon_file: PathBuf,
 }
 
 /// Splits each protein sequence in a FASTA format into a list of (tryptic) peptides.
@@ -391,19 +290,4 @@ pub struct Visualize {
     /// Host the result online and return the URL
     #[structopt(short = "u", long = "url")]
     pub url: bool,
-}
-
-error_chain! {
-    errors {
-        /// Unparseable Method
-        ParseMethodError(method: String) {
-            description("Unparseable method")
-            display("Unparseable method: {}", method)
-        }
-        /// Unparseable Strategy
-        ParseStrategyError(strategy: String) {
-            description("Unparseable strategy")
-            display("Unparseable strategy: {}", strategy)
-        }
-    }
 }
