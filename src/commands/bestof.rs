@@ -17,20 +17,20 @@ use crate::taxon::TaxonId;
 ///     $ cat dna.fa
 ///     >header1
 ///     CGCAGAGACGGGTAGAACCTCAGTAATCCGAAAAGCCGGGATCGACCGCCCCTTGCTTGCAGCCGGGCACTACAGGACCC
-///     $ umgap translate -a < dna.fa | umgap prot2kmer2lca 9mer.index > input.fa
-///     >h
+///     $ umgap translate -n -a < dna.fa | umgap prot2kmer2lca 9mer.index > input.fa
+///     >header1|1
 ///     9606 9606 2759 9606 9606 9606 9606 9606 9606 9606 8287
-///     >h
+///     >header1|2
 ///     2026807 888268 186802 1598 1883
-///     >h
+///     >header1|3
 ///     1883
-///     >h
+///     >header1|1R
 ///     27342 2759 155619 1133106 38033 2
-///     >h
-///     >h
+///     >header1|2R
+///     >header1|3R
 ///     2951
 ///     $ umgap bestof < input.fa
-///     >h
+///     >header1|1
 ///     9606 9606 2759 9606 9606 9606 9606 9606 9606 9606 8287
 ///
 /// (Number-separating newlines in the output have been replaced by spaces for this example.)

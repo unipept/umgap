@@ -44,7 +44,7 @@ pub enum Opt {
 
     /// Count and report on a list of taxon ids.
     #[structopt(name = "report")]
-    Report(Report),
+    Report(commands::report::Report),
 
     /// Seed and extend.
     #[structopt(name = "seedextend")]
@@ -222,22 +222,6 @@ pub struct SeedExtend {
     /// The score penalty for gaps in extended seeds
     #[structopt(short = "p", long = "penalty", default_value = "5")]
     pub penalty: usize,
-}
-
-/// Count and report on a list of taxon ids.
-#[derive(Debug, StructOpt)]
-pub struct Report {
-    /// The rank to show
-    #[structopt(short = "r", long = "rank", default_value = "species")]
-    pub rank: Rank,
-
-    /// The minimum frequency to be reported
-    #[structopt(short = "f", long = "frequency", default_value = "1")]
-    pub min_frequency: usize,
-
-    /// The NCBI taxonomy tsv-file
-    #[structopt(parse(from_os_str))]
-    pub taxon_file: PathBuf,
 }
 
 /// Print the values in an FST index to stdout.

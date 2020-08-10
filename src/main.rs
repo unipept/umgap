@@ -51,7 +51,7 @@ quick_main!(|| -> Result<()> {
         args::Opt::SnapTaxon(args) => snaptaxon(args),
         args::Opt::JsonTree(args) => jsontree(args),
         args::Opt::SeedExtend(args) => seedextend(args),
-        args::Opt::Report(args) => report(args),
+        args::Opt::Report(args) => commands::report::report(args),
         args::Opt::BestOf(args) => commands::bestof::bestof(args),
         args::Opt::PrintIndex(args) => printindex(args),
         args::Opt::SplitKmers(args) => splitkmers(args),
@@ -379,45 +379,6 @@ fn seedextend(args: args::SeedExtend) -> Result<()> {
             })
             .map_err(|err| err.to_string())?;
     }
-    Ok(())
-}
-
-fn report(args: args::Report) -> Result<()> {
-    let taxons = taxon::read_taxa_file(&args.taxon_file)?;
-    if args.rank == rank::Rank::NoRank {
-        return Err(ErrorKind::InvalidInvocation("Snap to an actual rank.".into()).into());
-    }
-
-    // Parsing the taxons
-    let tree = taxon::TaxonTree::new(&taxons);
-    let by_id = taxon::TaxonList::new(taxons);
-    let snapping =
-        tree.filter_ancestors(|tid| by_id.get(tid).map(|t| t.rank == args.rank).unwrap_or(false));
-
-    // Read and count taxon ranks
-    let mut counts = HashMap::new();
-    let stdin = io::stdin();
-    for line in stdin.lock().lines() {
-        let taxon = line?.parse::<taxon::TaxonId>()?;
-        *counts.entry(snapping[taxon].unwrap_or(0)).or_insert(0) += 1;
-    }
-
-    let mut counts = counts
-        .into_iter()
-        .filter(|&(_taxon, count)| count > args.min_frequency)
-        .map(|(taxon, count)| (count, taxon))
-        .collect::<Vec<(taxon::TaxonId, usize)>>();
-    counts.sort();
-
-    let stdout = io::stdout();
-    let mut stdout = stdout.lock();
-    for (count, taxon) in counts {
-        let taxon = by_id
-            .get(taxon)
-            .ok_or("LCA taxon id not in taxon list. Check compatibility with index.")?;
-        writeln!(stdout, "{},{},{}", count, taxon.id, taxon.name)?;
-    }
-
     Ok(())
 }
 
