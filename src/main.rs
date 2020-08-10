@@ -11,8 +11,6 @@ use std::ops;
 use fst;
 use fst::Streamer;
 
-use regex;
-
 use csv;
 
 #[macro_use(quick_main)]
@@ -44,7 +42,7 @@ quick_main!(|| -> Result<()> {
         args::Opt::ProtToKmerToLca(args) => commands::prot2kmer2lca::prot2kmer2lca(args),
         args::Opt::ProtToTrypToLca(args) => commands::prot2tryp2lca::prot2tryp2lca(args),
         args::Opt::TaxaToAgg(args) => commands::taxa2agg::taxa2agg(args),
-        args::Opt::ProtToPept(args) => prot2pept(args),
+        args::Opt::ProtToPept(args) => commands::prot2pept::prot2pept(args),
         args::Opt::ProtToKmer(args) => prot2kmer(args),
         args::Opt::Filter(args) => filter(args),
         args::Opt::Uniq(args) => uniq(args),
@@ -63,31 +61,6 @@ quick_main!(|| -> Result<()> {
         args::Opt::Visualize(args) => visualize(args),
     }
 });
-
-fn prot2pept(args: args::ProtToPept) -> Result<()> {
-    let pattern = regex::Regex::new(&args.pattern)?;
-
-    let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
-    for record in fasta::Reader::new(io::stdin(), true).records() {
-        let fasta::Record { header, sequence } = record?;
-
-        // We will run the regex replacement twice, since a letter can be
-        // matched twice (i.e. once after and once before the split).
-        let first_run = pattern.replace_all(&sequence[0], "$1\n$2");
-
-        writer.write_record(fasta::Record {
-            header: header,
-            sequence: pattern
-                .replace_all(&first_run, "$1\n$2")
-                .replace("*", "\n")
-                .lines()
-                .filter(|x| !x.is_empty())
-                .map(ToOwned::to_owned)
-                .collect(),
-        })?;
-    }
-    Ok(())
-}
 
 fn prot2kmer(args: args::ProtToKmer) -> Result<()> {
     let mut writer = fasta::Writer::new(io::stdout(), "\n", false);

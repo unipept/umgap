@@ -27,6 +27,7 @@ use crate::io::fasta;
 ///     >header1
 ///     AYKKAGVSGHVWQSDGITNCLLRGLTRVKEAVANRDSGNGYINKVYYWTVDKRATTRDALDAGVDGIMTNYPDVITDVLN
 ///     $ umgap prot2tryp2lca tryptic-lca.index < input.fa
+///     >header1
 ///     571525
 ///     1
 ///     571525

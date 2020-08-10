@@ -36,7 +36,7 @@ pub enum Opt {
 
     /// Splits each protein sequence in a FASTA format into a list of (tryptic) peptides.
     #[structopt(name = "prot2pept")]
-    ProtToPept(ProtToPept),
+    ProtToPept(commands::prot2pept::ProtToPept),
 
     /// Pick the frame with the most none-root hits.
     #[structopt(name = "bestof")]
@@ -101,15 +101,6 @@ pub enum Opt {
     /// Visualizes the given list of taxons using the Unipept API
     #[structopt(name = "visualize")]
     Visualize(Visualize),
-}
-
-/// Splits each protein sequence in a FASTA format into a list of (tryptic) peptides.
-#[derive(Debug, StructOpt)]
-pub struct ProtToPept {
-    /// The cleavage-pattern (regex), i.e. the pattern after which
-    /// the next peptide will be cleaved for tryptic peptides)
-    #[structopt(short = "p", long = "pattern", default_value = "([KR])([^P])")]
-    pub pattern: String,
 }
 
 /// Splits each protein sequence in a FASTA format into a list of kmers.
