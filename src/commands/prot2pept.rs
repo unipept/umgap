@@ -2,8 +2,8 @@
 
 use std::io;
 
-use crate::io::fasta;
 use crate::errors;
+use crate::io::fasta;
 
 /// The `umgap prot2pept` command takes one or more Amino Acid sequences as input, applies an *in
 /// silico* peptide digest and outputs the result.

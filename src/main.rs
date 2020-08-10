@@ -52,7 +52,7 @@ quick_main!(|| -> Result<()> {
         args::Opt::JsonTree(args) => jsontree(args),
         args::Opt::SeedExtend(args) => seedextend(args),
         args::Opt::Report(args) => report(args),
-        args::Opt::BestOf(args) => bestof(args),
+        args::Opt::BestOf(args) => commands::bestof::bestof(args),
         args::Opt::PrintIndex(args) => printindex(args),
         args::Opt::SplitKmers(args) => splitkmers(args),
         args::Opt::JoinKmers(args) => joinkmers(args),
@@ -418,35 +418,6 @@ fn report(args: args::Report) -> Result<()> {
         writeln!(stdout, "{},{},{}", count, taxon.id, taxon.name)?;
     }
 
-    Ok(())
-}
-
-fn bestof(args: args::BestOf) -> Result<()> {
-    let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
-
-    // Combine frames and process them
-    let mut chunk = Vec::with_capacity(args.frames);
-    for record in fasta::Reader::new(io::stdin(), false).records() {
-        let record = record?;
-        if chunk.len() < args.frames - 1 {
-            chunk.push(record);
-        } else {
-            // process chunk
-            writer.write_record_ref(
-                chunk
-                    .iter()
-                    .max_by_key(|&rec| {
-                        rec.sequence
-                            .iter()
-                            .map(|tid| tid.parse::<TaxonId>().unwrap_or(0))
-                            .filter(|&s| s != 0 && s != 1)
-                            .count()
-                    })
-                    .unwrap(),
-            )?;
-            chunk.clear();
-        }
-    }
     Ok(())
 }
 

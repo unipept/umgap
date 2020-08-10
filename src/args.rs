@@ -40,7 +40,7 @@ pub enum Opt {
 
     /// Pick the frame with the most none-root hits.
     #[structopt(name = "bestof")]
-    BestOf(BestOf),
+    BestOf(commands::bestof::BestOf),
 
     /// Count and report on a list of taxon ids.
     #[structopt(name = "report")]
@@ -238,14 +238,6 @@ pub struct Report {
     /// The NCBI taxonomy tsv-file
     #[structopt(parse(from_os_str))]
     pub taxon_file: PathBuf,
-}
-
-/// Pick the frame with the most none-root hits.
-#[derive(Debug, StructOpt)]
-pub struct BestOf {
-    /// The number of frames of which to pick the best
-    #[structopt(short = "f", long = "frames", default_value = "6")]
-    pub frames: usize,
 }
 
 /// Print the values in an FST index to stdout.
