@@ -1,6 +1,7 @@
 //! The subcommands of the umgap command.
 
 pub mod bestof;
+pub mod fastq2fasta;
 pub mod pept2lca;
 pub mod prot2kmer2lca;
 pub mod prot2pept;

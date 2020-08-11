@@ -1,7 +1,6 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::fs;
 use std::io;
 use std::io::Write;
 
@@ -24,11 +23,9 @@ use umgap::args;
 use umgap::commands;
 use umgap::errors::Result;
 use umgap::io::fasta;
-use umgap::io::fastq;
 use umgap::taxon;
 use umgap::taxon::TaxonId;
 use umgap::tree;
-use umgap::utils;
 
 quick_main!(|| -> Result<()> {
     match args::Opt::from_args() {
@@ -41,7 +38,7 @@ quick_main!(|| -> Result<()> {
         args::Opt::ProtToKmer(args) => prot2kmer(args),
         args::Opt::Filter(args) => filter(args),
         args::Opt::Uniq(args) => uniq(args),
-        args::Opt::FastqToFasta(args) => fastq2fasta(args),
+        args::Opt::FastqToFasta(args) => commands::fastq2fasta::fastq2fasta(args),
         args::Opt::Taxonomy(args) => commands::taxonomy::taxonomy(args),
         args::Opt::SnapTaxon(args) => commands::snaptaxon::snaptaxon(args),
         args::Opt::SeedExtend(args) => commands::seedextend::seedextend(args),
@@ -121,30 +118,6 @@ fn uniq(args: args::Uniq) -> Result<()> {
     }
     if let Some(rec) = last {
         writer.write_record(rec)?;
-    }
-    Ok(())
-}
-
-fn fastq2fasta(args: args::FastqToFasta) -> Result<()> {
-    let handles = args
-        .input
-        .iter()
-        .map(fs::File::open)
-        .collect::<io::Result<Vec<fs::File>>>()?;
-    let readers = handles
-        .iter()
-        .map(fastq::Reader::new)
-        .map(fastq::Reader::records)
-        .collect();
-    let mut writer = fasta::Writer::new(io::stdout(), "", false);
-    for recordzip in utils::Zip::new(readers) {
-        for record in recordzip {
-            let record = record?;
-            writer.write_record(fasta::Record {
-                header: record.header,
-                sequence: vec![record.sequence],
-            })?;
-        }
     }
     Ok(())
 }

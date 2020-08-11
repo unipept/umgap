@@ -58,7 +58,7 @@ pub enum Opt {
 
     /// Interleaves a number of FASTQ files into a single FASTA output.
     #[structopt(name = "fastq2fasta")]
-    FastqToFasta(FastqToFasta),
+    FastqToFasta(commands::fastq2fasta::FastqToFasta),
 
     /// Filter peptides in a FASTA format based on specific criteria.
     #[structopt(name = "filter")]
@@ -135,14 +135,6 @@ pub struct Filter {
     /// The letters that a sequence mustn't contain
     #[structopt(short = "l", long = "lacks", default_value = "")]
     pub lacks: String,
-}
-
-/// Interleaves a number of FASTQ files into a single FASTA output.
-#[derive(Debug, StructOpt)]
-pub struct FastqToFasta {
-    /// The input files
-    #[structopt(parse(from_os_str))]
-    pub input: Vec<PathBuf>,
 }
 
 /// Print the values in an FST index to stdout.
