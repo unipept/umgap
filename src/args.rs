@@ -62,7 +62,7 @@ pub enum Opt {
 
     /// Filter peptides in a FASTA format based on specific criteria.
     #[structopt(name = "filter")]
-    Filter(Filter),
+    Filter(commands::filter::Filter),
 
     /// Concatenates the data strings of all consecutive FASTA entries with the same header.
     #[structopt(name = "uniq")]
@@ -115,26 +115,6 @@ pub struct Uniq {
     /// Wrap the output sequences
     #[structopt(short = "w", long = "wrap")]
     pub wrap: bool,
-}
-
-/// Filter peptides in a FASTA format based on specific criteria.
-#[derive(Debug, StructOpt)]
-pub struct Filter {
-    /// Minimum length required
-    #[structopt(short = "m", long = "minlen", default_value = "5")]
-    pub min_length: usize,
-
-    /// Maximum length allowed
-    #[structopt(short = "M", long = "maxlen", default_value = "50")]
-    pub max_length: usize,
-
-    /// The letters that a sequence must contain
-    #[structopt(short = "c", long = "contains", default_value = "")]
-    pub contains: String,
-
-    /// The letters that a sequence mustn't contain
-    #[structopt(short = "l", long = "lacks", default_value = "")]
-    pub lacks: String,
 }
 
 /// Print the values in an FST index to stdout.

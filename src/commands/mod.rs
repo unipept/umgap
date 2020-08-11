@@ -2,6 +2,7 @@
 
 pub mod bestof;
 pub mod fastq2fasta;
+pub mod filter;
 pub mod pept2lca;
 pub mod prot2kmer2lca;
 pub mod prot2pept;

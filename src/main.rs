@@ -1,6 +1,5 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
-use std::collections::HashSet;
 use std::io;
 use std::io::Write;
 
@@ -36,7 +35,7 @@ quick_main!(|| -> Result<()> {
         args::Opt::TaxaToAgg(args) => commands::taxa2agg::taxa2agg(args),
         args::Opt::ProtToPept(args) => commands::prot2pept::prot2pept(args),
         args::Opt::ProtToKmer(args) => prot2kmer(args),
-        args::Opt::Filter(args) => filter(args),
+        args::Opt::Filter(args) => commands::filter::filter(args),
         args::Opt::Uniq(args) => uniq(args),
         args::Opt::FastqToFasta(args) => commands::fastq2fasta::fastq2fasta(args),
         args::Opt::Taxonomy(args) => commands::taxonomy::taxonomy(args),
@@ -67,33 +66,6 @@ fn prot2kmer(args: args::ProtToKmer) -> Result<()> {
                 .windows(args.length)
                 .map(String::from_utf8_lossy)
                 .map(Cow::into_owned)
-                .collect(),
-        })?;
-    }
-    Ok(())
-}
-
-fn filter(args: args::Filter) -> Result<()> {
-    let contains = args.contains.chars().collect::<HashSet<char>>();
-    let lacks = args.lacks.chars().collect::<HashSet<char>>();
-
-    let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
-    for record in fasta::Reader::new(io::stdin(), false).records() {
-        let fasta::Record { header, sequence } = record?;
-
-        writer.write_record(fasta::Record {
-            header: header,
-            sequence: sequence
-                .into_iter()
-                .filter(|seq| {
-                    let length = seq.len();
-                    length >= args.min_length && length <= args.max_length
-                })
-                .filter(|seq| {
-                    let set = seq.chars().collect::<HashSet<char>>();
-                    contains.intersection(&set).count() == contains.len()
-                        && lacks.intersection(&set).count() == 0
-                })
                 .collect(),
         })?;
     }
