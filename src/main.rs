@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fs;
 use std::io;
-use std::io::BufRead;
 use std::io::Write;
 
 use fst;
@@ -23,10 +22,9 @@ use umgap::agg;
 use umgap::agg::Aggregator;
 use umgap::args;
 use umgap::commands;
-use umgap::errors::{ErrorKind, Result};
+use umgap::errors::Result;
 use umgap::io::fasta;
 use umgap::io::fastq;
-use umgap::rank;
 use umgap::taxon;
 use umgap::taxon::TaxonId;
 use umgap::tree;
@@ -45,7 +43,7 @@ quick_main!(|| -> Result<()> {
         args::Opt::Uniq(args) => uniq(args),
         args::Opt::FastqToFasta(args) => fastq2fasta(args),
         args::Opt::Taxonomy(args) => commands::taxonomy::taxonomy(args),
-        args::Opt::SnapTaxon(args) => snaptaxon(args),
+        args::Opt::SnapTaxon(args) => commands::snaptaxon::snaptaxon(args),
         args::Opt::SeedExtend(args) => commands::seedextend::seedextend(args),
         args::Opt::Report(args) => commands::report::report(args),
         args::Opt::BestOf(args) => commands::bestof::bestof(args),
@@ -148,43 +146,6 @@ fn fastq2fasta(args: args::FastqToFasta) -> Result<()> {
             })?;
         }
     }
-    Ok(())
-}
-
-fn snaptaxon(args: args::SnapTaxon) -> Result<()> {
-    let taxons = taxon::read_taxa_file(&args.taxon_file)?;
-    if args.rank.map(|r| r == rank::Rank::NoRank).unwrap_or(false) {
-        return Err(ErrorKind::InvalidInvocation("Snap to an actual rank.".into()).into());
-    }
-
-    // Parsing the taxons
-    let tree = taxon::TaxonTree::new(&taxons);
-    let by_id = taxon::TaxonList::new(taxons);
-    let snapping = tree.filter_ancestors(|tid| {
-        args.taxons.contains(&tid)
-            || by_id
-                .get(tid)
-                .map(|t| {
-                    (args.invalid || t.valid) && args.rank.map(|r| t.rank == r).unwrap_or(false)
-                })
-                .unwrap_or(false)
-    });
-
-    // Read and count taxon ranks
-    let stdin = io::stdin();
-    let stdout = io::stdout();
-    let mut handle = stdout.lock();
-    for line in stdin.lock().lines() {
-        let line = line?;
-        if line.starts_with('>') {
-            writeln!(handle, "{}", line)?;
-        } else {
-            let taxon = line.parse::<taxon::TaxonId>()?;
-            let snapped = snapping[taxon].unwrap_or(0);
-            writeln!(handle, "{}", snapped)?;
-        }
-    }
-
     Ok(())
 }
 

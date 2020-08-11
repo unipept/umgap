@@ -3,8 +3,6 @@
 use std::path::PathBuf;
 
 use crate::commands;
-use crate::rank::Rank;
-use crate::taxon::TaxonId;
 
 /// The Options enum for UMGAP arguments
 #[derive(Debug, StructOpt)]
@@ -56,7 +54,7 @@ pub enum Opt {
 
     /// Snap taxa to a specified rank or one of the specified taxa.
     #[structopt(name = "snaptaxon")]
-    SnapTaxon(SnapTaxon),
+    SnapTaxon(commands::snaptaxon::SnapTaxon),
 
     /// Interleaves a number of FASTQ files into a single FASTA output.
     #[structopt(name = "fastq2fasta")]
@@ -145,26 +143,6 @@ pub struct FastqToFasta {
     /// The input files
     #[structopt(parse(from_os_str))]
     pub input: Vec<PathBuf>,
-}
-
-/// Snap taxa to a specified rank or one of the specified taxa.
-#[derive(Debug, StructOpt)]
-pub struct SnapTaxon {
-    /// The rank to snap towards.
-    #[structopt(short = "r", long = "rank")]
-    pub rank: Option<Rank>,
-
-    /// A taxon to snap towards (allow multiple times).
-    #[structopt(short = "t", long = "taxons")]
-    pub taxons: Vec<TaxonId>,
-
-    /// Include invalidated taxa
-    #[structopt(short = "i", long = "invalid")]
-    pub invalid: bool,
-
-    /// The NCBI taxonomy tsv-file
-    #[structopt(parse(from_os_str))]
-    pub taxon_file: PathBuf,
 }
 
 /// Print the values in an FST index to stdout.

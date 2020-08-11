@@ -7,6 +7,7 @@ pub mod prot2pept;
 pub mod prot2tryp2lca;
 pub mod report;
 pub mod seedextend;
+pub mod snaptaxon;
 pub mod taxa2agg;
 pub mod taxonomy;
 pub mod translate;
