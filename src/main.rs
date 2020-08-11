@@ -5,7 +5,6 @@ use std::fs;
 use std::io;
 use std::io::BufRead;
 use std::io::Write;
-use std::ops;
 
 use fst;
 use fst::Streamer;
@@ -17,7 +16,6 @@ extern crate error_chain;
 
 #[macro_use(json)]
 extern crate serde_json;
-use serde_json::value;
 
 use structopt::StructOpt;
 
@@ -48,7 +46,6 @@ quick_main!(|| -> Result<()> {
         args::Opt::FastqToFasta(args) => fastq2fasta(args),
         args::Opt::Taxonomy(args) => taxonomy(args),
         args::Opt::SnapTaxon(args) => snaptaxon(args),
-        args::Opt::JsonTree(args) => jsontree(args),
         args::Opt::SeedExtend(args) => commands::seedextend::seedextend(args),
         args::Opt::Report(args) => commands::report::report(args),
         args::Opt::BestOf(args) => commands::bestof::bestof(args),
@@ -231,53 +228,6 @@ fn snaptaxon(args: args::SnapTaxon) -> Result<()> {
             writeln!(handle, "{}", snapped)?;
         }
     }
-
-    Ok(())
-}
-
-fn jsontree(args: args::JsonTree) -> Result<()> {
-    let taxons = taxon::read_taxa_file(args.taxon_file)?;
-
-    // Parsing the taxons
-    let tree = taxon::TaxonTree::new(&taxons);
-    let by_id = taxon::TaxonList::new(taxons);
-    let snapping = tree.snapping(&by_id, args.ranked_only);
-
-    // Read and count taxon ranks
-    let mut counts = HashMap::new();
-    let stdin = io::stdin();
-    for line in stdin.lock().lines() {
-        let taxon = line?.parse::<taxon::TaxonId>()?;
-        *counts.entry(snapping[taxon].unwrap_or(0)).or_insert(0) += 1;
-    }
-
-    // Recursive json transformation
-    fn to_json(
-        node: &tree::tree::Tree<usize>,
-        aggnode: &tree::tree::Tree<usize>,
-        by_id: &taxon::TaxonList,
-        freq: usize,
-    ) -> value::Value {
-        let root = by_id.get(node.root).unwrap();
-        json!({
-            "name": root.name,
-            "id": node.root,
-            "data": {
-                "count": aggnode.value,
-                "valid_taxon": if root.valid { "1" } else { "0" },
-                "rank": format!("{}", root.rank),
-                "self_count": node.value
-            },
-            "children": node.children.iter().zip(aggnode.children.iter())
-                                     .filter(|&(_n, s)| s.value > freq)
-                                     .map(|(n, s)| to_json(n, s, by_id, freq))
-                                     .collect::<Vec<_>>()
-        })
-    }
-
-    let tree = tree::tree::Tree::new(1, &by_id.ancestry(), &counts)?;
-    let aggtree = tree.aggregate(&ops::Add::add);
-    print!("{}", to_json(&tree, &aggtree, &by_id, args.min_frequency));
 
     Ok(())
 }

@@ -50,10 +50,6 @@ pub enum Opt {
     #[structopt(name = "seedextend")]
     SeedExtend(commands::seedextend::SeedExtend),
 
-    /// Aggregates taxa to a JSON tree for usage in the unipept visualisations.
-    #[structopt(name = "jsontree")]
-    JsonTree(JsonTree),
-
     /// Show taxonomy info
     #[structopt(name = "taxonomy")]
     Taxonomy(Taxonomy),
@@ -186,22 +182,6 @@ pub struct Taxonomy {
     /// Do not output the CSV header
     #[structopt(short = "H", long = "no-header")]
     pub no_header: bool,
-}
-
-/// Aggregates taxa to a JSON tree for usage in the unipept visualisations.
-#[derive(Debug, StructOpt)]
-pub struct JsonTree {
-    /// Exclude taxons with unnamed rank
-    #[structopt(short = "r", long = "ranked")]
-    pub ranked_only: bool,
-
-    /// The minimum frequency to be reported
-    #[structopt(short = "f", long = "frequency", default_value = "1")]
-    pub min_frequency: usize,
-
-    /// The NCBI taxonomy tsv-file
-    #[structopt(parse(from_os_str))]
-    pub taxon_file: PathBuf,
 }
 
 /// Print the values in an FST index to stdout.
