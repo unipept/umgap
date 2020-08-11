@@ -36,7 +36,7 @@ quick_main!(|| -> Result<()> {
         args::Opt::ProtToPept(args) => commands::prot2pept::prot2pept(args),
         args::Opt::ProtToKmer(args) => prot2kmer(args),
         args::Opt::Filter(args) => commands::filter::filter(args),
-        args::Opt::Uniq(args) => uniq(args),
+        args::Opt::Uniq(args) => commands::uniq::uniq(args),
         args::Opt::FastqToFasta(args) => commands::fastq2fasta::fastq2fasta(args),
         args::Opt::Taxonomy(args) => commands::taxonomy::taxonomy(args),
         args::Opt::SnapTaxon(args) => commands::snaptaxon::snaptaxon(args),
@@ -68,28 +68,6 @@ fn prot2kmer(args: args::ProtToKmer) -> Result<()> {
                 .map(Cow::into_owned)
                 .collect(),
         })?;
-    }
-    Ok(())
-}
-
-fn uniq(args: args::Uniq) -> Result<()> {
-    let mut last = None::<fasta::Record>;
-    let mut writer = fasta::Writer::new(io::stdout(), &args.separator, args.wrap);
-    for record in fasta::Reader::new(io::stdin(), false).records() {
-        let record = record?;
-        if let Some(ref mut rec) = last {
-            if rec.header == record.header {
-                rec.sequence.extend(record.sequence);
-            } else {
-                writer.write_record_ref(rec)?;
-                *rec = record;
-            }
-        } else {
-            last = Some(record);
-        }
-    }
-    if let Some(rec) = last {
-        writer.write_record(rec)?;
     }
     Ok(())
 }

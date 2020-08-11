@@ -66,7 +66,7 @@ pub enum Opt {
 
     /// Concatenates the data strings of all consecutive FASTA entries with the same header.
     #[structopt(name = "uniq")]
-    Uniq(Uniq),
+    Uniq(commands::uniq::Uniq),
 
     /// Splits each protein sequence in a FASTA format into a list of kmers.
     #[structopt(name = "prot2kmer")]
@@ -103,18 +103,6 @@ pub struct ProtToKmer {
     /// The K in K-mers
     #[structopt(short = "k", long = "length", default_value = "9")]
     pub length: usize,
-}
-
-/// Concatenates the data strings of all consecutive FASTA entries with the same header.
-#[derive(Debug, StructOpt)]
-pub struct Uniq {
-    /// Separator between output items
-    #[structopt(short = "s", long = "separator", default_value = "\n")]
-    pub separator: String,
-
-    /// Wrap the output sequences
-    #[structopt(short = "w", long = "wrap")]
-    pub wrap: bool,
 }
 
 /// Print the values in an FST index to stdout.
