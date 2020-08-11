@@ -48,7 +48,7 @@ pub enum Opt {
 
     /// Seed and extend.
     #[structopt(name = "seedextend")]
-    SeedExtend(SeedExtend),
+    SeedExtend(commands::seedextend::SeedExtend),
 
     /// Aggregates taxa to a JSON tree for usage in the unipept visualisations.
     #[structopt(name = "jsontree")]
@@ -202,26 +202,6 @@ pub struct JsonTree {
     /// The NCBI taxonomy tsv-file
     #[structopt(parse(from_os_str))]
     pub taxon_file: PathBuf,
-}
-
-/// Seed and extend.
-#[derive(Debug, StructOpt)]
-pub struct SeedExtend {
-    /// The minimum length of equal taxa to count as seed
-    #[structopt(short = "s", long = "min-seed-size", default_value = "2")]
-    pub min_seed_size: usize,
-
-    /// The maximum length of a gap between seeds in an extension
-    #[structopt(short = "g", long = "max-gap-size", default_value = "0")]
-    pub max_gap_size: usize,
-
-    /// Use taxon ranks in given NCBI taxonomy tsv-file to pick extended seed with highest score
-    #[structopt(short = "r", long = "ranked", parse(from_os_str))]
-    pub ranked: Option<PathBuf>,
-
-    /// The score penalty for gaps in extended seeds
-    #[structopt(short = "p", long = "penalty", default_value = "5")]
-    pub penalty: usize,
 }
 
 /// Print the values in an FST index to stdout.

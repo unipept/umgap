@@ -1,5 +1,4 @@
 use std::borrow::Cow;
-use std::cmp;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fs;
@@ -50,7 +49,7 @@ quick_main!(|| -> Result<()> {
         args::Opt::Taxonomy(args) => taxonomy(args),
         args::Opt::SnapTaxon(args) => snaptaxon(args),
         args::Opt::JsonTree(args) => jsontree(args),
-        args::Opt::SeedExtend(args) => seedextend(args),
+        args::Opt::SeedExtend(args) => commands::seedextend::seedextend(args),
         args::Opt::Report(args) => commands::report::report(args),
         args::Opt::BestOf(args) => commands::bestof::bestof(args),
         args::Opt::PrintIndex(args) => printindex(args),
@@ -280,105 +279,6 @@ fn jsontree(args: args::JsonTree) -> Result<()> {
     let aggtree = tree.aggregate(&ops::Add::add);
     print!("{}", to_json(&tree, &aggtree, &by_id, args.min_frequency));
 
-    Ok(())
-}
-
-fn seedextend(args: args::SeedExtend) -> Result<()> {
-    let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
-
-    let by_id = if let Some(ref tf) = args.ranked {
-        let taxa = taxon::read_taxa_file(tf)?;
-        Some(taxon::TaxonList::new_with_unknown(taxa, true))
-    } else {
-        None
-    };
-
-    for record in fasta::Reader::new(io::stdin(), false).records() {
-        let record = record?;
-        let mut taxons = record
-            .sequence
-            .iter()
-            .map(|s| s.parse::<TaxonId>())
-            .collect::<std::result::Result<Vec<TaxonId>, _>>()?;
-        taxons.push(0);
-
-        let mut seeds = Vec::new();
-        let mut start = 0;
-        let mut end = 1;
-        let mut last_tid = taxons[start];
-        let mut same_tid = 1;
-        let mut same_max = 1;
-        while end < taxons.len() {
-            // same tid as last, add to seed.
-            if last_tid == taxons[end] {
-                same_tid += 1;
-                end += 1;
-                continue;
-            }
-
-            // our gap just became to big
-            if last_tid == 0 && same_tid > args.max_gap_size {
-                // add extended seed
-                if same_max >= args.min_seed_size {
-                    seeds.push((start, end - same_tid))
-                }
-                start = end;
-                last_tid = taxons[end];
-                same_tid = 1;
-                same_max = 1;
-                end += 1;
-                continue;
-            }
-
-            // don't start with a missing taxon
-            if last_tid == 0 && (end - start) == same_tid {
-                end += 1;
-                start = end;
-                continue;
-            }
-
-            // another taxon
-            if last_tid != 0 {
-                same_max = cmp::max(same_max, same_tid);
-            }
-            last_tid = taxons[end];
-            same_tid = 1;
-            end += 1;
-        }
-        if same_max >= args.min_seed_size {
-            if last_tid == 0 {
-                end -= same_tid
-            }
-            seeds.push((start, end))
-        }
-
-        if let Some(ref by_id) = by_id {
-            seeds = seeds
-                .into_iter()
-                .max_by_key(|(s, e)| {
-                    taxons
-                        .iter()
-                        .skip(*s)
-                        .take(e - s)
-                        .map(|t| by_id.score(*t).unwrap_or(args.penalty))
-                        .sum::<usize>()
-                })
-                .into_iter()
-                .collect::<Vec<(usize, usize)>>();
-        }
-
-        // write it
-        writer
-            .write_record(fasta::Record {
-                header: record.header,
-                sequence: seeds
-                    .into_iter()
-                    .flat_map(|(start, end)| taxons[start..end].into_iter())
-                    .map(|t| t.to_string())
-                    .collect(),
-            })
-            .map_err(|err| err.to_string())?;
-    }
     Ok(())
 }
 
