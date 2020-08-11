@@ -44,7 +44,7 @@ quick_main!(|| -> Result<()> {
         args::Opt::Filter(args) => filter(args),
         args::Opt::Uniq(args) => uniq(args),
         args::Opt::FastqToFasta(args) => fastq2fasta(args),
-        args::Opt::Taxonomy(args) => taxonomy(args),
+        args::Opt::Taxonomy(args) => commands::taxonomy::taxonomy(args),
         args::Opt::SnapTaxon(args) => snaptaxon(args),
         args::Opt::SeedExtend(args) => commands::seedextend::seedextend(args),
         args::Opt::Report(args) => commands::report::report(args),
@@ -146,50 +146,6 @@ fn fastq2fasta(args: args::FastqToFasta) -> Result<()> {
                 header: record.header,
                 sequence: vec![record.sequence],
             })?;
-        }
-    }
-    Ok(())
-}
-
-fn taxonomy(args: args::Taxonomy) -> Result<()> {
-    let taxons = taxon::read_taxa_file(&args.taxon_file)?;
-    let by_id = taxon::TaxonList::new(taxons);
-
-    let stdin = io::stdin();
-    let stdout = io::stdout();
-    let mut handle = stdout.lock();
-
-    if !args.no_header {
-        write!(handle, "taxon_id,taxon_name,taxon_rank")?;
-        if args.all_ranks {
-            for rank in rank::Rank::ranks() {
-                let rank_name = rank.to_string().replace(" ", "_");
-                write!(handle, ",{}_id,{}_name", rank_name, rank_name)?;
-            }
-        }
-        write!(handle, "\n")?;
-    }
-
-    for line in stdin.lock().lines() {
-        let line = line?;
-        if line.starts_with('>') {
-            writeln!(handle, "{}", line)?;
-        } else {
-            let id = line.parse::<taxon::TaxonId>()?;
-            // Map to root if id not found
-            let taxon = by_id.get_or_unknown(id)?;
-            write!(handle, "{},{},{}", taxon.id, taxon.name, taxon.rank)?;
-            if args.all_ranks {
-                let lineage = by_id.lineage(id)?;
-                for rank in rank::Rank::ranks() {
-                    if let Some(l_taxon) = &lineage[rank] {
-                        write!(handle, ",{},{}", l_taxon.id, l_taxon.name)?;
-                    } else {
-                        write!(handle, ",,")?;
-                    }
-                }
-            }
-            write!(handle, "\n")?;
         }
     }
     Ok(())
