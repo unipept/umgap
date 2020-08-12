@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::io;
-use std::io::Write;
 
 use fst;
 
@@ -14,15 +13,11 @@ extern crate serde_json;
 
 use structopt::StructOpt;
 
-use umgap::agg;
-use umgap::agg::Aggregator;
 use umgap::args;
 use umgap::commands;
 use umgap::errors::Result;
 use umgap::io::fasta;
-use umgap::taxon;
 use umgap::taxon::TaxonId;
-use umgap::tree;
 
 quick_main!(|| -> Result<()> {
     match args::Opt::from_args() {
@@ -43,7 +38,7 @@ quick_main!(|| -> Result<()> {
         args::Opt::BestOf(args) => commands::bestof::bestof(args),
         args::Opt::PrintIndex(args) => commands::printindex::printindex(args),
         args::Opt::SplitKmers(args) => commands::splitkmers::splitkmers(args),
-        args::Opt::JoinKmers(args) => joinkmers(args),
+        args::Opt::JoinKmers(args) => commands::joinkmers::joinkmers(args),
         args::Opt::BuildIndex => buildindex(),
         args::Opt::CountRecords => countrecords(),
         args::Opt::Visualize(args) => visualize(args),
@@ -64,60 +59,6 @@ fn buildindex() -> Result<()> {
     }
 
     index.finish()?;
-
-    Ok(())
-}
-
-fn joinkmers(args: args::JoinKmers) -> Result<()> {
-    let mut reader = csv::ReaderBuilder::new()
-        .has_headers(false)
-        .delimiter(b'\t')
-        .from_reader(io::stdin());
-
-    let stdout = io::stdout();
-    let mut handle = stdout.lock();
-
-    let taxons = taxon::read_taxa_file(args.taxon_file)?;
-
-    // Parsing the Taxa file
-    let tree = taxon::TaxonTree::new(&taxons);
-    let by_id = taxon::TaxonList::new(taxons);
-    let ranksnapping = tree.snapping(&by_id, true);
-    let validsnapping = tree.snapping(&by_id, false);
-    let aggregator = tree::mix::MixCalculator::new(tree.root, &by_id, 0.95);
-
-    let mut emit = |kmer: &str, tids: Vec<(TaxonId, f32)>| {
-        let counts = agg::count(tids.into_iter());
-        if let Ok(aggregate) = aggregator.aggregate(&counts) {
-            let taxon = ranksnapping[aggregate].unwrap();
-            let rank = by_id.get_or_unknown(taxon).unwrap().rank;
-            write!(handle, "{}\t{}\t{}\n", kmer, taxon, rank)
-        } else {
-            Ok(())
-        }
-    };
-
-    // Iterate over records and emit groups
-    let mut current_kmer: Option<String> = Option::None;
-    let mut current_tids = vec![];
-    for record in reader.deserialize() {
-        let (kmer, tid): (String, TaxonId) = record?;
-        if let Some(c) = current_kmer {
-            if c != kmer {
-                emit(&c, current_tids)?;
-                current_tids = vec![];
-            }
-        } else {
-            current_tids = vec![];
-        }
-        current_kmer = Some(kmer);
-        if let Some(validancestor) = validsnapping[tid] {
-            current_tids.push((validancestor, 1.0));
-        }
-    }
-    if let Some(c) = current_kmer {
-        emit(&c, current_tids)?;
-    }
 
     Ok(())
 }

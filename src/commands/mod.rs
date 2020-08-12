@@ -3,6 +3,7 @@
 pub mod bestof;
 pub mod fastq2fasta;
 pub mod filter;
+pub mod joinkmers;
 pub mod pept2lca;
 pub mod printindex;
 pub mod prot2kmer;
