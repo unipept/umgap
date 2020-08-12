@@ -1,6 +1,7 @@
 //! The subcommands of the umgap command.
 
 pub mod bestof;
+pub mod buildindex;
 pub mod fastq2fasta;
 pub mod filter;
 pub mod joinkmers;

@@ -84,7 +84,7 @@ pub enum Opt {
 
     /// Write an FST index of stdin on stdout.
     #[structopt(name = "buildindex")]
-    BuildIndex,
+    BuildIndex(commands::buildindex::BuildIndex),
 
     /// Count the amount of FASTA records from stdin
     #[structopt(name = "countrecords")]

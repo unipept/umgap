@@ -20,7 +20,7 @@ use crate::tree;
 /// meant to be used after an `umgap splitkmers` and `sort`, and it's output is ideal for `umgap
 /// buildindex`, but there may be further uses.
 ///
-///     $ cat ~/input.tsv
+///     $ cat input.tsv
 ///     AAAAA	34924
 ///     AAAAA	30423
 ///     AAAAA	5678

@@ -1,10 +1,6 @@
 use std::collections::HashMap;
 use std::io;
 
-use fst;
-
-use csv;
-
 #[macro_use(quick_main)]
 extern crate error_chain;
 
@@ -39,29 +35,11 @@ quick_main!(|| -> Result<()> {
         args::Opt::PrintIndex(args) => commands::printindex::printindex(args),
         args::Opt::SplitKmers(args) => commands::splitkmers::splitkmers(args),
         args::Opt::JoinKmers(args) => commands::joinkmers::joinkmers(args),
-        args::Opt::BuildIndex => buildindex(),
+        args::Opt::BuildIndex(args) => commands::buildindex::buildindex(args),
         args::Opt::CountRecords => countrecords(),
         args::Opt::Visualize(args) => visualize(args),
     }
 });
-
-fn buildindex() -> Result<()> {
-    let mut reader = csv::ReaderBuilder::new()
-        .has_headers(false)
-        .delimiter(b'\t')
-        .from_reader(io::stdin());
-
-    let mut index = fst::MapBuilder::new(io::stdout())?;
-
-    for record in reader.deserialize() {
-        let (kmer, lca): (String, u64) = record?;
-        index.insert(kmer, lca)?;
-    }
-
-    index.finish()?;
-
-    Ok(())
-}
 
 fn countrecords() -> Result<()> {
     let mut records = 0;
