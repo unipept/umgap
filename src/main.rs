@@ -36,27 +36,9 @@ quick_main!(|| -> Result<()> {
         args::Opt::SplitKmers(args) => commands::splitkmers::splitkmers(args),
         args::Opt::JoinKmers(args) => commands::joinkmers::joinkmers(args),
         args::Opt::BuildIndex(args) => commands::buildindex::buildindex(args),
-        args::Opt::CountRecords => countrecords(),
         args::Opt::Visualize(args) => visualize(args),
     }
 });
-
-fn countrecords() -> Result<()> {
-    let mut records = 0;
-    let mut sequences = 0;
-    for record in fasta::Reader::new(io::stdin(), false).records() {
-        let record = record?;
-        records += 1;
-        for seq in record.sequence {
-            if seq.len() > 0 {
-                sequences += 1;
-            }
-        }
-    }
-    println!("Records: {}", records);
-    println!("Sequence items: {}", sequences);
-    Ok(())
-}
 
 fn visualize(args: args::Visualize) -> Result<()> {
     let mut taxa = HashMap::new();

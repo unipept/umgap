@@ -86,10 +86,6 @@ pub enum Opt {
     #[structopt(name = "buildindex")]
     BuildIndex(commands::buildindex::BuildIndex),
 
-    /// Count the amount of FASTA records from stdin
-    #[structopt(name = "countrecords")]
-    CountRecords,
-
     /// Visualizes the given list of taxons using the Unipept API
     #[structopt(name = "visualize")]
     Visualize(Visualize),
