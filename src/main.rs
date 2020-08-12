@@ -3,7 +3,6 @@ use std::io;
 use std::io::Write;
 
 use fst;
-use fst::Streamer;
 
 use csv;
 
@@ -42,7 +41,7 @@ quick_main!(|| -> Result<()> {
         args::Opt::SeedExtend(args) => commands::seedextend::seedextend(args),
         args::Opt::Report(args) => commands::report::report(args),
         args::Opt::BestOf(args) => commands::bestof::bestof(args),
-        args::Opt::PrintIndex(args) => printindex(args),
+        args::Opt::PrintIndex(args) => commands::printindex::printindex(args),
         args::Opt::SplitKmers(args) => splitkmers(args),
         args::Opt::JoinKmers(args) => joinkmers(args),
         args::Opt::BuildIndex => buildindex(),
@@ -50,21 +49,6 @@ quick_main!(|| -> Result<()> {
         args::Opt::Visualize(args) => visualize(args),
     }
 });
-
-fn printindex(args: args::PrintIndex) -> Result<()> {
-    let mut writer = csv::WriterBuilder::new()
-        .delimiter(b'\t')
-        .from_writer(io::stdout());
-
-    let index = unsafe { fst::Map::from_path(args.fst_file) }?;
-    let mut stream = index.stream();
-
-    while let Some((k, v)) = stream.next() {
-        writer.serialize((String::from_utf8_lossy(k), v))?;
-    }
-
-    Ok(())
-}
 
 fn splitkmers(args: args::SplitKmers) -> Result<()> {
     let byte = args.prefix.as_bytes().first();

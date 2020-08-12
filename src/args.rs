@@ -74,7 +74,7 @@ pub enum Opt {
 
     /// Print the values in an FST index to stdout.
     #[structopt(name = "printindex")]
-    PrintIndex(PrintIndex),
+    PrintIndex(commands::printindex::PrintIndex),
 
     /// Splits each protein sequence in a FASTA format into a list of kmers.
     #[structopt(name = "splitkmers")]
@@ -95,14 +95,6 @@ pub enum Opt {
     /// Visualizes the given list of taxons using the Unipept API
     #[structopt(name = "visualize")]
     Visualize(Visualize),
-}
-
-/// Print the values in an FST index to stdout.
-#[derive(Debug, StructOpt)]
-pub struct PrintIndex {
-    /// An FST to query
-    #[structopt(parse(from_os_str))]
-    pub fst_file: PathBuf,
 }
 
 /// Splits each taxon id + protein sequence pair in a CSV format into a list of kmers.
