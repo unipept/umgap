@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 use std::collections::HashMap;
 use std::io;
 use std::io::Write;
@@ -34,7 +33,7 @@ quick_main!(|| -> Result<()> {
         args::Opt::ProtToTrypToLca(args) => commands::prot2tryp2lca::prot2tryp2lca(args),
         args::Opt::TaxaToAgg(args) => commands::taxa2agg::taxa2agg(args),
         args::Opt::ProtToPept(args) => commands::prot2pept::prot2pept(args),
-        args::Opt::ProtToKmer(args) => prot2kmer(args),
+        args::Opt::ProtToKmer(args) => commands::prot2kmer::prot2kmer(args),
         args::Opt::Filter(args) => commands::filter::filter(args),
         args::Opt::Uniq(args) => commands::uniq::uniq(args),
         args::Opt::FastqToFasta(args) => commands::fastq2fasta::fastq2fasta(args),
@@ -51,26 +50,6 @@ quick_main!(|| -> Result<()> {
         args::Opt::Visualize(args) => visualize(args),
     }
 });
-
-fn prot2kmer(args: args::ProtToKmer) -> Result<()> {
-    let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
-    for record in fasta::Reader::new(io::stdin(), true).records() {
-        let fasta::Record { header, sequence } = record?;
-        if sequence[0].len() < args.length {
-            continue;
-        }
-        writer.write_record(fasta::Record {
-            header: header,
-            sequence: sequence[0]
-                .as_bytes()
-                .windows(args.length)
-                .map(String::from_utf8_lossy)
-                .map(Cow::into_owned)
-                .collect(),
-        })?;
-    }
-    Ok(())
-}
 
 fn printindex(args: args::PrintIndex) -> Result<()> {
     let mut writer = csv::WriterBuilder::new()

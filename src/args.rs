@@ -70,7 +70,7 @@ pub enum Opt {
 
     /// Splits each protein sequence in a FASTA format into a list of kmers.
     #[structopt(name = "prot2kmer")]
-    ProtToKmer(ProtToKmer),
+    ProtToKmer(commands::prot2kmer::ProtToKmer),
 
     /// Print the values in an FST index to stdout.
     #[structopt(name = "printindex")]
@@ -95,14 +95,6 @@ pub enum Opt {
     /// Visualizes the given list of taxons using the Unipept API
     #[structopt(name = "visualize")]
     Visualize(Visualize),
-}
-
-/// Splits each protein sequence in a FASTA format into a list of kmers.
-#[derive(Debug, StructOpt)]
-pub struct ProtToKmer {
-    /// The K in K-mers
-    #[structopt(short = "k", long = "length", default_value = "9")]
-    pub length: usize,
 }
 
 /// Print the values in an FST index to stdout.
