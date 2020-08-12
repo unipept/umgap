@@ -42,42 +42,13 @@ quick_main!(|| -> Result<()> {
         args::Opt::Report(args) => commands::report::report(args),
         args::Opt::BestOf(args) => commands::bestof::bestof(args),
         args::Opt::PrintIndex(args) => commands::printindex::printindex(args),
-        args::Opt::SplitKmers(args) => splitkmers(args),
+        args::Opt::SplitKmers(args) => commands::splitkmers::splitkmers(args),
         args::Opt::JoinKmers(args) => joinkmers(args),
         args::Opt::BuildIndex => buildindex(),
         args::Opt::CountRecords => countrecords(),
         args::Opt::Visualize(args) => visualize(args),
     }
 });
-
-fn splitkmers(args: args::SplitKmers) -> Result<()> {
-    let byte = args.prefix.as_bytes().first();
-
-    let mut reader = csv::ReaderBuilder::new()
-        .has_headers(false)
-        .delimiter(b'\t')
-        .from_reader(io::stdin());
-
-    let mut writer = csv::WriterBuilder::new()
-        .delimiter(b'\t')
-        .from_writer(io::stdout());
-
-    for record in reader.deserialize() {
-        let (tid, sequence): (TaxonId, String) = record?;
-        if sequence.len() < args.length {
-            continue;
-        }
-        for kmer in sequence.as_bytes().windows(args.length) {
-            if byte.is_none() {
-                writer.serialize((String::from_utf8_lossy(kmer), tid))?;
-            } else if *byte.unwrap() == kmer[0] {
-                writer.serialize((String::from_utf8_lossy(&kmer[1..]), tid))?;
-            }
-        }
-    }
-
-    Ok(())
-}
 
 fn buildindex() -> Result<()> {
     let mut reader = csv::ReaderBuilder::new()

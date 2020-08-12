@@ -76,9 +76,9 @@ pub enum Opt {
     #[structopt(name = "printindex")]
     PrintIndex(commands::printindex::PrintIndex),
 
-    /// Splits each protein sequence in a FASTA format into a list of kmers.
+    /// Splits each protein sequence in a CSV format into a list of kmers.
     #[structopt(name = "splitkmers")]
-    SplitKmers(SplitKmers),
+    SplitKmers(commands::splitkmers::SplitKmers),
 
     /// Groups a CSV by equal first fields (Kmers) and aggregates the second fields (taxon ids).
     #[structopt(name = "joinkmers")]
@@ -95,17 +95,6 @@ pub enum Opt {
     /// Visualizes the given list of taxons using the Unipept API
     #[structopt(name = "visualize")]
     Visualize(Visualize),
-}
-
-/// Splits each taxon id + protein sequence pair in a CSV format into a list of kmers.
-#[derive(Debug, StructOpt)]
-pub struct SplitKmers {
-    /// The K in K-mers
-    #[structopt(short = "k", long = "length", default_value = "9")]
-    pub length: usize,
-    /// Print (K-1)-mer suffixes of the Kmers starting with this character
-    #[structopt(short = "p", long = "prefix", default_value = "")]
-    pub prefix: String,
 }
 
 /// Groups a CSV by equal first fields (Kmers) and aggregates the second fields (taxon ids).
