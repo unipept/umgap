@@ -19,3 +19,4 @@ pub mod taxa2agg;
 pub mod taxonomy;
 pub mod translate;
 pub mod uniq;
+pub mod visualize;

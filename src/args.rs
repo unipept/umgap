@@ -88,13 +88,5 @@ pub enum Opt {
 
     /// Visualizes the given list of taxons using the Unipept API
     #[structopt(name = "visualize")]
-    Visualize(Visualize),
-}
-
-/// Visualizes the given list of taxons using the Unipept API
-#[derive(Debug, StructOpt)]
-pub struct Visualize {
-    /// Host the result online and return the URL
-    #[structopt(short = "u", long = "url")]
-    pub url: bool,
+    Visualize(commands::visualize::Visualize),
 }

@@ -1,19 +1,10 @@
-use std::collections::HashMap;
-use std::io;
-
-#[macro_use(quick_main)]
-extern crate error_chain;
-
-#[macro_use(json)]
-extern crate serde_json;
+use error_chain::quick_main;
 
 use structopt::StructOpt;
 
 use umgap::args;
 use umgap::commands;
 use umgap::errors::Result;
-use umgap::io::fasta;
-use umgap::taxon::TaxonId;
 
 quick_main!(|| -> Result<()> {
     match args::Opt::from_args() {
@@ -36,30 +27,6 @@ quick_main!(|| -> Result<()> {
         args::Opt::SplitKmers(args) => commands::splitkmers::splitkmers(args),
         args::Opt::JoinKmers(args) => commands::joinkmers::joinkmers(args),
         args::Opt::BuildIndex(args) => commands::buildindex::buildindex(args),
-        args::Opt::Visualize(args) => visualize(args),
+        args::Opt::Visualize(args) => commands::visualize::visualize(args),
     }
 });
-
-fn visualize(args: args::Visualize) -> Result<()> {
-    let mut taxa = HashMap::new();
-    for record in fasta::Reader::new(io::stdin(), false).records() {
-        let record = record?;
-        let taxon = record.sequence[0].parse::<TaxonId>()?;
-        *taxa.entry(taxon).or_insert(0) += 1;
-    }
-
-    let json = json!({
-        "counts": taxa,
-        "link": args.url.to_string(),
-    });
-
-    let client = reqwest::blocking::Client::new();
-    let res = client
-        .post("http://api.unipept.ugent.be/api/v1/taxa2tree")
-        .json(&json)
-        .send()
-        .map_err(|err| err.to_string())?;
-
-    print!("{}", res.text().map_err(|err| err.to_string())?);
-    Ok(())
-}
