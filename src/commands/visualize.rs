@@ -47,10 +47,9 @@ pub fn visualize(args: Visualize) -> errors::Result<()> {
         "link": args.url.to_string(),
     });
 
-    let client = reqwest::blocking::Client::new();
-    let res = client
-        .post("http://api.unipept.ugent.be/api/v1/taxa2tree")
+    let res = attohttpc::post("http://api.unipept.ugent.be/api/v1/taxa2tree")
         .json(&json)
+        .map_err(|err| err.to_string())?
         .send()
         .map_err(|err| err.to_string())?;
 
