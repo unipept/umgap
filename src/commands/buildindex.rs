@@ -4,6 +4,7 @@ use std::io;
 
 use crate::errors;
 
+#[structopt(verbatim_doc_comment)]
 /// The `umgap buildindex` command takes tab-separated strings and taxon IDs, and creates a
 /// searchable FST index of this mapping.
 ///
@@ -12,13 +13,15 @@ use crate::errors;
 /// IDs) in the second column. A binary file with a compressed mapping is written to *standard
 /// output*.
 ///
-///     $ cat input.tsv
-///     AAAAA	2759
-///     BBBBBB	9153
-///     $ umgap buildindex < input.tsv > tiny.index
-///     $ umgap printindex tiny.index
-///     AAAAA	2759
-///     BBBBBB	9153
+/// ```sh
+/// $ cat input.tsv
+/// AAAAA	2759
+/// BBBBBB	9153
+/// $ umgap buildindex < input.tsv > tiny.index
+/// $ umgap printindex tiny.index
+/// AAAAA	2759
+/// BBBBBB	9153
+/// ```
 #[derive(Debug, StructOpt)]
 pub struct BuildIndex {}
 

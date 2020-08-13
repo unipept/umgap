@@ -13,6 +13,7 @@ use rayon::iter::{ParallelBridge, ParallelIterator};
 use crate::errors;
 use crate::io::fasta;
 
+#[structopt(verbatim_doc_comment)]
 /// The `umgap prot2kmer2lca` command takes one or more peptides as input and outputs the lowest
 /// common ancestors of their k-mers.
 ///
@@ -22,30 +23,34 @@ use crate::io::fasta;
 /// All overlapping k-mers in these peptides (*k* configurable via the `-k` option, and 9 by
 /// default) are searched for in the FST index passed as argument. The results are printed out.
 ///
-///     $ cat input.fa
-///     >header1
-///     DAIGDVAKAYKKAG*S
-///     $ umgap prot2kmer2lca -k9 uniprot-2020-04-9mer.index < input.fa
-///     >header1
-///     571525
-///     571525
-///     6920
-///     6920
-///     1
-///     6920
+/// ```sh
+/// $ cat input.fa
+/// >header1
+/// DAIGDVAKAYKKAG*S
+/// $ umgap prot2kmer2lca -k9 uniprot-2020-04-9mer.index < input.fa
+/// >header1
+/// 571525
+/// 571525
+/// 6920
+/// 6920
+/// 1
+/// 6920
+/// ```
 ///
 /// Add the `-o` option to print out 0 for k-mers not found in the index.
 ///
-///     $ umgap prot2kmer2lca -o uniprot-2020-04-9mer.index < input.fa
-///     >header1
-///     571525
-///     571525
-///     6920
-///     6920
-///     1
-///     6920
-///     0
-///     0
+/// ```sh
+/// $ umgap prot2kmer2lca -o uniprot-2020-04-9mer.index < input.fa
+/// >header1
+/// 571525
+/// 571525
+/// 6920
+/// 6920
+/// 1
+/// 6920
+/// 0
+/// 0
+/// ```
 ///
 /// This command also allows an alternative mode of operation. When left on disk, it can take some
 /// time for the index to be searched. With the `-m` flag, the complete index will be loaded in

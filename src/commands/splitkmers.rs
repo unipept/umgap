@@ -6,6 +6,7 @@ use crate::errors;
 use crate::taxon::TaxonId;
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
+#[structopt(verbatim_doc_comment)]
 /// The `umgap splitkmers` command takes tab-separated taxon IDs and protein sequences and outputs
 /// the k-mers mapped to the taxon IDs.
 ///
@@ -17,22 +18,24 @@ use crate::taxon::TaxonId;
 /// This output stream is ready to be grouped by k-mer by sorting and than aggregated into a
 /// searchable index, with the `sort`, `umgap joinkmers` and `umgap buildindex` commands.
 ///
-///     $ cat input.fa
-///     654924  MNAKYDTDQGVGRMLFLGTIGLAVVVGGLMAYGYYYDGKTPSSGTSFHTASPSFSSRYRY
-///     176652  MIKLFCVLAAFISINSACQSSHQQREEFTVATYHSSSICTTYCYSNCVVASQHKGLNVESYTCDKPDPYGRETVCKCTLIKCHDI
-///     $ umgap splitkmers < input.fa
-///     MNAKYDTDQ       654924
-///     NAKYDTDQG       654924
-///     AKYDTDQGV       654924
-///     KYDTDQGVG       654924
-///     YDTDQGVGR       654924
-///     ...
-///     SPSFSSRYR       654924
-///     PSFSSRYRY       654924
-///     MIKLFCVLA       176652
-///     IKLFCVLAA       176652
-///     KLFCVLAAF       176652
-///     ...
+/// ```sh
+/// $ cat input.fa
+/// 654924  MNAKYDTDQGVGRMLFLGTIGLAVVVGGLMAYGYYYDGKTPSSGTSFHTASPSFSSRYRY
+/// 176652  MIKLFCVLAAFISINSACQSSHQQREEFTVATYHSSSICTTYCYSNCVVASQHKGLNVESYTCDKPDPYGRETVCKCTLIKCHDI
+/// $ umgap splitkmers < input.fa
+/// MNAKYDTDQ       654924
+/// NAKYDTDQG       654924
+/// AKYDTDQGV       654924
+/// KYDTDQGVG       654924
+/// YDTDQGVGR       654924
+/// ...
+/// SPSFSSRYR       654924
+/// PSFSSRYRY       654924
+/// MIKLFCVLA       176652
+/// IKLFCVLAA       176652
+/// KLFCVLAAF       176652
+/// ...
+/// ```
 #[derive(Debug, StructOpt)]
 pub struct SplitKmers {
     /// The k in k-mers

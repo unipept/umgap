@@ -5,6 +5,7 @@ use std::io;
 use crate::errors;
 use crate::io::fasta;
 
+#[structopt(verbatim_doc_comment)]
 /// The `umgap uniq` command joins consecutive FASTA records with the same header.
 ///
 /// The input is given on *standard input* in a FASTA format. The content of all consecutive records
@@ -13,23 +14,25 @@ use crate::io::fasta;
 ///
 /// This command can be used to join together the predictions of 2 paired ends before aggregation.
 ///
-///     $ cat input.fa
-///     >header1/1
-///     147206
-///     240495
-///     >header1/2
-///     1883
-///     1
-///     1883
-///     1883
-///     $ sed '/^>/s_/.*__' input.fa | umgap uniq
-///     >header1
-///     147206
-///     240495
-///     1883
-///     1
-///     1883
-///     1883
+/// ```sh
+/// $ cat input.fa
+/// >header1/1
+/// 147206
+/// 240495
+/// >header1/2
+/// 1883
+/// 1
+/// 1883
+/// 1883
+/// $ sed '/^>/s_/.*__' input.fa | umgap uniq
+/// >header1
+/// 147206
+/// 240495
+/// 1883
+/// 1
+/// 1883
+/// 1883
+/// ```
 #[derive(Debug, StructOpt)]
 pub struct Uniq {
     /// Separator between output items

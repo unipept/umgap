@@ -11,6 +11,7 @@ use crate::rank::Rank;
 use crate::taxon;
 use crate::taxon::TaxonId;
 
+#[structopt(verbatim_doc_comment)]
 /// The `umgap snaptaxon` command takes one or more taxon IDs as input, snaps them to a given rank
 /// and outputs the resulting taxon IDs.
 ///
@@ -21,24 +22,26 @@ use crate::taxon::TaxonId;
 /// a taxonomy. If the taxon has an ancestor amongst the marked taxa, it is replaced by the most
 /// specific of these ancestors. Otherwise, it is mapped to the taxonomy root.
 ///
-///     $ cat input.fa
-///     >header1
-///     888268
-///     186802
-///     1598
-///     1883
-///     $ umgap snaptaxon 2020-04-taxons.tsv -r order < ~/input.fa
-///     >header1
-///     38820
-///     186802
-///     186826
-///     85011
-///     $ umgap snaptaxon 2020-04-taxons.tsv -t 1239 2 < ~/input.fa
-///     >header1
-///     1
-///     1239
-///     1239
-///     2
+/// ```sh
+/// $ cat input.fa
+/// >header1
+/// 888268
+/// 186802
+/// 1598
+/// 1883
+/// $ umgap snaptaxon 2020-04-taxons.tsv -r order < ~/input.fa
+/// >header1
+/// 38820
+/// 186802
+/// 186826
+/// 85011
+/// $ umgap snaptaxon 2020-04-taxons.tsv -t 1239 2 < ~/input.fa
+/// >header1
+/// 1
+/// 1239
+/// 1239
+/// 2
+/// ```
 #[derive(Debug, StructOpt)]
 pub struct SnapTaxon {
     /// The rank to snap towards.

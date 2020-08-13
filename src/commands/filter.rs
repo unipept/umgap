@@ -6,6 +6,7 @@ use std::io;
 use crate::errors;
 use crate::io::fasta;
 
+#[structopt(verbatim_doc_comment)]
 /// The `umgap filter` command takes one or more lists of peptides as input, filters them and
 /// outputs the remainder.
 ///
@@ -19,26 +20,28 @@ use crate::io::fasta;
 /// * `-c LIK` requires the peptides to contain all of the specified amino acids (none by default).
 /// * `-l LIK` removes the peptides containing any of the specified amino acids (none by default).
 ///
-///     $ cat input.fa
-///     >header1
-///     AYKKAGVSGHVWQSDGITNCLLRGLTRVKEAVANRDSGNGYINKVYYWTVDKRATTRDALDAGVDGIMTNYPDVITDVLN
-///     AYK
-///     K
-///     AGVSGHVWQSDGITNCLLR
-///     GLTR
-///     VK
-///     EAVANR
-///     DSGNGYINK
-///     $ umgap filter < input.fa
-///     >header1
-///     AGVSGHVWQSDGITNCLLR
-///     EAVANR
-///     DSGNGYINK
-///     $ umgap filter -m 0 -c R -l K < input.fa
-///     >header1
-///     AGVSGHVWQSDGITNCLLR
-///     GLTR
-///     EAVANR
+/// ```sh
+/// $ cat input.fa
+/// >header1
+/// AYKKAGVSGHVWQSDGITNCLLRGLTRVKEAVANRDSGNGYINKVYYWTVDKRATTRDALDAGVDGIMTNYPDVITDVLN
+/// AYK
+/// K
+/// AGVSGHVWQSDGITNCLLR
+/// GLTR
+/// VK
+/// EAVANR
+/// DSGNGYINK
+/// $ umgap filter < input.fa
+/// >header1
+/// AGVSGHVWQSDGITNCLLR
+/// EAVANR
+/// DSGNGYINK
+/// $ umgap filter -m 0 -c R -l K < input.fa
+/// >header1
+/// AGVSGHVWQSDGITNCLLR
+/// GLTR
+/// EAVANR
+/// ```
 #[derive(Debug, StructOpt)]
 pub struct Filter {
     /// Minimum length required

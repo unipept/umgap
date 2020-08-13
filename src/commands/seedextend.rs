@@ -9,6 +9,7 @@ use crate::io::fasta;
 use crate::taxon;
 use crate::taxon::TaxonId;
 
+#[structopt(verbatim_doc_comment)]
 /// The `umgap seedextend` command takes one or more sequences of taxon IDs, selects regions of
 /// consecutive predictions and outputs only those. It can be used to filter out accidental matches
 /// of incorrect taxa.
@@ -20,29 +21,31 @@ use crate::taxon::TaxonId;
 /// extended with other taxa, forming an extended seed. The command writes all taxa in any of these
 /// extended seeds to *standard output*.
 ///
-///     $ cat dna.fa
-///     >header1
-///     CGCAGAGACGGGTAGAACCTCAGTAATCCGAAAAGCCGGGATCGACCGCCCCTTGCTTGCAGCCGGGCACTACAGGACCC
-///     $ umgap translate -n -a < dna.fa | umgap prot2kmer2lca 9mer.index > input.fa
-///     >header1|1
-///     9606 9606 2759 9606 9606 9606 9606 9606 9606 9606 8287
-///     >header1|2
-///     2026807 888268 186802 1598 1883
-///     >header1|3
-///     1883
-///     >header1|1R
-///     27342 2759 155619 1133106 38033 2
-///     >header1|2R
-///     >header1|3R
-///     2951
-///     $ umgap seedextend < input.fa
-///     >header1|1
-///     9606 9606 2759 9606 9606 9606 9606 9606 9606 9606 8287
-///     >header1|2
-///     >header1|3
-///     >header1|1R
-///     >header1|2R
-///     >header1|3R
+/// ```sh
+/// $ cat dna.fa
+/// >header1
+/// CGCAGAGACGGGTAGAACCTCAGTAATCCGAAAAGCCGGGATCGACCGCCCCTTGCTTGCAGCCGGGCACTACAGGACCC
+/// $ umgap translate -n -a < dna.fa | umgap prot2kmer2lca 9mer.index > input.fa
+/// >header1|1
+/// 9606 9606 2759 9606 9606 9606 9606 9606 9606 9606 8287
+/// >header1|2
+/// 2026807 888268 186802 1598 1883
+/// >header1|3
+/// 1883
+/// >header1|1R
+/// 27342 2759 155619 1133106 38033 2
+/// >header1|2R
+/// >header1|3R
+/// 2951
+/// $ umgap seedextend < input.fa
+/// >header1|1
+/// 9606 9606 2759 9606 9606 9606 9606 9606 9606 9606 8287
+/// >header1|2
+/// >header1|3
+/// >header1|1R
+/// >header1|2R
+/// >header1|3R
+/// ```
 ///
 /// (Number-separating newlines in the output have been replaced by spaces for this example.)
 ///

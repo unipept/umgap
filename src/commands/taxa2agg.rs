@@ -13,6 +13,7 @@ use crate::taxon;
 use crate::taxon::TaxonId;
 use crate::tree;
 
+#[structopt(verbatim_doc_comment)]
 /// The `umgap taxa2agg` command takes one or more lists of taxa as input and reduces each to a
 /// single consensus taxon.
 ///
@@ -25,17 +26,19 @@ use crate::tree;
 /// For operation, the command requires to be passed a small database created from the uniprot
 /// taxonomy as argument.
 ///
-///     $ cat input.fa
-///     >header1
-///     571525
-///     571525
-///     6920
-///     6920
-///     1
-///     6920
-///     $ umgap taxa2agg taxons.tsv < input.fa
-///     >header1
-///     571525
+/// ```sh
+/// $ cat input.fa
+/// >header1
+/// 571525
+/// 571525
+/// 6920
+/// 6920
+/// 1
+/// 6920
+/// $ umgap taxa2agg taxons.tsv < input.fa
+/// >header1
+/// 571525
+/// ```
 ///
 /// By default, the aggregation used is the maximum root-to-leaf path (MRTL) aggregation. A variant
 /// of the lowest common ancestor (LCA\*) aggregation is also available via the `-a` and `-m`

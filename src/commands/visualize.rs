@@ -9,6 +9,7 @@ use crate::errors;
 use crate::io::fasta;
 use crate::taxon::TaxonId;
 
+#[structopt(verbatim_doc_comment)]
 /// The `umgap visualize` command, similar to the `unipept taxa2tree` command, takes one or more
 /// taxon IDs as input and returns the taxonomic tree of there taxa as output. It uses the Unipept
 /// API server.
@@ -18,14 +19,16 @@ use crate::taxon::TaxonId;
 /// taxonomic tree containing all these taxa. With `-u`, instead a URL to the visualization hosted
 /// online is printed.
 ///
-///     $ cat input.txt
-///     >header1
-///     817
-///     329854
-///     1099853
-///     $ umgap visualize < input.txt > output.html
-///     $ umgap visualize --url < input.txt
-///     https://bl.ocks.org/a686a37e1dcd43dd4ec7d467487bd6a1
+/// ```sh
+/// $ cat input.txt
+/// >header1
+/// 817
+/// 329854
+/// 1099853
+/// $ umgap visualize < input.txt > output.html
+/// $ umgap visualize --url < input.txt
+/// https://bl.ocks.org/a686a37e1dcd43dd4ec7d467487bd6a1
+/// ```
 #[derive(Debug, StructOpt)]
 pub struct Visualize {
     /// Host the result online and return the URL

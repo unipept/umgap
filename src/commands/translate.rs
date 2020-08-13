@@ -9,27 +9,32 @@ use crate::dna::Strand;
 use crate::errors;
 use crate::io::fasta;
 
+#[structopt(verbatim_doc_comment)]
 /// The `umgap translate` command takes one or more DNA sequences, as input and translates them into
 /// Amino Acid sequences.
 ///
 /// The DNA sequences are expected in a FASTA format on *standard input*:
 ///
-///     $ cat input.fa
-///     >header1
-///     GATTACAAA
-///     $ umgap translate -f1 < input.fa
-///     >header1
-///     DYK
+/// ```sh
+/// $ cat input.fa
+/// >header1
+/// GATTACAAA
+/// $ umgap translate -f1 < input.fa
+/// >header1
+/// DYK
+/// ```
 ///
 /// The `-f` flag allows you to add reading frames to the translation. If you want to translate
 /// multiple frames and care to keep them apart, the `-n` flag adds the name of the frame to the end
 /// of the FASTA header:
 ///
-///     $ umgap translate -f1 -f1R < input.fa
-///     >header1|1
-///     DYK
-///     >header1|1R
-///     FVI
+/// ```sh
+/// $ umgap translate -f1 -f1R < input.fa
+/// >header1|1
+/// DYK
+/// >header1|1R
+/// FVI
+/// ```
 ///
 /// The `-a` flag can be used as a shortcut to translate all 6 reading frames.
 ///

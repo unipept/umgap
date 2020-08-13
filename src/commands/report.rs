@@ -11,6 +11,7 @@ use crate::rank;
 use crate::rank::Rank;
 use crate::taxon;
 
+#[structopt(verbatim_doc_comment)]
 /// The `umgap report` command creates a frequency table of a list of taxa.
 ///
 /// The input is given on *standard input*, a single taxon ID on each line. Each taxon at least as
@@ -20,26 +21,30 @@ use crate::taxon;
 /// For operation, the command requires to be passed a small database created from the uniprot
 /// taxonomy as argument.
 ///
-///     $ cat input.txt
-///     9606
-///     9606
-///     2759
-///     9606
-///     9606
-///     9606
-///     9606
-///     9606
-///     9606
-///     9606
-///     8287
-///     $ umgap report taxons.tsv < input.txt
-///     2,1,root
-///     9,9606,Homo sapiens
+/// ```sh
+/// $ cat input.txt
+/// 9606
+/// 9606
+/// 2759
+/// 9606
+/// 9606
+/// 9606
+/// 9606
+/// 9606
+/// 9606
+/// 9606
+/// 8287
+/// $ umgap report taxons.tsv < input.txt
+/// 2,1,root
+/// 9,9606,Homo sapiens
+/// ```
 ///
 /// With the `-r` option, the default species rank can be set to any named rank.
 ///
-///     $ umgap report -r phylum taxons.tsv < input.txt
-///     10,7711,Chordata
+/// ```sh
+/// $ umgap report -r phylum taxons.tsv < input.txt
+/// 10,7711,Chordata
+/// ```
 #[derive(Debug, StructOpt)]
 pub struct Report {
     /// The rank to show

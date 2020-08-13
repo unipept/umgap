@@ -7,20 +7,23 @@ use fst::Streamer;
 
 use crate::errors;
 
+#[structopt(verbatim_doc_comment)]
 /// Print the key/value pairs in an FST index in TSV format, mostly for debugging.
 ///
-///     $ umgap printindex tryptic.index
-///     ...
-///     AAAAADRPANEIGGR	293089
-///     AAAAADRPAPAGHDHQAVAR	156981
-///     AAAAADRPASQIVR	536018
-///     AAAAADRPE	1707
-///     AAAAADRPEVHALALR	1883427
-///     AAAAADRPFVAEPAR	41275
-///     AAAAADRPIAAHAEDESLVR	33010
-///     AAAAADRPIR	1988
-///     AAAAADRPLAEHGGPVPR	1827
-///     ...
+/// ```sh
+/// $ umgap printindex tryptic.index
+/// ...
+/// AAAAADRPANEIGGR	293089
+/// AAAAADRPAPAGHDHQAVAR	156981
+/// AAAAADRPASQIVR	536018
+/// AAAAADRPE	1707
+/// AAAAADRPEVHALALR	1883427
+/// AAAAADRPFVAEPAR	41275
+/// AAAAADRPIAAHAEDESLVR	33010
+/// AAAAADRPIR	1988
+/// AAAAADRPLAEHGGPVPR	1827
+/// ...
+/// ```
 #[derive(Debug, StructOpt)]
 pub struct PrintIndex {
     /// An FST to query

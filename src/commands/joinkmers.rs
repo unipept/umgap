@@ -11,6 +11,7 @@ use crate::taxon;
 use crate::taxon::TaxonId;
 use crate::tree;
 
+#[structopt(verbatim_doc_comment)]
 /// The `umgap joinkmers` command takes tab-separated strings and taxon IDs, aggregates the taxon
 /// IDs where consecutive strings are equal and outputs the resulting tiple of string, consensus
 /// taxon ID and its rank.
@@ -20,15 +21,17 @@ use crate::tree;
 /// meant to be used after an `umgap splitkmers` and `sort`, and it's output is ideal for `umgap
 /// buildindex`, but there may be further uses.
 ///
-///     $ cat input.tsv
-///     AAAAA	34924
-///     AAAAA	30423
-///     AAAAA	5678
-///     BBBBBB	48890
-///     BBBBBB	156563
-///     $ umgap joinkmers taxons.tsv < input.tsv
-///     AAAAA	2759	superkingdom
-///     BBBBBB	9153	family
+/// ```sh
+/// $ cat input.tsv
+/// AAAAA	34924
+/// AAAAA	30423
+/// AAAAA	5678
+/// BBBBBB	48890
+/// BBBBBB	156563
+/// $ umgap joinkmers taxons.tsv < input.tsv
+/// AAAAA	2759	superkingdom
+/// BBBBBB	9153	family
+/// ```
 #[derive(Debug, StructOpt)]
 pub struct JoinKmers {
     /// The NCBI taxonomy tsv-file

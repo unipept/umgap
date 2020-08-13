@@ -14,6 +14,7 @@ use rayon::iter::{ParallelBridge, ParallelIterator};
 use crate::errors;
 use crate::io::fasta;
 
+#[structopt(verbatim_doc_comment)]
 /// The `umgap prot2tryp2lca` command takes one or more peptides as input, splits those into
 /// tryptic peptides, possibly filtering them, and outputs their lowest common ancestors. It is a
 /// combination of the `umgap prot2pept`, `umgap filter` and `umgap pept2lca` commands to allow more
@@ -23,15 +24,17 @@ use crate::io::fasta;
 /// peptide, which may be hardwrapped with newlines. The command prints the lowest common ancestors
 /// for each tryptic peptide found in this peptide to standard output.
 ///
-///     $ cat input.fa
-///     >header1
-///     AYKKAGVSGHVWQSDGITNCLLRGLTRVKEAVANRDSGNGYINKVYYWTVDKRATTRDALDAGVDGIMTNYPDVITDVLN
-///     $ umgap prot2tryp2lca tryptic-lca.index < input.fa
-///     >header1
-///     571525
-///     1
-///     571525
-///     6920
+/// ```sh
+/// $ cat input.fa
+/// >header1
+/// AYKKAGVSGHVWQSDGITNCLLRGLTRVKEAVANRDSGNGYINKVYYWTVDKRATTRDALDAGVDGIMTNYPDVITDVLN
+/// $ umgap prot2tryp2lca tryptic-lca.index < input.fa
+/// >header1
+/// 571525
+/// 1
+/// 571525
+/// 6920
+/// ```
 #[derive(Debug, StructOpt)]
 pub struct ProtToTrypToLca {
     /// Map unknown sequences to 0 instead of ignoring them

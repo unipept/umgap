@@ -6,6 +6,7 @@ use std::io;
 use crate::errors;
 use crate::io::fasta;
 
+#[structopt(verbatim_doc_comment)]
 /// The `umgap prot2kmer2lca` command takes one or more peptides as input and outputs all k-length
 /// subsequences.
 ///
@@ -14,19 +15,21 @@ use crate::io::fasta;
 /// to *standard output*, separated by newlines. (*k* is configurable via the `-k` option, and is 9
 /// by default.)
 ///
-///     $ cat input.fa
-///     >header1
-///     DAIGDVAKAYKKAG*S
-///     $ umgap prot2kmer < input.fa
-///     >header1
-///     DAIGDVAKA
-///     AIGDVAKAY
-///     IGDVAKAYK
-///     GDVAKAYKK
-///     DVAKAYKKA
-///     VAKAYKKAG
-///     AKAYKKAG*
-///     KAYKKAG*S
+/// ```sh
+/// $ cat input.fa
+/// >header1
+/// DAIGDVAKAYKKAG*S
+/// $ umgap prot2kmer < input.fa
+/// >header1
+/// DAIGDVAKA
+/// AIGDVAKAY
+/// IGDVAKAYK
+/// GDVAKAYKK
+/// DVAKAYKKA
+/// VAKAYKKAG
+/// AKAYKKAG*
+/// KAYKKAG*S
+/// ```
 #[derive(Debug, StructOpt)]
 pub struct ProtToKmer {
     /// The K in K-mers

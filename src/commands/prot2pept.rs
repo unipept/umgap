@@ -5,6 +5,7 @@ use std::io;
 use crate::errors;
 use crate::io::fasta;
 
+#[structopt(verbatim_doc_comment)]
 /// The `umgap prot2pept` command takes one or more Amino Acid sequences as input, applies an *in
 /// silico* peptide digest and outputs the result.
 ///
@@ -13,22 +14,24 @@ use crate::io::fasta;
 /// format, the peptides resulting from the digest. Per FASTA header, there will be multiple
 /// peptides, separated by newlines.
 ///
-///     $ cat input.fa
-///     >header1
-///     AYKKAGVSGHVWQSDGITNCLLRGLTRVKEAVANRDSGNGYINKVYYWTVDKRATTRDALDAGVDGIMTNYPDVITDVLN
-///     $ umgap prot2tryp2lca tryptic-lca.index < input.fa
-///     >header1
-///     AYK
-///     K
-///     AGVSGHVWQSDGITNCLLR
-///     GLTR
-///     VK
-///     EAVANR
-///     DSGNGYINK
-///     VYYWTVDK
-///     R
-///     ATTR
-///     DALDAGVDGIMTNYPDVITDVLN
+/// ```sh
+/// $ cat input.fa
+/// >header1
+/// AYKKAGVSGHVWQSDGITNCLLRGLTRVKEAVANRDSGNGYINKVYYWTVDKRATTRDALDAGVDGIMTNYPDVITDVLN
+/// $ umgap prot2tryp2lca tryptic-lca.index < input.fa
+/// >header1
+/// AYK
+/// K
+/// AGVSGHVWQSDGITNCLLR
+/// GLTR
+/// VK
+/// EAVANR
+/// DSGNGYINK
+/// VYYWTVDK
+/// R
+/// ATTR
+/// DALDAGVDGIMTNYPDVITDVLN
+/// ```
 ///
 /// Using the `-p` flag, you can change the splitting pattern (`([KR])([^P])`, so between a K and R
 /// and before something that's not a P) to something else.

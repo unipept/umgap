@@ -9,6 +9,7 @@ use rayon::iter::{ParallelBridge, ParallelIterator};
 use crate::errors;
 use crate::io::fasta;
 
+#[structopt(verbatim_doc_comment)]
 /// The `umgap pept2lca` command takes one or more Amino Acid sequences as input, searches the
 /// corresponding taxon in an (FST) index file, and outputs this.
 ///
@@ -16,26 +17,30 @@ use crate::io::fasta;
 /// multiple sequences, each on a line. Below we match tryptic peptides on their lowest common
 /// ancestor in the NCBI taxonomy.
 ///
-///     $ cat input.fa
-///     >header1
-///     AAALTER
-///     ENFVYLAK
-///     $ umgap pept2lca tryptic-peptides.index < input.fa
-///     >header1
-///     2
-///     3398
+/// ```sh
+/// $ cat input.fa
+/// >header1
+/// AAALTER
+/// ENFVYLAK
+/// $ umgap pept2lca tryptic-peptides.index < input.fa
+/// >header1
+/// 2
+/// 3398
+/// ```
 ///
 /// By default, sequences not found in the index are simply left out. Using the `-o` (`--on-on-one`)
 /// flag, they are mapped to 0, instead.
 ///
-///     $ cat input.fa
-///     >header1
-///     NOTATRYPTICPEPTIDE
-///     ENFVYLAK
-///     $ umgap pept2lca -o tryptic-peptides.index < input.fa
-///     >header1
-///     0
-///     3398
+/// ```sh
+/// $ cat input.fa
+/// >header1
+/// NOTATRYPTICPEPTIDE
+/// ENFVYLAK
+/// $ umgap pept2lca -o tryptic-peptides.index < input.fa
+/// >header1
+/// 0
+/// 3398
+/// ```
 #[derive(Debug, StructOpt)]
 pub struct PeptToLca {
     /// Map unknown sequences to 0 instead of ignoring them
