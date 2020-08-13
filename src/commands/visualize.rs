@@ -25,7 +25,7 @@ use crate::taxon::TaxonId;
 ///     1099853
 ///     $ umgap visualize < input.txt > output.html
 ///     $ umgap visualize --url < input.txt
-///     {"gist":"https://gist.github.com/a686a37e1dcd43dd4ec7d467487bd6a1"}
+///     https://bl.ocks.org/a686a37e1dcd43dd4ec7d467487bd6a1
 #[derive(Debug, StructOpt)]
 pub struct Visualize {
     /// Host the result online and return the URL
@@ -53,6 +53,20 @@ pub fn visualize(args: Visualize) -> errors::Result<()> {
         .send()
         .map_err(|err| err.to_string())?;
 
-    print!("{}", res.text().map_err(|err| err.to_string())?);
+    if args.url {
+        let jsonres: serde_json::Value = res.json().map_err(|err| err.to_string())?;
+        let gist = jsonres
+            .get("gist")
+            .expect("Incompatible server API")
+            .as_str()
+            .expect("Incompatible server API");
+        println!(
+            "{}",
+            gist.replace("https://gist.github.com/", "https://bl.ocks.org/")
+        )
+    } else {
+        print!("{}", res.text().map_err(|err| err.to_string())?);
+    }
+
     Ok(())
 }
