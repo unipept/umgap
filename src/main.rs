@@ -30,7 +30,11 @@ quick_main!(|| -> Result<()> {
     }
 });
 
-/// The Options enum for UMGAP arguments
+/// UMGAP is a collection of tools to be used in a metagenomics analysis pipeline.
+///
+/// Call `umgap <command> -h` for additional help per command.
+///
+/// Use the `umgap-analyse.sh` script for some prebuild pipelines.
 #[derive(Debug, StructOpt)]
 pub enum Opt {
     /// Translates DNA into Amino Acid Sequences.
