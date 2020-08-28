@@ -5,6 +5,8 @@ use std::io;
 use crate::errors;
 
 #[structopt(verbatim_doc_comment)]
+/// Builds an index mapping strings to taxa
+///
 /// The `umgap buildindex` command takes tab-separated strings and taxon IDs, and creates a
 /// searchable FST index of this mapping.
 ///

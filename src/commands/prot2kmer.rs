@@ -7,7 +7,9 @@ use crate::errors;
 use crate::io::fasta;
 
 #[structopt(verbatim_doc_comment)]
-/// The `umgap prot2kmer2lca` command takes one or more peptides as input and outputs all k-length
+/// Prints all K-mers of a FASTA stream of peptides
+///
+/// The `umgap prot2kmer` command takes one or more peptides as input and outputs all k-length
 /// subsequences.
 ///
 /// The input is given on *standard input* in a FASTA format. Per FASTA header should be a single

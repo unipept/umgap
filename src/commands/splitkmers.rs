@@ -7,6 +7,8 @@ use crate::taxon::TaxonId;
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
 #[structopt(verbatim_doc_comment)]
+/// Splits peptides in a CSV stream into K-mers duplicating the records
+///
 /// The `umgap splitkmers` command takes tab-separated taxon IDs and protein sequences and outputs
 /// the k-mers mapped to the taxon IDs.
 ///

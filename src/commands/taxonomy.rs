@@ -11,6 +11,8 @@ use crate::taxon;
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
 #[structopt(verbatim_doc_comment)]
+/// Includes info in a FASTA stream of taxon IDs
+///
 /// The `umgap taxonomy` command takes one or more taxon IDs as input, searches for them in a
 /// taxonomy and outputs more information about them in a CSV format.
 ///

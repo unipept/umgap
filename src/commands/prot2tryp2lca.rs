@@ -15,6 +15,8 @@ use crate::errors;
 use crate::io::fasta;
 
 #[structopt(verbatim_doc_comment)]
+/// Digests a FASTA stream of peptides and maps all tryptic peptides to taxon IDs
+///
 /// The `umgap prot2tryp2lca` command takes one or more peptides as input, splits those into
 /// tryptic peptides, possibly filtering them, and outputs their lowest common ancestors. It is a
 /// combination of the `umgap prot2pept`, `umgap filter` and `umgap pept2lca` commands to allow more

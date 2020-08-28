@@ -12,6 +12,8 @@ use crate::taxon;
 use crate::taxon::TaxonId;
 
 #[structopt(verbatim_doc_comment)]
+/// Snaps taxon IDs to a rank or specified taxa
+///
 /// The `umgap snaptaxon` command takes one or more taxon IDs as input, snaps them to a given rank
 /// and outputs the resulting taxon IDs.
 ///

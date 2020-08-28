@@ -10,6 +10,8 @@ use crate::taxon;
 use crate::taxon::TaxonId;
 
 #[structopt(verbatim_doc_comment)]
+/// Selects promising regions in sequences of taxon IDs
+///
 /// The `umgap seedextend` command takes one or more sequences of taxon IDs, selects regions of
 /// consecutive predictions and outputs only those. It can be used to filter out accidental matches
 /// of incorrect taxa.

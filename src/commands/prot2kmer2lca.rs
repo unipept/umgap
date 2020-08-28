@@ -14,6 +14,8 @@ use crate::errors;
 use crate::io::fasta;
 
 #[structopt(verbatim_doc_comment)]
+/// Maps all K-mers in a FASTA stream of peptides to taxon IDs
+///
 /// The `umgap prot2kmer2lca` command takes one or more peptides as input and outputs the lowest
 /// common ancestors of their k-mers.
 ///

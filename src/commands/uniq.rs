@@ -6,7 +6,7 @@ use crate::errors;
 use crate::io::fasta;
 
 #[structopt(verbatim_doc_comment)]
-/// The `umgap uniq` command joins consecutive FASTA records with the same header.
+/// Joins consecutive FASTA records with the same header
 ///
 /// The input is given on *standard input* in a FASTA format. The content of all consecutive records
 /// with the same FASTA header is joined under a single header, separated by newlines (or another

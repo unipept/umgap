@@ -8,7 +8,9 @@ use fst::Streamer;
 use crate::errors;
 
 #[structopt(verbatim_doc_comment)]
-/// Print the key/value pairs in an FST index in TSV format, mostly for debugging.
+/// Prints the key/value pairs in an FST index
+///
+/// Outputs in TSV format, mostly for debugging.
 ///
 /// ```sh
 /// $ umgap printindex tryptic.index

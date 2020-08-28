@@ -7,7 +7,9 @@ use crate::io::fasta;
 use crate::taxon::TaxonId;
 
 #[structopt(verbatim_doc_comment)]
-/// The `umgap bestof` command takes groups of numbers as input and output for each group the one
+/// Selects the best read of every fixed size group
+///
+/// The `umgap bestof` command takes groups of numbers as input and outputs for each group the one
 /// with the most non-root identifications.
 ///
 /// The input is given on *standard input*, in a FASTA format. Per FASTA header, there should be

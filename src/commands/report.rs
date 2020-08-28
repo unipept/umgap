@@ -12,6 +12,8 @@ use crate::rank::Rank;
 use crate::taxon;
 
 #[structopt(verbatim_doc_comment)]
+/// Counts and reports on a stream of taxon IDs
+///
 /// The `umgap report` command creates a frequency table of a list of taxa.
 ///
 /// The input is given on *standard input*, a single taxon ID on each line. Each taxon at least as

@@ -14,6 +14,8 @@ use crate::taxon::TaxonId;
 use crate::tree;
 
 #[structopt(verbatim_doc_comment)]
+/// Aggregates taxa in a FASTA stream
+///
 /// The `umgap taxa2agg` command takes one or more lists of taxa as input and reduces each to a
 /// single consensus taxon.
 ///

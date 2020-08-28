@@ -7,6 +7,8 @@ use crate::errors;
 use crate::io::fasta;
 
 #[structopt(verbatim_doc_comment)]
+/// Filters a FASTA stream of peptides
+///
 /// The `umgap filter` command takes one or more lists of peptides as input, filters them and
 /// outputs the remainder.
 ///

@@ -12,6 +12,8 @@ use crate::taxon::TaxonId;
 use crate::tree;
 
 #[structopt(verbatim_doc_comment)]
+/// Aggregates a CSV stream of peptides and taxon IDs
+///
 /// The `umgap joinkmers` command takes tab-separated strings and taxon IDs, aggregates the taxon
 /// IDs where consecutive strings are equal and outputs the resulting tiple of string, consensus
 /// taxon ID and its rank.

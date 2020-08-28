@@ -11,6 +11,8 @@ use crate::utils;
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
 #[structopt(verbatim_doc_comment)]
+/// Interleaves FASTQ files into a FASTA stream
+///
 /// The `umgap fastq2fasta` command takes a number of FASTQ files and interleaves them into a single
 /// FASTA file.
 ///

@@ -10,6 +10,8 @@ use crate::errors;
 use crate::io::fasta;
 
 #[structopt(verbatim_doc_comment)]
+/// Translates a FASTA stream of DNA to peptides
+///
 /// The `umgap translate` command takes one or more DNA sequences, as input and translates them into
 /// Amino Acid sequences.
 ///

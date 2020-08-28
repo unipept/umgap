@@ -6,6 +6,8 @@ use crate::errors;
 use crate::io::fasta;
 
 #[structopt(verbatim_doc_comment)]
+/// Splits the peptides in a FASTA stream into tryptic peptides
+///
 /// The `umgap prot2pept` command takes one or more Amino Acid sequences as input, applies an *in
 /// silico* peptide digest and outputs the result.
 ///

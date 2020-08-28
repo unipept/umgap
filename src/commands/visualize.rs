@@ -10,6 +10,8 @@ use crate::io::fasta;
 use crate::taxon::TaxonId;
 
 #[structopt(verbatim_doc_comment)]
+/// Visualizes a stream of taxon IDs using the Unipept API
+///
 /// The `umgap visualize` command, similar to the `unipept taxa2tree` command, takes one or more
 /// taxon IDs as input and returns the taxonomic tree of there taxa as output. It uses the Unipept
 /// API server.

@@ -10,6 +10,8 @@ use crate::errors;
 use crate::io::fasta;
 
 #[structopt(verbatim_doc_comment)]
+/// Maps a FASTA stream of peptides to taxon IDs
+///
 /// The `umgap pept2lca` command takes one or more Amino Acid sequences as input, searches the
 /// corresponding taxon in an (FST) index file, and outputs this.
 ///
