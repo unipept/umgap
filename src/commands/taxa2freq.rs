@@ -52,7 +52,12 @@ use crate::taxon;
 #[derive(Debug, StructOpt)]
 pub struct TaxaToFreq {
     /// The rank to show
-    #[structopt(short = "r", long = "rank", default_value = "species")]
+    #[structopt(
+        short = "r",
+        long = "rank",
+        default_value = "species",
+        possible_values = &Rank::variants()
+    )]
     pub rank: Rank,
 
     /// The minimum frequency to be reported

@@ -49,7 +49,11 @@ use crate::taxon::TaxonId;
 #[derive(Debug, StructOpt)]
 pub struct SnapTaxon {
     /// The rank to snap towards.
-    #[structopt(short = "r", long = "rank")]
+    #[structopt(
+        short = "r",
+        long = "rank",
+        possible_values = &Rank::variants()
+    )]
     pub rank: Option<Rank>,
 
     /// A taxon to snap towards (allow multiple times).

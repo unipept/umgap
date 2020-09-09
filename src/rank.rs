@@ -40,6 +40,37 @@ pub enum Rank {
 
 pub const RANK_COUNT: usize = 29;
 
+static RANKS: &[&str] = &[
+    "superkingdom",
+    "kingdom",
+    "subkingdom",
+    "superphylum",
+    "phylum",
+    "subphylum",
+    "superclass",
+    "class",
+    "subclass",
+    "infraclass",
+    "superorder",
+    "order",
+    "suborder",
+    "infraorder",
+    "parvorder",
+    "superfamily",
+    "family",
+    "subfamily",
+    "tribe",
+    "subtribe",
+    "genus",
+    "subgenus",
+    "species group",
+    "species subgroup",
+    "species",
+    "subspecies",
+    "varietas",
+    "forma",
+];
+
 impl Rank {
     pub fn index(&self) -> usize {
         *self as usize
@@ -62,6 +93,10 @@ impl Rank {
     /// Iterator over all the real ranks (NoRank is skipped)
     pub fn ranks() -> impl Iterator<Item = Rank> {
         Self::iter().skip(1)
+    }
+
+    pub fn variants() -> &'static [&'static str] {
+        RANKS
     }
 }
 
