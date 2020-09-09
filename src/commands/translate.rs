@@ -78,7 +78,7 @@ pub fn translate(args: Translate) -> errors::Result<()> {
     // Parsing the table
     let table = args.table.parse::<&TranslationTable>()?;
 
-    // Which frames TODO ugly
+    // Which frames to do
     let frames = if args.all_frames {
         vec![
             Frame::Forward1,

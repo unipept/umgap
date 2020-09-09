@@ -114,7 +114,7 @@ mod tests {
         assert_matches!(aggregator.counting_aggregate(&vec![1, 1, 10239, 10239, 10239, 12884, 185751, 185752]), Ok(1));
     }
 
-    /* TODO: third example might fail because 12884 and 185751 have the same score. */
+    /* third example might fail because 12884 and 185751 have the same score. */
     #[test]
     fn test_one_half() {
         let aggregator = MixCalculator::new(fixtures::tree(), 0.5);

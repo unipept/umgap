@@ -53,9 +53,10 @@ use crate::tree;
 ///   contradicting taxa in the list. Non-contradicting taxa of a taxon are either itself, its
 ///   ancestors and its descendants. A tree-based algorithm is used.
 ///
-/// * `-m tree -a hybrid` mixes the above two strategies, which results in a taxon which might have not
-///   have the highest frequency of ancestors in the list, but would have less contradicting taxa.
-///   Use the `-f` option to select a hybrid close to the MRTL (`-f 0.0`) or to the LCA (`-f 1.0`).
+/// * `-m tree -a hybrid` mixes the above two strategies, which results in a taxon which might have
+///   not have the highest frequency of ancestors in the list, but would have less contradicting
+///   taxa. Use the `-f` option to select a hybrid close to the MRTL (`-f 0.0`) or to the LCA (`-f
+///   1.0`).
 ///
 /// TODO: rephrase these explanations?
 #[derive(Debug, StructOpt)]

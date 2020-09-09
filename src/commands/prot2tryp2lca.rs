@@ -133,8 +133,6 @@ pub fn prot2tryp2lca(args: ProtToTrypToLca) -> errors::Result<()> {
                     }
                 }
             }
-            // TODO: make this the result of the map
-            // and print using a Writer
             print!("{}", chunk_output);
             Ok(())
         })

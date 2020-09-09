@@ -181,8 +181,6 @@ where
                     chunk_output.push_str(&lcas);
                 }
             }
-            // TODO: make this the result of the map
-            // and print using a Writer
             output_mutex
                 .lock()
                 .unwrap()

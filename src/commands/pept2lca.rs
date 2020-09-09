@@ -95,8 +95,6 @@ pub fn pept2lca(args: PeptToLca) -> errors::Result<()> {
                     }
                 }
             }
-            // TODO: make this the result of the map
-            // and print using a Writer
             print!("{}", chunk_output);
             Ok(())
         })
