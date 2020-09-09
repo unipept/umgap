@@ -12,14 +12,13 @@ use crate::taxon::TaxonId;
 #[structopt(verbatim_doc_comment)]
 /// Selects promising regions in sequences of taxon IDs
 ///
-/// The `umgap seedextend` command takes one or more sequences of taxon IDs, selects regions of
-/// consecutive predictions and outputs only those. It can be used to filter out accidental matches
-/// of incorrect taxa.
+/// The `umgap seedextend` command takes one or more sequences of taxon IDs and selects regions of
+/// consecutive predictions. It can be used to filter out accidental matches of incorrect taxa.
 ///
-/// The input is given on *standard input*, in a FASTA format. It should consist of taxon IDs
+/// The input is given in a FASTA format on *standard input*. It should consist of taxon IDs
 /// separated by newlines, and the order of these taxa should reflect their location on a peptide,
 /// such as output by the `umgap prot2kmer2lca -o` command. As such, 3 consecutive equal IDs
-/// representing 9-mers, for instance, indicate a 12-mer match. This so-called seed could still be
+/// representing 9-mers, for instance, indicate a 11-mer match. This so-called seed could still be
 /// extended with other taxa, forming an extended seed. The command writes all taxa in any of these
 /// extended seeds to *standard output*.
 ///
@@ -49,16 +48,17 @@ use crate::taxon::TaxonId;
 /// >header1|3R
 /// ```
 ///
-/// (Number-separating newlines in the output have been replaced by spaces for this example.)
+/// Taxon IDs are separated by newlines in the actual output, but are separated by spaces in this
+/// example.
 ///
 /// The number of consecutive equal IDs to start a seed is 2 by default, and can be changed using
-/// the `-s` option. The maximum length of gaps between to seeds to join in an extension can be set
+/// the `-s` option. The maximum length of gaps between seeds to join in an extension can be set
 /// with `-g`, no gaps are allowed by default.
 ///
-/// The command can be altered to print only the extended seed with the highest score among them.
-/// Pass a taxonomy using the `-r taxon.tsv` option to activate this. In this scored mode, extended
-/// seeds with gaps are given a penalty of 5, which can be made more or less severe (higher or
-/// lower) with the `-p` option.
+/// The command can be altered to print only the extended seed with the highest score among all
+/// extended seeds. Pass a taxonomy using the `-r taxon.tsv` option to activate this. In this scored
+/// mode, extended seeds with gaps are given a penalty of 5, which can be made more or less severe
+/// (higher or lower) with the `-p` option.
 #[derive(Debug, StructOpt)]
 pub struct SeedExtend {
     /// The minimum length of equal taxa to count as seed

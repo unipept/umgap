@@ -9,13 +9,14 @@ use crate::taxon::TaxonId;
 #[structopt(verbatim_doc_comment)]
 /// Selects the best read of every fixed size group
 ///
-/// The `umgap bestof` command takes groups of numbers as input and outputs for each group the one
-/// with the most non-root identifications.
+/// The `umgap bestof` command takes groups of taxon IDs as input and outputs for each group the
+/// taxon ID with the most non-root identifications.
 ///
-/// The input is given on *standard input*, in a FASTA format. Per FASTA header, there should be
-/// multiple numbers (taxon IDs). Per 6 records (or whichever number you specify with `-f`), the
-/// best record is selected and written to *standard output*. If the input is a series of identified
-/// reads for each of the 6 reading frames, the output will be the actual coding frame.
+/// The input is given in FASTA format on *standard input*. Per FASTA header, there should be
+/// multiple numbers (taxon IDs). Per 6 FASTA records (or whichever number you specify with `-f`),
+/// the best record is selected and written to *standard output*. If the input is a series of
+/// identified taxon IDs for each of the 6 translations of a read, the output will most likely come
+/// from the actual coding frame.
 ///
 /// ```sh
 /// $ cat dna.fa
@@ -38,7 +39,8 @@ use crate::taxon::TaxonId;
 /// 9606 9606 2759 9606 9606 9606 9606 9606 9606 9606 8287
 /// ```
 ///
-/// (Number-separating newlines in the output have been replaced by spaces for this example.)
+/// Taxon IDs are separated by newlines in the actual output, but are separated by spaces in this
+/// example.
 #[derive(Debug, StructOpt)]
 pub struct BestOf {
     /// The number of frames of which to pick the best

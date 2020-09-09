@@ -8,11 +8,12 @@ use crate::io::fasta;
 #[structopt(verbatim_doc_comment)]
 /// Joins consecutive FASTA records with the same header
 ///
-/// The input is given on *standard input* in a FASTA format. The content of all consecutive records
-/// with the same FASTA header is joined under a single header, separated by newlines (or another
-/// separated set with `-s`).
+/// The `umgap uniq` command can for example be used to join together the predictions of 2 paired
+/// ends before aggregation.
 ///
-/// This command can be used to join together the predictions of 2 paired ends before aggregation.
+/// The input is given in a FASTA format on *standard input*. The content of all consecutive records
+/// with the same FASTA header is joined under a single header, separated by newlines (or another
+/// separator set with `-s`).
 ///
 /// ```sh
 /// $ cat input.fa
@@ -33,6 +34,8 @@ use crate::io::fasta;
 /// 1883
 /// 1883
 /// ```
+///
+/// TODO: vraag Peter: de / vervangen door iets naar keuze; maar wat?
 #[derive(Debug, StructOpt)]
 pub struct Uniq {
     /// Separator between output items

@@ -12,17 +12,19 @@ use crate::taxon;
 use crate::taxon::TaxonId;
 
 #[structopt(verbatim_doc_comment)]
-/// Snaps taxon IDs to a rank or specified taxa
+/// Snaps taxon IDs to a specific rank or listed taxa
 ///
-/// The `umgap snaptaxon` command takes one or more taxon IDs as input, snaps them to a given rank
-/// and outputs the resulting taxon IDs.
+/// The `umgap snaptaxon` command takes one or more taxon IDs. For each taxon, it searches amongst
+/// its ancestors if any are of the specified rank (e.g., `-r species`), or are one of the listed
+/// taxa (e.g., `-t 1598 -t 1883`). If so, the taxon is replaced by the most specific of these
+/// matching taxa. Otherwise, it is mapped to the root of the taxonomy.
 ///
 /// The input is given on *standard input* and may be any sequence of FASTA headers and/or lines
 /// containing a single taxon ID. The FASTA headers (if any) are just copied over to *standard
-/// output*. All taxa of a given rank (if any, e.g. `-r species`) and all taxa whose IDs are given
-/// (e.g. `-t 1598 -t 1883`) are marked. Each of the taxon IDs on the other lines are lookup up in
-/// a taxonomy. If the taxon has an ancestor amongst the marked taxa, it is replaced by the most
-/// specific of these ancestors. Otherwise, it is mapped to the taxonomy root.
+/// output*.
+///
+/// The taxonomy to be used is passed as an argument to this command. This is a preprocessed version
+/// of the NCBI taxonomy.
 ///
 /// ```sh
 /// $ cat input.fa
@@ -58,7 +60,7 @@ pub struct SnapTaxon {
     #[structopt(short = "i", long = "invalid")]
     pub invalid: bool,
 
-    /// The NCBI taxonomy tsv-file
+    /// An NCBI taxonomy TSV-file as processed by Unipept
     #[structopt(parse(from_os_str))]
     pub taxon_file: PathBuf,
 }

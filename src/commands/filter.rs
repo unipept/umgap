@@ -9,18 +9,19 @@ use crate::io::fasta;
 #[structopt(verbatim_doc_comment)]
 /// Filters a FASTA stream of peptides
 ///
-/// The `umgap filter` command takes one or more lists of peptides as input, filters them and
-/// outputs the remainder.
+/// The `umgap filter` command takes a FASTA stream of peptides as input and outputs a filtered
+/// stream.
 ///
-/// The input is given on *standard input* in a FASTA format. Per FASTA header, there may be
-/// multiple peptides separated by newlines. Each of these peptides is checked against the requested
-/// criteria and written to *standard output* if it matches them. The criteria are specified as
-/// options:
+/// The input is given in FASTA format on *standard input*. Per FASTA header, there may be multiple
+/// peptides separated by newlines. Each of these peptides are checked against the filter criteria
+/// and written to *standard output* they pass them. The criteria are specified as options:
 ///
 /// * `-m 5` sets the minimum length of the peptides to 5 (which is the default).
 /// * `-M 50` sets the maximum length of the peptides to 50 (which is the default).
-/// * `-c LIK` requires the peptides to contain all of the specified amino acids (none by default).
-/// * `-l LIK` removes the peptides containing any of the specified amino acids (none by default).
+/// * `-c LIK` requires the peptides to contain amino acids Leucine (L), Isoleucine (I) and Lysine
+///   (K) (none by default).
+/// * `-l LIK` removes the peptides containing the amino acids Leucine, Isoleucine or Lysine (none
+///   by default).
 ///
 /// ```sh
 /// $ cat input.fa
@@ -54,11 +55,11 @@ pub struct Filter {
     #[structopt(short = "M", long = "maxlen", default_value = "50")]
     pub max_length: usize,
 
-    /// The letters that a sequence must contain
+    /// Amino acid symbols that a sequence must contain
     #[structopt(short = "c", long = "contains", default_value = "")]
     pub contains: String,
 
-    /// The letters that a sequence mustn't contain
+    /// Amino acid symbols that a sequence may not contain
     #[structopt(short = "l", long = "lacks", default_value = "")]
     pub lacks: String,
 }

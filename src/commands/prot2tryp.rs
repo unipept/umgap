@@ -1,4 +1,4 @@
-//! The `umgap prot2pept` command.
+//! The `umgap prot2tryp` command.
 
 use std::io;
 
@@ -8,13 +8,13 @@ use crate::io::fasta;
 #[structopt(verbatim_doc_comment)]
 /// Splits the peptides in a FASTA stream into tryptic peptides
 ///
-/// The `umgap prot2pept` command takes one or more Amino Acid sequences as input, applies an *in
-/// silico* peptide digest and outputs the result.
+/// The `umgap prot2tryp` command takes one or more amino acid sequences as input, applies an *in
+/// silico* trypsine digest.
 ///
-/// The input is given on *standard input*, in a FASTA format. Per FASTA header, it should contain
-/// one sequence, possibly wrapped with newlines. It will write to *standard output*, in FASTA
-/// format, the peptides resulting from the digest. Per FASTA header, there will be multiple
-/// peptides, separated by newlines.
+/// The input is given in a FASTA format on *standard input* with a single peptide per FASTA header,
+/// which may be hardwrapped with newlines. The peptides resulting from the digest are written
+/// in FASTA format to *standard output*, with multiple peptides per FASTA header, separated by
+/// newlines.
 ///
 /// ```sh
 /// $ cat input.fa
@@ -35,18 +35,19 @@ use crate::io::fasta;
 /// DALDAGVDGIMTNYPDVITDVLN
 /// ```
 ///
-/// Using the `-p` flag, you can change the splitting pattern (`([KR])([^P])`, so between a K and R
-/// and before something that's not a P) to something else.
+/// Using the `-p` flag, you can change the splitting pattern. The default pattern `([KR])([^P])`
+/// splits between any Lysine (K) or Arginine (R), followed by any amino acid that is not Proline
+/// (P).
 #[derive(Debug, StructOpt)]
-pub struct ProtToPept {
+pub struct ProtToTryp {
     /// The cleavage-pattern (regex), i.e. the pattern after which
     /// the next peptide will be cleaved for tryptic peptides)
     #[structopt(short = "p", long = "pattern", default_value = "([KR])([^P])")]
     pub pattern: String,
 }
 
-/// Implements the prot2pept command
-pub fn prot2pept(args: ProtToPept) -> errors::Result<()> {
+/// Implements the prot2tryp command
+pub fn prot2tryp(args: ProtToTryp) -> errors::Result<()> {
     let pattern = regex::Regex::new(&args.pattern)?;
 
     let mut writer = fasta::Writer::new(io::stdout(), "\n", false);

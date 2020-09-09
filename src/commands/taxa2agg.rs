@@ -14,19 +14,18 @@ use crate::taxon::TaxonId;
 use crate::tree;
 
 #[structopt(verbatim_doc_comment)]
-/// Aggregates taxa in a FASTA stream
+/// Aggregates taxon IDs in a FASTA stream
 ///
-/// The `umgap taxa2agg` command takes one or more lists of taxa as input and reduces each to a
+/// The `umgap taxa2agg` command takes one or more lists of taxon IDs and aggregates them into a
 /// single consensus taxon.
 ///
-/// The input is given on *standard input*, in a FASTA format. Per FASTA header, there should be a
-/// list of taxa, each represented by its identifier, seperated by newlines. The output is written
-/// to *standard output*, also in a FASTA format. Each header in the output is accompanied by a
-/// single taxon identifier, which is the consensus taxon resulting from aggregation of the given
-/// list.
+/// The input is given in a FASTA format on *standard input*. Each FASTA record contains a list of
+/// taxon IDs, separated by newlines. The output is written to *standard output*, also in a FASTA
+/// format, each record containing a single taxon ID, which is the consensus taxon resulting from
+/// aggregation of the given list.
 ///
-/// For operation, the command requires to be passed a small database created from the uniprot
-/// taxonomy as argument.
+/// The taxonomy to be used is passed as an argument to this command. This is a preprocessed version
+/// of the NCBI taxonomy.
 ///
 /// ```sh
 /// $ cat input.fa
@@ -42,21 +41,23 @@ use crate::tree;
 /// 571525
 /// ```
 ///
-/// By default, the aggregation used is the maximum root-to-leaf path (MRTL) aggregation. A variant
-/// of the lowest common ancestor (LCA\*) aggregation is also available via the `-a` and `-m`
-/// options, as is a hybrid approach.
+/// By default, the aggregation used is the maximum root-to-leaf path (MRTL). A variant of the
+/// lowest common ancestor (LCA\*) aggregation is also available via the `-a` and `-m` options, as
+/// is a hybrid approach.
 ///
 /// * `-m rmq -a mrtl` is the default aggregation strategy. It selects the taxon from the given list
 ///   which has the highest frequency of ancestors in the list (including its own frequency). A
-///   range-minimum-query (RMQ) method is used.
+///   range-minimum-query (RMQ) algorithm is used.
 ///
 /// * `-m tree -a lca\*` returns the taxon (possibly not from the list) of lowest rank without
 ///   contradicting taxa in the list. Non-contradicting taxa of a taxon are either itself, its
-///   ancestors and its descendants. A tree-based method is used.
+///   ancestors and its descendants. A tree-based algorithm is used.
 ///
-/// * `-m tree -a hybrid` mixes above two strategies, which results in a taxon which might have not
+/// * `-m tree -a hybrid` mixes the above two strategies, which results in a taxon which might have not
 ///   have the highest frequency of ancestors in the list, but would have less contradicting taxa.
-///   Use the `-f` option to select a hybrid close to the MTRL (`-f 0.0`) or to the LCA (`-f 1.0`).
+///   Use the `-f` option to select a hybrid close to the MRTL (`-f 0.0`) or to the LCA (`-f 1.0`).
+///
+/// TODO: rephrase these explanations?
 #[derive(Debug, StructOpt)]
 pub struct TaxaToAgg {
     /// Each taxon is followed by a score between 0 and 1
@@ -93,7 +94,7 @@ pub struct TaxaToAgg {
     #[structopt(short = "l", long = "lower-bound", default_value = "0")]
     pub lower_bound: f32,
 
-    /// The NCBI taxonomy tsv-file
+    /// An NCBI taxonomy TSV-file as processed by Unipept
     #[structopt(parse(from_os_str))]
     pub taxon_file: PathBuf,
 }

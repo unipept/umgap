@@ -12,12 +12,12 @@ use crate::io::fasta;
 #[structopt(verbatim_doc_comment)]
 /// Maps a FASTA stream of peptides to taxon IDs
 ///
-/// The `umgap pept2lca` command takes one or more Amino Acid sequences as input, searches the
-/// corresponding taxon in an (FST) index file, and outputs this.
+/// The `umgap pept2lca` command takes one or more amino acid sequences and looks up the
+/// corresponding taxon ID in an (FST) index file.
 ///
-/// The input is given on *standard input*, in a FASTA format. Per FASTA header, there can be
-/// multiple sequences, each on a line. Below we match tryptic peptides on their lowest common
-/// ancestor in the NCBI taxonomy.
+/// The input is given in FASTA format on *standard input*. Per FASTA header, there can be multiple
+/// sequences, each on a line. In the following example we match tryptic peptides on their lowest
+/// common ancestor in the NCBI taxonomy.
 ///
 /// ```sh
 /// $ cat input.fa
@@ -30,8 +30,8 @@ use crate::io::fasta;
 /// 3398
 /// ```
 ///
-/// By default, sequences not found in the index are simply left out. Using the `-o` (`--on-on-one`)
-/// flag, they are mapped to 0, instead.
+/// By default, sequences not found in the index are ignored. Using the `-o` (`--on-on-one`) flag,
+/// they are mapped to 0, instead.
 ///
 /// ```sh
 /// $ cat input.fa
@@ -49,21 +49,22 @@ pub struct PeptToLca {
     #[structopt(short = "o", long = "one-on-one")]
     pub one_on_one: bool,
 
-    /// An FST to query
+    /// An FST index that maps strings to taxon IDs
     #[structopt(parse(from_os_str))]
     pub fst_file: PathBuf,
 
-    /// Load FST in memory instead of mmap'ing the file contents. This makes
-    /// querying significantly faster, but requires some time to load the FST
-    /// into memory.
+    /// Load FST in memory instead of memory mapping the file contents. This
+    /// makes querying significantly faster, but requires some time to load the
+    /// FST into memory.
     #[structopt(short = "m", long = "in-memory")]
     pub fst_in_memory: bool,
 
-    /// How much reads to group together in one chunk, bigger chunks decrease
+    /// Number of reads grouped into one chunk. Bigger chunks decrease
     /// the overhead caused by multithreading. Because the output order is not
     /// necessarily the same as the input order, having a chunk size which is
     /// a multiple of 12 (all 6 translations multiplied by the two paired-end
-    /// reads) will keep FASTA records of the same reads together.
+    /// reads) will keep FASTA records that originate from the same reads
+    /// together.
     #[structopt(short = "c", long = "chunksize", default_value = "240")]
     pub chunk_size: usize,
 }

@@ -17,14 +17,14 @@ use crate::io::fasta;
 #[structopt(verbatim_doc_comment)]
 /// Digests a FASTA stream of peptides and maps all tryptic peptides to taxon IDs
 ///
-/// The `umgap prot2tryp2lca` command takes one or more peptides as input, splits those into
-/// tryptic peptides, possibly filtering them, and outputs their lowest common ancestors. It is a
-/// combination of the `umgap prot2pept`, `umgap filter` and `umgap pept2lca` commands to allow more
+/// The `umgap prot2tryp2lca` command takes one or more peptides and splits these into
+/// tryptic peptides, possibly filters them, and outputs their lowest common ancestors. It is a
+/// combination of the `umgap prot2tryp`, `umgap filter` and `umgap pept2lca` commands to allow more
 /// efficient parallel computing (c.f. their documentation for details).
 ///
-/// The input is given on *standard input* in a FASTA format. Per FASTA header should be a single
-/// peptide, which may be hardwrapped with newlines. The command prints the lowest common ancestors
-/// for each tryptic peptide found in this peptide to standard output.
+/// The input is given in a FASTA format on *standard input* with a single peptide per FASTA header,
+/// which may be hardwrapped with newlines. The command prints the lowest common ancestors for each
+/// tryptic peptide found in each given peptide to standard output.
 ///
 /// ```sh
 /// $ cat input.fa
@@ -47,17 +47,18 @@ pub struct ProtToTrypToLca {
     #[structopt(parse(from_os_str))]
     pub fst_file: PathBuf,
 
-    /// Load FST in memory instead of mmap'ing the file contents. This makes
-    /// querying significantly faster, but requires some time to load the FST
-    /// into memory.
+    /// Load FST in memory instead of memory mapping the file contents. This
+    /// makes querying significantly faster, but requires some time to load the
+    /// FST into memory.
     #[structopt(short = "m", long = "in-memory")]
     pub fst_in_memory: bool,
 
-    /// How much reads to group together in one chunk, bigger chunks decrease
+    /// Number of reads grouped into one chunk. Bigger chunks decrease
     /// the overhead caused by multithreading. Because the output order is not
     /// necessarily the same as the input order, having a chunk size which is
     /// a multiple of 12 (all 6 translations multiplied by the two paired-end
-    /// reads) will keep records of the same reads together.
+    /// reads) will keep FASTA records that originate from the same reads
+    /// together.
     #[structopt(short = "c", long = "chunksize", default_value = "240")]
     pub chunk_size: usize,
 
@@ -74,11 +75,11 @@ pub struct ProtToTrypToLca {
     #[structopt(short = "L", long = "maxlen", default_value = "50")]
     pub max_length: usize,
 
-    /// Keep only tryptic peptides containing these letters
+    /// Amino acid symbols that a peptide must contain to be processed
     #[structopt(short = "k", long = "keep", default_value = "")]
     pub contains: String,
 
-    /// Drop tryptic peptides containing these letters
+    /// Amino acid symbols that a peptide may not contain to be processed
     #[structopt(short = "d", long = "drop", default_value = "")]
     pub lacks: String,
 }

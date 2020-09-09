@@ -10,12 +10,12 @@ use crate::errors;
 use crate::io::fasta;
 
 #[structopt(verbatim_doc_comment)]
-/// Translates a FASTA stream of DNA to peptides
+/// Translates a FASTA stream of DNA reads to peptides
 ///
-/// The `umgap translate` command takes one or more DNA sequences, as input and translates them into
-/// Amino Acid sequences.
+/// The `umgap translate` command takes one or more DNA sequences and translates them into amino
+/// acid sequences.
 ///
-/// The DNA sequences are expected in a FASTA format on *standard input*:
+/// The DNA sequences are expected in a FASTA format on *standard input*.
 ///
 /// ```sh
 /// $ cat input.fa
@@ -40,7 +40,7 @@ use crate::io::fasta;
 ///
 /// The `-a` flag can be used as a shortcut to translate all 6 reading frames.
 ///
-/// With the `-t` flag, you can select your preferred translation table, for instance `-t11` for the
+/// With the `-t` flag, you can select a specific translation table, for instance `-t11` for the
 /// bacterial, archaeal and plant plastid code.
 #[derive(Debug, StructOpt)]
 pub struct Translate {

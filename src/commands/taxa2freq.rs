@@ -1,4 +1,4 @@
-//! The `umgap report` command.
+//! The `umgap taxa2freq` command.
 
 use std::collections::HashMap;
 use std::io;
@@ -12,16 +12,18 @@ use crate::rank::Rank;
 use crate::taxon;
 
 #[structopt(verbatim_doc_comment)]
-/// Counts and reports on a stream of taxon IDs
+/// Counts ranked taxon occurrences a stream of taxon IDs
 ///
-/// The `umgap report` command creates a frequency table of a list of taxa.
+/// The `umgap taxa2freq` command creates a frequency table of a list of taxa on a given target rank
+/// (species by default).
 ///
-/// The input is given on *standard input*, a single taxon ID on each line. Each taxon at least as
-/// specific as a species is counted towards that species, each taxon above species rank is counted
-/// as root. The command outputs a CSV table of counts, species taxon IDs and their names.
+/// The input is given on *standard input*, a single taxon ID on each line. Each taxon that is more
+/// specific than the target rank is counted towards its ancestor on the target rank. Each taxon
+/// less specific than the target rank is counted towards root. The command outputs a TSV table of
+/// counts, taxon IDs and their names.
 ///
-/// For operation, the command requires to be passed a small database created from the uniprot
-/// taxonomy as argument.
+/// The taxonomy to be used is passed as an argument to this command. This is a preprocessed version
+/// of the NCBI taxonomy.
 ///
 /// ```sh
 /// $ cat input.txt
@@ -36,19 +38,19 @@ use crate::taxon;
 /// 9606
 /// 9606
 /// 8287
-/// $ umgap report taxons.tsv < input.txt
-/// 2,1,root
-/// 9,9606,Homo sapiens
+/// $ umgap taxa2freq taxons.tsv < input.txt
+/// 2	1	root
+/// 9	9606	Homo sapiens
 /// ```
 ///
 /// With the `-r` option, the default species rank can be set to any named rank.
 ///
 /// ```sh
-/// $ umgap report -r phylum taxons.tsv < input.txt
-/// 10,7711,Chordata
+/// $ umgap taxa2freq -r phylum taxons.tsv < input.txt
+/// 10	7711	Chordata
 /// ```
 #[derive(Debug, StructOpt)]
-pub struct Report {
+pub struct TaxaToFreq {
     /// The rank to show
     #[structopt(short = "r", long = "rank", default_value = "species")]
     pub rank: Rank,
@@ -57,13 +59,13 @@ pub struct Report {
     #[structopt(short = "f", long = "frequency", default_value = "1")]
     pub min_frequency: usize,
 
-    /// The NCBI taxonomy tsv-file
+    /// An NCBI taxonomy TSV-file as processed by Unipept
     #[structopt(parse(from_os_str))]
     pub taxon_file: PathBuf,
 }
 
-/// Implements the report command.
-pub fn report(args: Report) -> errors::Result<()> {
+/// Implements the taxa2freq command.
+pub fn taxa2freq(args: TaxaToFreq) -> errors::Result<()> {
     let taxons = taxon::read_taxa_file(&args.taxon_file)?;
     if args.rank == rank::Rank::NoRank {
         return Err(errors::ErrorKind::InvalidInvocation("Snap to an actual rank.".into()).into());
@@ -96,7 +98,7 @@ pub fn report(args: Report) -> errors::Result<()> {
         let taxon = by_id
             .get(taxon)
             .ok_or("LCA taxon id not in taxon list. Check compatibility with index.")?;
-        writeln!(stdout, "{},{},{}", count, taxon.id, taxon.name)?;
+        writeln!(stdout, "{}    {}    {}", count, taxon.id, taxon.name)?;
     }
 
     Ok(())

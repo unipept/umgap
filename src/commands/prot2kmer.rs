@@ -7,15 +7,15 @@ use crate::errors;
 use crate::io::fasta;
 
 #[structopt(verbatim_doc_comment)]
-/// Prints all K-mers of a FASTA stream of peptides
+/// Splits a FASTA stream of peptides into k-mers
 ///
-/// The `umgap prot2kmer` command takes one or more peptides as input and outputs all k-length
-/// subsequences.
+/// The `umgap prot2kmer` command takes one or more peptides as input and outputs all their k-length
+/// subsequences in order of appearance.
 ///
-/// The input is given on *standard input* in a FASTA format. Per FASTA header should be a single
-/// peptide, which may be hardwrapped with newlines. All overlapping k-mers of a peptide are written
-/// to *standard output*, separated by newlines. (*k* is configurable via the `-k` option, and is 9
-/// by default.)
+/// The input is given in a FASTA format on *standard input* with a single peptide per FASTA header,
+/// which may be hardwrapped with newlines. All overlapping k-mers of a peptide are written to
+/// *standard output*, separated by newlines. The k-mer length is configurable with the `-k` option,
+/// and is 9 by default.
 ///
 /// ```sh
 /// $ cat input.fa
@@ -34,7 +34,7 @@ use crate::io::fasta;
 /// ```
 #[derive(Debug, StructOpt)]
 pub struct ProtToKmer {
-    /// The K in K-mers
+    /// The k-mer length
     #[structopt(short = "k", long = "length", default_value = "9")]
     pub length: usize,
 }

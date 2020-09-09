@@ -7,24 +7,24 @@ use crate::taxon::TaxonId;
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
 #[structopt(verbatim_doc_comment)]
-/// Splits peptides in a CSV stream into K-mers duplicating the records
+/// Splits a TSV stream of peptides and taxon IDs into k-mers and taxon IDs
 ///
 /// The `umgap splitkmers` command takes tab-separated taxon IDs and protein sequences and outputs
 /// the k-mers mapped to the taxon IDs.
 ///
 /// The input is given on *standard input* and should be a TSV formatted stream of taxon IDs and a
 /// protein sequence from this taxon. The output will be written to *standard output* and consists
-/// of a TSV formatted stream of k-mers (*k* is configurable with `-k` and is 9 by default) mapped
-/// to the taxa in which they occur.
+/// of a TSV formatted stream of k-mers mapped to the taxa in which they occur. The k-mer length is
+/// configurable with the `-k` option, and is 9 by default.
 ///
-/// This output stream is ready to be grouped by k-mer by sorting and than aggregated into a
+/// This output stream is ready to be grouped by k-mer by sorting and then aggregated into a
 /// searchable index, with the `sort`, `umgap joinkmers` and `umgap buildindex` commands.
 ///
 /// ```sh
-/// $ cat input.fa
+/// $ cat input.tsv
 /// 654924  MNAKYDTDQGVGRMLFLGTIGLAVVVGGLMAYGYYYDGKTPSSGTSFHTASPSFSSRYRY
 /// 176652  MIKLFCVLAAFISINSACQSSHQQREEFTVATYHSSSICTTYCYSNCVVASQHKGLNVESYTCDKPDPYGRETVCKCTLIKCHDI
-/// $ umgap splitkmers < input.fa
+/// $ umgap splitkmers < input.tsv
 /// MNAKYDTDQ       654924
 /// NAKYDTDQG       654924
 /// AKYDTDQGV       654924
@@ -40,11 +40,11 @@ use crate::taxon::TaxonId;
 /// ```
 #[derive(Debug, StructOpt)]
 pub struct SplitKmers {
-    /// The k in k-mers
+    /// The k-mer length
     #[structopt(short = "k", long = "length", default_value = "9")]
     pub length: usize,
 
-    /// Print only the (k-1)-mer suffixes of the k-mers starting with this character
+    /// Print only the (k-1)-mer suffixes of the k-mers starting with this character, if any
     #[structopt(short = "p", long = "prefix", default_value = "")]
     pub prefix: String,
 }

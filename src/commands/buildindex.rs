@@ -5,13 +5,13 @@ use std::io;
 use crate::errors;
 
 #[structopt(verbatim_doc_comment)]
-/// Builds an index mapping strings to taxa
+/// Builds an index mapping short strings to taxon IDs
 ///
 /// The `umgap buildindex` command takes tab-separated strings and taxon IDs, and creates a
 /// searchable FST index of this mapping.
 ///
 /// The input is given on *standard input*. It should be in a TSV format with two columns, ordered
-/// by the first. The unique strings in the first column are to be mapped to the integers (taxon
+/// by the first. The unique strings in the first column should be mapped to the integers (taxon
 /// IDs) in the second column. A binary file with a compressed mapping is written to *standard
 /// output*.
 ///
@@ -24,6 +24,8 @@ use crate::errors;
 /// AAAAA	2759
 /// BBBBBB	9153
 /// ```
+///
+/// TODO: description of FST?
 #[derive(Debug, StructOpt)]
 pub struct BuildIndex {}
 

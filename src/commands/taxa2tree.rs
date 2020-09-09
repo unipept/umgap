@@ -1,4 +1,4 @@
-//! The `umgap visualize` command.
+//! The `umgap taxa2tree` command.
 
 use std::collections::HashMap;
 use std::io;
@@ -12,14 +12,13 @@ use crate::taxon::TaxonId;
 #[structopt(verbatim_doc_comment)]
 /// Visualizes a stream of taxon IDs using the Unipept API
 ///
-/// The `umgap visualize` command, similar to the `unipept taxa2tree` command, takes one or more
-/// taxon IDs as input and returns the taxonomic tree of there taxa as output. It uses the Unipept
-/// API server.
+/// The `umgap taxa2tree` command, similar to the `unipept taxa2tree` command, takes one or more
+/// taxon IDs and returns a visualized taxonomic tree using the Unipept API server.
 ///
-/// The input is given on *standard input* in a FASTA format. Per FASTA header, there should be
-/// one taxon IDs. A HTML file is written to *standard output* containing a visualization of the
-/// taxonomic tree containing all these taxa. With `-u`, instead a URL to the visualization hosted
-/// online is printed.
+/// The input is given in a FASTA format on *standard input*. Each FASTA record contains one taxon
+/// ID. A HTML file is written to *standard output* containing a visualization of the taxonomic
+/// tree containing all these taxa. With `-u`, a URL to the visualization hosted online is printed
+/// instead.
 ///
 /// ```sh
 /// $ cat input.txt
@@ -27,19 +26,19 @@ use crate::taxon::TaxonId;
 /// 817
 /// 329854
 /// 1099853
-/// $ umgap visualize < input.txt > output.html
-/// $ umgap visualize --url < input.txt
+/// $ umgap taxa2tree < input.txt > output.html
+/// $ umgap taxa2tree --url < input.txt
 /// https://bl.ocks.org/a686a37e1dcd43dd4ec7d467487bd6a1
 /// ```
 #[derive(Debug, StructOpt)]
-pub struct Visualize {
+pub struct TaxaToTree {
     /// Host the result online and return the URL
     #[structopt(short = "u", long = "url")]
     pub url: bool,
 }
 
-/// Implements the visualize command.
-pub fn visualize(args: Visualize) -> errors::Result<()> {
+/// Implements the taxa2tree command.
+pub fn taxa2tree(args: TaxaToTree) -> errors::Result<()> {
     let mut taxa = HashMap::new();
     for record in fasta::Reader::new(io::stdin(), false).records() {
         let record = record?;

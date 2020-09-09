@@ -12,16 +12,20 @@ use crate::taxon::TaxonId;
 use crate::tree;
 
 #[structopt(verbatim_doc_comment)]
-/// Aggregates a CSV stream of peptides and taxon IDs
+/// Aggregates a TSV stream of peptides and taxon IDs
 ///
 /// The `umgap joinkmers` command takes tab-separated strings and taxon IDs, aggregates the taxon
-/// IDs where consecutive strings are equal and outputs the resulting tiple of string, consensus
-/// taxon ID and its rank.
+/// IDs where consecutive strings are equal and outputs a tab-separated triple of string, consensus
+/// taxon ID and taxon rank.
 ///
 /// The input is given on *standard input*. If it is sorted on the first column, a complete mapping
 /// from strings to aggregated taxa and its rank will be written to *standard output*. It is
 /// meant to be used after an `umgap splitkmers` and `sort`, and it's output is ideal for `umgap
 /// buildindex`, but there may be further uses.
+///
+/// The aggregation strategy used in this command to find a consensus taxon is the hybrid approach
+/// of the `umgap taxa2agg` command, with a 95% factor. This keeps the result close to the lowest
+/// common ancestor, but filters out some outlying taxa.
 ///
 /// ```sh
 /// $ cat input.tsv
@@ -36,7 +40,7 @@ use crate::tree;
 /// ```
 #[derive(Debug, StructOpt)]
 pub struct JoinKmers {
-    /// The NCBI taxonomy tsv-file
+    /// An NCBI taxonomy TSV-file as processed by Unipept
     #[structopt(parse(from_os_str))]
     pub taxon_file: PathBuf,
 }

@@ -13,7 +13,7 @@ use crate::utils;
 #[structopt(verbatim_doc_comment)]
 /// Interleaves FASTQ files into a FASTA stream
 ///
-/// The `umgap fastq2fasta` command takes a number of FASTQ files and interleaves them into a single
+/// The `umgap fastq2fasta` command takes one or more FASTQ files and interleaves them into a single
 /// FASTA file.
 ///
 /// The FASTQ input files are given as command line arguments. In order, a single record is taken
