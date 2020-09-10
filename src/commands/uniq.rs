@@ -15,6 +15,9 @@ use crate::io::fasta;
 /// with the same FASTA header is joined under a single header, separated by newlines (or another
 /// separator set with `-s`).
 ///
+/// A delimiter can be passed with the `-d` option to drop this delimiter and everything after it
+/// from the FASTA header before comparing it.
+///
 /// ```sh
 /// $ cat input.fa
 /// >header1/1
@@ -25,7 +28,7 @@ use crate::io::fasta;
 /// 1
 /// 1883
 /// 1883
-/// $ sed '/^>/s_/.*__' input.fa | umgap uniq
+/// $ umgap uniq -d / < input.fa
 /// >header1
 /// 147206
 /// 240495
@@ -34,8 +37,6 @@ use crate::io::fasta;
 /// 1883
 /// 1883
 /// ```
-///
-/// TODO: vraag Peter: de / vervangen door iets naar keuze; maar wat?
 #[derive(Debug, StructOpt)]
 pub struct Uniq {
     /// Separator between output items
@@ -45,6 +46,10 @@ pub struct Uniq {
     /// Wrap the output sequences
     #[structopt(short = "w", long = "wrap")]
     pub wrap: bool,
+
+    /// Strip FASTA headers after this string
+    #[structopt(short = "d", long = "delimiter")]
+    pub delimiter: Option<String>,
 }
 
 /// Implements the uniq command.
@@ -52,7 +57,10 @@ pub fn uniq(args: Uniq) -> errors::Result<()> {
     let mut last = None::<fasta::Record>;
     let mut writer = fasta::Writer::new(io::stdout(), &args.separator, args.wrap);
     for record in fasta::Reader::new(io::stdin(), false).records() {
-        let record = record?;
+        let mut record = record?;
+        if let Some(ref delimiter) = args.delimiter {
+            record.header.truncate(record.header.find(delimiter).unwrap_or(record.header.len()));
+        }
         if let Some(ref mut rec) = last {
             if rec.header == record.header {
                 rec.sequence.extend(record.sequence);
