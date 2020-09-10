@@ -57,8 +57,6 @@ use crate::tree;
 ///   not have the highest frequency of ancestors in the list, but would have less contradicting
 ///   taxa. Use the `-f` option to select a hybrid close to the MRTL (`-f 0.0`) or to the LCA (`-f
 ///   1.0`).
-///
-/// TODO: rephrase these explanations?
 #[derive(Debug, StructOpt)]
 pub struct TaxaToAgg {
     /// Each taxon is followed by a score between 0 and 1
