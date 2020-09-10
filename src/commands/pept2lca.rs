@@ -13,7 +13,7 @@ use crate::io::fasta;
 /// Maps a FASTA stream of peptides to taxon IDs
 ///
 /// The `umgap pept2lca` command takes one or more amino acid sequences and looks up the
-/// corresponding taxon ID in an (FST) index file.
+/// corresponding taxon ID in an index file (as build by the `umgap buildindex` command).
 ///
 /// The input is given in FASTA format on *standard input*. Per FASTA header, there can be multiple
 /// sequences, each on a line. In the following example we match tryptic peptides on their lowest
@@ -49,13 +49,13 @@ pub struct PeptToLca {
     #[structopt(short = "o", long = "one-on-one")]
     pub one_on_one: bool,
 
-    /// An FST index that maps strings to taxon IDs
+    /// An index that maps peptides to taxon IDs
     #[structopt(parse(from_os_str))]
     pub fst_file: PathBuf,
 
-    /// Load FST in memory instead of memory mapping the file contents. This
-    /// makes querying significantly faster, but requires some time to load the
-    /// FST into memory.
+    /// Load index in memory instead of memory mapping the file contents. This
+    /// makes querying significantly faster, but requires some initialization
+    /// time.
     #[structopt(short = "m", long = "in-memory")]
     pub fst_in_memory: bool,
 

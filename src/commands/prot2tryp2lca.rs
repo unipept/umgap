@@ -43,13 +43,13 @@ pub struct ProtToTrypToLca {
     #[structopt(short = "o", long = "one-on-one")]
     pub one_on_one: bool,
 
-    /// An FST to query
+    /// An index that maps tryptic peptides to taxon IDs
     #[structopt(parse(from_os_str))]
     pub fst_file: PathBuf,
 
-    /// Load FST in memory instead of memory mapping the file contents. This
-    /// makes querying significantly faster, but requires some time to load the
-    /// FST into memory.
+    /// Load index in memory instead of memory mapping the file contents. This
+    /// makes querying significantly faster, but requires some initialization
+    /// time.
     #[structopt(short = "m", long = "in-memory")]
     pub fst_in_memory: bool,
 

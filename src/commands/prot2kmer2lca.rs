@@ -22,8 +22,9 @@ use crate::io::fasta;
 ///
 /// The input is given in a FASTA format on *standard input*, with a single peptide per FASTA
 /// header, which may be hardwrapped with newlines. All overlapping k-mers in these peptides (*k*
-/// configurable via the `-k` option, and 9 by default) are searched for in the FST index passed as
-/// argument. The results are printed on *standard output* in FASTA format.
+/// configurable via the `-k` option, and 9 by default) are searched for in the index (as build by
+/// the `umgap buildindex` command) passed as argument. The results are printed on *standard output*
+/// in FASTA format.
 ///
 ///
 /// ```sh
@@ -66,7 +67,7 @@ use crate::io::fasta;
 /// socket using OpenBSD's netcat: `... | nc -NU /path/to/umgap-socket | ...`.
 #[derive(Debug, StructOpt)]
 pub struct ProtToKmerToLca {
-    /// The length of the k-mers in the FST
+    /// The length of the k-mers in the index
     #[structopt(short = "k", long = "length", default_value = "9")]
     pub length: usize,
 
@@ -74,21 +75,21 @@ pub struct ProtToKmerToLca {
     #[structopt(short = "o", long = "one-on-one")]
     pub one_on_one: bool,
 
-    /// An FST to query
+    /// An index that maps k-mers to taxon IDs
     #[structopt(parse(from_os_str))]
     pub fst_file: PathBuf,
 
     /// Instead of reading from stdin and writing to stdout, create a Unix
     /// socket to communicate with using OpenBSD's netcat (`nc -NU <socket>`).
     /// This is especially useful in combination with the `--in-memory` flag:
-    /// you only have to load the FST in memory once, after which you can query
-    /// it without having the loading time overhead each time.
+    /// you only have to load the index in memory once, after which you can
+    /// query it without having the loading time overhead each time.
     #[structopt(parse(from_os_str), short = "s", long = "socket")]
     pub socket: Option<PathBuf>,
 
-    /// Load FST in memory instead of memory mapping the file contents. This
-    /// makes querying significantly faster, but requires some time to load the
-    /// FST into memory.
+    /// Load index in memory instead of memory mapping the file contents. This
+    /// makes querying significantly faster, but requires some initialization
+    /// time.
     #[structopt(short = "m", long = "in-memory")]
     pub fst_in_memory: bool,
 

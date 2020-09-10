@@ -59,7 +59,9 @@ pub fn uniq(args: Uniq) -> errors::Result<()> {
     for record in fasta::Reader::new(io::stdin(), false).records() {
         let mut record = record?;
         if let Some(ref delimiter) = args.delimiter {
-            record.header.truncate(record.header.find(delimiter).unwrap_or(record.header.len()));
+            record
+                .header
+                .truncate(record.header.find(delimiter).unwrap_or(record.header.len()));
         }
         if let Some(ref mut rec) = last {
             if rec.header == record.header {

@@ -8,7 +8,7 @@ use fst::Streamer;
 use crate::errors;
 
 #[structopt(verbatim_doc_comment)]
-/// Prints the key/value pairs in an FST index
+/// Prints the key/value pairs in an index
 ///
 /// Outputs the string keys and taxon ID values in TSV format, mostly for debugging purposes.
 ///
@@ -28,7 +28,7 @@ use crate::errors;
 /// ```
 #[derive(Debug, StructOpt)]
 pub struct PrintIndex {
-    /// An FST index that maps strings to taxon IDs
+    /// An index that maps strings to taxon IDs
     #[structopt(parse(from_os_str))]
     pub fst_file: PathBuf,
 }

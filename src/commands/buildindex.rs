@@ -8,7 +8,7 @@ use crate::errors;
 /// Builds an index mapping short strings to taxon IDs
 ///
 /// The `umgap buildindex` command takes tab-separated strings and taxon IDs, and creates a
-/// searchable FST index of this mapping.
+/// finite state transducer (FST) index of this mapping.
 ///
 /// The input is given on *standard input*. It should be in a TSV format with two columns, ordered
 /// by the first. The unique strings in the first column should be mapped to the integers (taxon
@@ -24,8 +24,6 @@ use crate::errors;
 /// AAAAA	2759
 /// BBBBBB	9153
 /// ```
-///
-/// TODO: description of FST?
 #[derive(Debug, StructOpt)]
 pub struct BuildIndex {}
 

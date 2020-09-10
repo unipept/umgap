@@ -33,7 +33,9 @@ quick_main!(|| -> Result<()> {
 /// UMGAP is a collection of tools to be used in metagenomics analysis pipelines. Use the
 /// `umgap-analyse.sh` script for some prebuild pipelines.
 ///
-/// Throughout this documentation, the term taxon ID refers to an identifier of the NCBI taxonomy.
+/// Throughout this documentation, the term peptides is used for both tryptic peptides and k-mers.
+/// The term taxon ID refers to an identifier of a NCBI taxonomy (which should be the same version
+/// in the whole pipeline).
 #[cfg_attr(rustfmt, rustfmt_skip)]
 #[derive(Debug, StructOpt)]
 pub enum Opt {
