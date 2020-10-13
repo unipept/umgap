@@ -13,7 +13,7 @@ use crate::taxon::TaxonId;
 /// Visualizes a stream of taxon IDs using the Unipept API
 ///
 /// The `umgap taxa2tree` command, similar to the `unipept taxa2tree` command, takes one or more
-/// taxon IDs and returns a visualized taxonomic tree using the Unipept API server.
+/// taxon IDs and returns a visualized taxonomic tree of these taxa using the Unipept API server.
 ///
 /// The input is given in a FASTA format on *standard input*. Each FASTA record contains one taxon
 /// ID. A HTML file is written to *standard output* containing a visualization of the taxonomic

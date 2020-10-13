@@ -12,7 +12,7 @@ use crate::rank::Rank;
 use crate::taxon;
 
 #[structopt(verbatim_doc_comment)]
-/// Counts ranked taxon occurrences a stream of taxon IDs
+/// Counts ranked taxon occurrences in a stream of taxon IDs
 ///
 /// The `umgap taxa2freq` command creates a frequency table of a list of taxa on a given target rank
 /// (species by default).

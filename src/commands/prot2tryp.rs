@@ -8,7 +8,7 @@ use crate::io::fasta;
 #[structopt(verbatim_doc_comment)]
 /// Splits the peptides in a FASTA stream into tryptic peptides
 ///
-/// The `umgap prot2tryp` command takes one or more amino acid sequences as input, applies an *in
+/// The `umgap prot2tryp` command takes one or more amino acid sequences as input and applies an *in
 /// silico* trypsine digest.
 ///
 /// The input is given in a FASTA format on *standard input* with a single peptide per FASTA header,
@@ -20,7 +20,7 @@ use crate::io::fasta;
 /// $ cat input.fa
 /// >header1
 /// AYKKAGVSGHVWQSDGITNCLLRGLTRVKEAVANRDSGNGYINKVYYWTVDKRATTRDALDAGVDGIMTNYPDVITDVLN
-/// $ umgap prot2tryp2lca tryptic-lca.index < input.fa
+/// $ umgap prot2tryp tryptic-lca.index < input.fa
 /// >header1
 /// AYK
 /// K
