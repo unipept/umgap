@@ -3,6 +3,7 @@
 pub mod bestof;
 pub mod buildindex;
 pub mod fastq2fasta;
+pub mod fraggenescan;
 pub mod filter;
 pub mod joinkmers;
 pub mod pept2lca;
