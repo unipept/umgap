@@ -36,9 +36,10 @@ pub enum Rank {
     #[strum(serialize="subspecies")]       Subspecies,
     #[strum(serialize="varietas")]         Varietas,
     #[strum(serialize="forma")]            Forma,
+    #[strum(serialize="strain")]           Strain,
 }
 
-pub const RANK_COUNT: usize = 29;
+pub const RANK_COUNT: usize = 30;
 
 static RANKS: &[&str] = &[
     "superkingdom",
@@ -69,6 +70,7 @@ static RANKS: &[&str] = &[
     "subspecies",
     "varietas",
     "forma",
+    "strain",
 ];
 
 impl Rank {
