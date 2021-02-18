@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 
 # print stuff to stderr and exits with fault
 crash() {
@@ -92,7 +93,7 @@ if [ -z "$fgsppdir" ]; then
 	fi
 else
 	cd "$fgsppdir"
-	if ! printf '>a\nA' | ./FGSpp -s stdin -o stdout -w 0 -t illumina_10 -c 240 > /dev/null; then
+	if ! printf '>a\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' | ./FGSpp -s stdin -o stdout -w 0 -t illumina_10 -c 240 > /dev/null; then
 		crash 'Invoking FGSpp failed, follow installation instructions at https://github.com/unipept/FragGeneScanPlusPlus.'
 	fi
 	fgsppdir="$PWD" # make path absolute
@@ -144,11 +145,11 @@ human() {
 	printf '%d%s' "$number" "$unit"
 }
 
-if wget -V > /dev/null; then
+if wget -V > /dev/null 2>&1; then
 	get() { wget -q -O - "$1"; }
 	size() { wget --spider --server-response "$1" 2>&1 | sed -n 's/ *[Cc]ontent-[Ll]ength: \([0-9]*\)\r*/\1/p' | human; }
 	download() { wget -O "$2" "$1"; }
-elif curl -V > /dev/null; then
+elif curl -V > /dev/null 2>&1; then
 	get() { curl -s "$1"; }
 	size() { curl -s -I "$1" | sed -n 's/ *[Cc]ontent-[Ll]ength: \([0-9]*\)\r*/\1/p' | human; }
 	download() { curl -o "$2" "$1"; }
