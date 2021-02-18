@@ -93,7 +93,7 @@ if [ -z "$fgsppdir" ]; then
 	fi
 else
 	cd "$fgsppdir"
-	if ! printf '>a\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' | ./FGSpp -s stdin -o stdout -w 0 -t illumina_10 -c 240 > /dev/null; then
+	if ! printf '>a\nA' | ./FGSpp -s stdin -o stdout -w 0 -t illumina_10 -c 240 > /dev/null; then
 		crash 'Invoking FGSpp failed, follow installation instructions at https://github.com/unipept/FragGeneScanPlusPlus.'
 	fi
 	fgsppdir="$PWD" # make path absolute
