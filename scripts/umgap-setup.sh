@@ -146,11 +146,11 @@ human() {
 
 if wget -V > /dev/null; then
 	get() { wget -q -O - "$1"; }
-	size() { wget --spider --server-response "$1" 2>&1 | sed -n 's/ *[Cc]ontent-[Ll]ength: \([0-9]*\)/\1/p' | human; }
+	size() { wget --spider --server-response "$1" 2>&1 | sed -n 's/ *[Cc]ontent-[Ll]ength: \([0-9]*\)\r*/\1/p' | human; }
 	download() { wget -O "$2" "$1"; }
 elif curl -V > /dev/null; then
 	get() { curl -s "$1"; }
-	size() { curl -I "$1" | sed -n 's/ *[Cc]ontent-[Ll]ength: \([0-9]*\)/\1/p' | human; }
+	size() { curl -s -I "$1" | sed -n 's/ *[Cc]ontent-[Ll]ength: \([0-9]*\)\r*/\1/p' | human; }
 	download() { curl -o "$2" "$1"; }
 else
 	crash 'Neither curl nor wget is available to download data.'
