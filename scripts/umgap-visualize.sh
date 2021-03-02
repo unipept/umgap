@@ -17,10 +17,15 @@ USAGE="
 Visualizing data with the UMGAP.
 
 Usage: $0 -i <input> -o <output>
+       $0 -i <input> -u
 
 Where:
   <input>   A (optionally GZIP-compressed FASTA file of taxa.
-  <output>  The output file. Use '-' to write to stdout.
+  <output>  The HTML output file. Use '-' to write to stdout.
+
+Options:
+  -u        Instead of writing to a file, print a URL to an
+            online visualisation
 "
 
 # =========================================================================== #
@@ -99,13 +104,18 @@ fi
 
 debug "parsing the arguments"
 
-while getopts i:o: f; do
+while getopts i:o:u f; do
 	case "$f" in
 	i) inputfile="$OPTARG" ;;
 	o) outputfile="$OPTARG" ;;
+	u) url="yes" ;;
 	\?) crash "$USAGE" ''
 	esac
 done
+
+[ -z "$inputfile" ] && crash "$USAGE"
+[ -n "$outputfile" -a -n "$url" ] && crash "$USAGE"
+[ -z "$outputfile" -a -z "$url" ] && crash "$USAGE"
 
 filetype="$(file --mime-type "$inputfile")" || \
 	crash "Could not determine filetype of '$inputfile'."
@@ -126,4 +136,8 @@ fi
 #  The actual visualization code
 # =========================================================================== #
 
-crash "Not yet implemented."
+if [ -n "$url" ]; then
+    umgap taxa2tree < "$inputfile" --url
+else
+    umgap taxa2tree < "$inputfile" > "$outputfile"
+fi

@@ -245,7 +245,6 @@ if [ "$fgspp_used" = "true" ]; then
 fi
 
 versions="$(find -H "$(getconfigdir)" -mindepth 1 -maxdepth 1 \
-                 -name '[0-9][0-9][0-9][0-9]-[0-9][0-9]' \
                  -printf '%P\n' | sort -n)"
 for candidate in $versions; do
 	[ ! -h "$(getconfigdir)/$candidate/taxons.tsv" ] && continue
