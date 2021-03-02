@@ -1,5 +1,6 @@
 #!/bin/sh
 set -e
+self="$$"
 
 # What to do if the XDG standard isn't there...
 if [ -z "$XDG_CONFIG_HOME" ]; then
@@ -35,8 +36,8 @@ Where:
   <output>  The output file. Use '-' to write to stdout.
 
 Options:
-  -z        GZIP-compress before writing the output.
-  -c dir    The configuration directory. Defaults to '$config_default'
+  -z        GZIP-compress before writing the following output file.
+  -c dir    The configuration directory. Defaults to '$config_default'.
 
 Note: you can call this script with multiple samples, by just repeating above
 arguments. It will then share files loaded in memory in between samples to save
@@ -57,7 +58,7 @@ log() {
 
 debug() {
 	[ -z "$VERBOSE" -a -z "$DEBUG" ] && return
-	printf "log: %s\n" "$*" >&2
+	printf "debug: %s\n" "$*" >&2
 }
 
 # cleans up temporary files and exits
@@ -96,7 +97,6 @@ crash() {
 checkname() {
 	debug "checking if filename '$1' is valid"
 	[ "${1}" = "${1%	*}" ] || crash "Tabs in filenames are unsupported."
-	[ "${1}" = "${1%*}" ] || crash "Newlines in filenames are unsupported."
 }
 
 # function to fetch the configuration directory
@@ -171,7 +171,7 @@ while getopts c:1:2:t:zo: f; do
 			if [ "$filetype" != "${filetype%gzip}" ]; then
 				log "- input file 1 is compressed"
 				fifo="$(getfifo)"
-				zcat "$infile1" > "$fifo" &
+				{ zcat "$infile1" > "$fifo" || kill "$self"; } > /dev/null &
 				infile1="$fifo"
 			fi
 		fi
@@ -183,7 +183,7 @@ while getopts c:1:2:t:zo: f; do
 			if [ "$filetype" != "${filetype%gzip}" ]; then
 				log "- input file 2 is compressed"
 				fifo="$(getfifo)"
-				zcat "$infile2" > "$fifo" &
+				{ zcat "$infile2" > "$fifo" || kill "$self"; } > /dev/null &
 				infile2="$fifo"
 			fi
 		fi
@@ -192,7 +192,7 @@ while getopts c:1:2:t:zo: f; do
 			if [ -n "$infile1" ]; then
 				log "- found two input files, assuming paired-end FASTQ"
 				fifo="$(getfifo)"
-				umgap fastq2fasta "$infile1" "$infile2" > "$fifo" &
+				{ umgap fastq2fasta "$infile1" "$infile2" > "$fifo" || kill "$self"; } > /dev/null &
 				infile="$fifo"
 			else
 				crash "Encountered a second input file without a first."
@@ -211,11 +211,11 @@ while getopts c:1:2:t:zo: f; do
 
 		if [ "$compress" = "true" ]; then
 			fifo="$(getfifo)"
-			gzip - < "$fifo" > "$outfile" &
+			{ gzip - < "$fifo" > "$outfile" || kill "$self"; } > /dev/null &
 			outfile="$fifo"
 		fi
 
-		samples="$(printf '%s%s\t%s\t%s\n' "$samples" "$type" "$infile" "$outfile")"
+		samples="$(printf '%s%s\t%s\t%s\t' "$samples" "$type" "$infile" "$outfile")"
 
 		log ""
 		
@@ -271,16 +271,16 @@ tryptics="$(getconfigdir)/$version/tryptic.fst"
 if [ "$ninemer_used" = "true" ]; then
 	log "Loading index in memory."
 	socket="$(gettempname)"
-	umgap prot2kmer2lca -m -o -s "$socket" "$ninemers" &
+	{ umgap prot2kmer2lca -m -o -s "$socket" "$ninemers" || kill "$self"; } > /dev/null &
+	while [ ! -S "$socket" ] && sleep 1; do true; done
 fi
 
 # for each sample
 count=0
-while [ -n "${samples%%*}" ]; do
+while [ -n "${samples}" ]; do
 	type="${samples%%	*}" ; samples="${samples#*	}"
 	infile="${samples%%	*}" ; samples="${samples#*	}"
-	outfile="${samples%%*}" ; samples="${samples#*}"
-	if [ "$outfile" = "$samples" ]; then samples=""; fi
+	outfile="${samples%%	*}" ; samples="${samples#*	}"
 
 	count="$(( count + 1 ))"
 	log "Running sample ${count}."
@@ -290,35 +290,35 @@ while [ -n "${samples%%*}" ]; do
 		umgap translate -a                             | # translate 6 frames
 		socat - UNIX-CONNECT:"$socket"                 | # map to taxa
 		umgap seedextend -g1 -s2                       | # seedextend filter
-		umgap uniq                                     | # join paired ends
+		umgap uniq -d /                                | # join paired ends
 		umgap taxa2agg -l1 -m rmq -a mrtl "$taxons"   ;; # aggregate
 	"high-sensitivity")
 		umgap translate -a                             | # translate 6 frames
 		socat - UNIX-CONNECT:"$socket"                 | # map to taxa
 		umgap seedextend -g1 -s3                       | # seedextend filter
-		umgap uniq                                     | # join paired ends
+		umgap uniq -d /                                | # join paired ends
 		umgap taxa2agg -l1 -a hybrid -f 0.25 "$taxons";; # aggregate
 	"tryptic-sensitivity")
 		fgspp                                          | # gene prediction
 		umgap prot2tryp2lca    -l9 -L45 "$tryptics"    | # map to taxa
-		umgap uniq                                     | # join paired ends
+		umgap uniq -d /                                | # join paired ends
 		umgap taxa2agg -l1 -m rmq -a mrtl "$taxons"   ;; # aggregate
 	"tryptic-precision")
 		fgspp                                          | # gene prediction
 		umgap prot2tryp2lca    -l9 -L45 "$tryptics"    | # map to taxa
-		umgap uniq                                     | # join paired ends
+		umgap uniq -d /                                | # join paired ends
 		umgap taxa2agg -l5 -m rmq -a mrtl "$taxons"   ;; # aggregate
 	"high-precision")
 		fgspp                                          | # gene prediction
 		socat - UNIX-CONNECT:"$socket"                 | # map to taxa
 		umgap seedextend -g1 -s3                       | # seedextend filter
-		umgap uniq                                     | # join paired ends
+		umgap uniq -d /                                | # join paired ends
 		umgap taxa2agg -l2 -a lca\* "$taxons"         ;; # aggregate
 	"max-precision")
 		fgspp                                          | # gene prediction
 		socat - UNIX-CONNECT:"$socket"                 | # map to taxa
 		umgap seedextend -g1 -s4                       | # seedextend filter
-		umgap uniq                                     | # join paired ends
+		umgap uniq -d /                                | # join paired ends
 		umgap taxa2agg -l5 -a lca\* "$taxons"         ;; # aggregate
 	esac < "$infile" > "$outfile"
 done
