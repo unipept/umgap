@@ -24,20 +24,27 @@ yesno() {
 
 # What to do if the XDG standard isn't there...
 if [ -z "$XDG_CONFIG_HOME" ]; then
-	if [ -d "$HOME/Library/Preferences/" -a "$HOME/Library/Application Support" ]; then
-		# mac
+	if [ -d "$HOME/Library/Preferences/" ]; then
 		config_default="$HOME/Library/Preferences/Unipept"
-		data_default="$HOME/Library/Application Support/Unipept"
-	elif [ -d "$HOME/.config" -a -d "$HOME/.local/share" ]; then
+	elif [ -d "$HOME/.config" ]; then
 		# why weren't the XDG variables set then?
 		config_default="$HOME/.config/unipept"
-		data_default="$HOME/.local/share/unipept"
 	else
 		config_default="$HOME/.unipept"
-		data_default="$HOME/.unipept/data"
 	fi
 else
 	config_default="$XDG_CONFIG_HOME/unipept"
+fi
+
+if [ -z "$XDG_DATA_HOME" ]; then
+	if [ -d "$HOME/Library/Application Support" ]; then
+		data_default="$HOME/Library/Application Support/Unipept"
+	elif [ -d "$HOME/.local/share" ]; then
+		data_default="$HOME/.local/share/unipept"
+	else
+		data_default="$HOME/.unipept/data"
+	fi
+else
 	data_default="$XDG_DATA_HOME/unipept"
 fi
 
