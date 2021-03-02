@@ -96,7 +96,7 @@ else
 	if ! printf '>a\nA' | ./FGSpp -s stdin -o stdout -w 0 -t illumina_10 -c 240 > /dev/null; then
 		crash 'Invoking FGSpp failed, follow installation instructions at https://github.com/unipept/FragGeneScanPlusPlus.'
 	fi
-	fgsppdir="$(pwd)" # make path absolute
+	fgsppdir="$(pwd -P)" # make path absolute
 	cd - > /dev/null
 	if ln -f -s "$fgsppdir" "$configdir/FGSpp"; then
 		echo 'Found, tested and remembered the FragGeneScan++ location.'
@@ -119,13 +119,13 @@ fi
 if [ ! -d "$datadir" ]; then
 	if mkdir -p "$datadir"; then
 		echo "Created directory ${datadir}."
-		cd "$datadir"
-		datadir="$(pwd)" # make path absolute
-		cd - > /dev/null
 	else
 		crash "Could not create the data directory."
 	fi
 fi
+cd "$datadir"
+datadir="$(pwd -P)" # make path absolute
+cd - > /dev/null
 
 # How can we download stuff
 human() {
