@@ -1,6 +1,17 @@
 #!/bin/sh
 set -e
 self="$$"
+tmp="$(mktemp -d)"
+
+# Preparing exit
+children=""
+
+trapf() {
+	rm -rf "$tmp"
+	[ -n "$children" ] && kill $children
+}
+
+trap trapf EXIT KILL
 
 # What to do if the XDG standard isn't there...
 if [ -z "$XDG_CONFIG_HOME" ]; then
@@ -59,31 +70,6 @@ log() {
 debug() {
 	[ -z "$VERBOSE" -a -z "$DEBUG" ] && return
 	printf "debug: %s\n" "$*" >&2
-}
-
-# cleans up temporary files and exits
-tmpfiles=""
-finish() {
-	debug "removing temporary files"
-	while [ -n "${tmpfiles%%*}" ]; do
-		debug "removing ${tmpfiles%%*}"
-		rm -f "${tmpfiles%%*}"
-		tmpfiles="${tmpfiles#*}"
-	done
-	debug "quitting"
-	exit "${1:-0}"
-}
-
-getfifo() {
-	name="$(gettempname)"
-	mkfifo "$name"
-	printf '%s' "$name"
-}
-
-gettempname() {
-	name="$(mktemp)"
-	rm "$name"
-	printf '%s' "$name"
 }
 
 # print stuff to stderr and exits with fault
@@ -170,9 +156,9 @@ while getopts c:1:2:t:zo: f; do
 				crash "Could not determine filetype of '$infile1'."
 			if [ "$filetype" != "${filetype%gzip}" ]; then
 				log "- input file 1 is compressed"
-				fifo="$(getfifo)"
-				{ zcat "$infile1" > "$fifo" || kill "$self"; } > /dev/null &
-				infile1="$fifo"
+				mkfifo "$tmp/gunzip1-$count"
+				{ zcat "$infile1" > "$tmp/gunzip1-$count" || kill "$self"; } > /dev/null &
+				infile1="$tmp/gunzip1-$count"
 			fi
 		fi
 
@@ -182,37 +168,37 @@ while getopts c:1:2:t:zo: f; do
 				crash "Could not determine filetype of '$infile2'."
 			if [ "$filetype" != "${filetype%gzip}" ]; then
 				log "- input file 2 is compressed"
-				fifo="$(getfifo)"
-				{ zcat "$infile2" > "$fifo" || kill "$self"; } > /dev/null &
-				infile2="$fifo"
+				mkfifo  "$tmp/gunzip2-$count"
+				{ zcat "$infile2" > "$tmp/gunzip2-$count" || kill "$self"; } > /dev/null &
+				infile2="$tmp/gunzip2-$count"
 			fi
 		fi
 
 		if [ -n "$infile2" ]; then
 			if [ -n "$infile1" ]; then
 				log "- found two input files, assuming paired-end FASTQ"
-				fifo="$(getfifo)"
-				{ umgap fastq2fasta "$infile1" "$infile2" > "$fifo" || kill "$self"; } > /dev/null &
-				infile="$fifo"
+				mkfifo "$tmp/infile-$count"
+				{ umgap fastq2fasta "$infile1" "$infile2" > "$tmp/infile-$count" || kill "$self"; } > /dev/null &
+				infile="$tmp/infile-$count"
 			else
 				crash "Encountered a second input file without a first."
 			fi
 		elif [ -n "$infile1" ]; then
 			infile="$infile1"
 		else
-			crash "Encounterd an output file without input files."
+			crash "Encountered an output file without input files."
 		fi
 
 		if [ "$outfile" = "-" ]; then
-			fifo="$(getfifo)"
-			cat "$fifo" &
-			outfile="$fifo"
+			mkfifo "$tmp/outfile-$count"
+			cat "$tmp/outfile-$count" &
+			outfile="$tmp/outfile-$count"
 		fi
 
 		if [ "$compress" = "true" ]; then
-			fifo="$(getfifo)"
-			{ gzip - < "$fifo" > "$outfile" || kill "$self"; } > /dev/null &
-			outfile="$fifo"
+			mkfifo "$tmp/gzip-$count"
+			{ gzip - < "$tmp/gzip-$count" > "$outfile" || kill "$self"; } > /dev/null &
+			outfile="$tmp/gzip-$count"
 		fi
 
 		samples="$(printf '%s%s\t%s\t%s\t' "$samples" "$type" "$infile" "$outfile")"
@@ -270,8 +256,10 @@ tryptics="$(getconfigdir)/$version/tryptic.fst"
 
 if [ "$ninemer_used" = "true" ]; then
 	log "Loading index in memory."
-	socket="$(gettempname)"
+	socket="$tmp/socket"
 	{ umgap prot2kmer2lca -m -o -s "$socket" "$ninemers" || kill "$self"; } > /dev/null &
+	ninemer_pid="$!"
+	children="$(pgrep -P "$!") $ninemer_pid"
 	while [ ! -S "$socket" ] && sleep 1; do true; done
 fi
 
