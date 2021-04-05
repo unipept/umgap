@@ -1,5 +1,7 @@
 #!/bin/sh
 set -e
+tmp="$(mktemp -d)"
+trap "rm -rf '$tmp'" EXIT KILL
 
 # What to do if the XDG standard isn't there...
 if [ -z "$XDG_CONFIG_HOME" ]; then
@@ -18,16 +20,19 @@ fi
 USAGE="
 Visualizing data with the UMGAP.
 
-Usage: $0 -i <input> -o <output>
+Usage: $0 -i <input> [-r rank] -t
+       $0 -i <input> -w
        $0 -i <input> -u
 
 Where:
-  <input>   A (optionally GZIP-compressed FASTA file of taxa.
-  <output>  The HTML output file. Use '-' to write to stdout.
+  <input>   A (optionally GZIP-compressed) FASTA file of taxa.
 
 Options:
-  -u        Instead of writing to a file, print a URL to an
-            online visualisation
+  -t        Output a CSV frequency table on species rank.
+  -w        Output an HTML webpage of an interactive visualization.
+  -u        Print a shareable URL to a online interactive visualisation.
+  -c dir    The configuration directory. Defaults to '$config_default'.
+  -r rank   Set the rank for the CSV frequency table (default: species).
 "
 
 # =========================================================================== #
@@ -42,39 +47,14 @@ log() {
 
 debug() {
 	[ -z "$VERBOSE" -a -z "$DEBUG" ] && return
-	printf "log: %s\n" "$*" >&2
-}
-
-# cleans up temporary files and exits
-tmpfiles=""
-finish() {
-	debug "removing temporary files"
-	while [ -n "${tmpfiles%%*}" ]; do
-		debug "removing ${tmpfiles%%*}"
-		rm -f "${tmpfiles%%*}"
-		tmpfiles="${tmpfiles#*}"
-	done
-	debug "quitting"
-	exit "${1:-0}"
-}
-
-getfifo() {
-	name="$(gettempname)"
-	mkfifo "$name"
-	printf '%s' "$name"
-}
-
-gettempname() {
-	name="$(mktemp)"
-	rm "$name"
-	printf '%s' "$name"
+	printf "debug: %s\n" "$*" >&2
 }
 
 # print stuff to stderr and exits with fault
 crash() {
 	debug "encountered error"
 	echo "$*" >&2
-	finish 1
+	exit 1
 }
 
 # function to fetch the configuration directory
@@ -92,6 +72,37 @@ getconfigdir() {
 }
 
 # =========================================================================== #
+#  Argument parsing.
+# =========================================================================== #
+
+debug "parsing the arguments"
+
+rank="species"
+while getopts i:c:r:wtu f; do
+	case "$f" in
+	c) configdir="$OPTARG" ;;
+	i) inputfile="$OPTARG" ;;
+	r) rank="$OPTARG" ;;
+	w) type="html" ;;
+	t) type="csv" ;;
+	u) type="url" ;;
+	\?) crash "$USAGE" '' ;;
+	esac
+done
+
+[ -z "$inputfile" ] && crash "$USAGE"
+[ -z "$type" ] && crash "$USAGE"
+
+filetype="$(file --mime-type "$inputfile")" || \
+	crash "Could not determine filetype of '$inputfile'."
+if [ "$filetype" != "${filetype%gzip}" ]; then
+	log "Inputfile is compressed"
+	mkfifo "$tmp/gunzip"
+	zcat "$inputfile" > "$tmp/gunzip" &
+	inputfile="$tmp/gunzip"
+fi
+
+# =========================================================================== #
 #  Environmental checks.
 # =========================================================================== #
 
@@ -100,46 +111,24 @@ if ! umgap -V > /dev/null; then
 	crash 'Cannot find the umgap executable. Please ensure it is installed and located in your $PATH.'
 fi
 
-# =========================================================================== #
-#  Argument parsing.
-# =========================================================================== #
-
-debug "parsing the arguments"
-
-while getopts i:o:u f; do
-	case "$f" in
-	i) inputfile="$OPTARG" ;;
-	o) outputfile="$OPTARG" ;;
-	u) url="yes" ;;
-	\?) crash "$USAGE" ''
-	esac
-done
-
-[ -z "$inputfile" ] && crash "$USAGE"
-[ -n "$outputfile" -a -n "$url" ] && crash "$USAGE"
-[ -z "$outputfile" -a -z "$url" ] && crash "$USAGE"
-
-filetype="$(file --mime-type "$inputfile")" || \
-	crash "Could not determine filetype of '$inputfile'."
-if [ "$filetype" != "${filetype%gzip}" ]; then
-	log "Inputfile is compressed"
-	fifo="$(getfifo)"
-	zcat "$inputfile" > "$fifo" &
-	inputfile="$fifo"
-fi
-
-if [ "$outputfile" = "-" ]; then
-	fifo="$(getfifo)"
-	cat "$fifo" &
-	outfile="$fifo"
+debug "checking if we have a taxons file for the frequency table"
+if [ "$type" = "csv" ]; then
+	versions="$(find -H "$(getconfigdir)" -mindepth 1 -maxdepth 1 \
+	                 -printf '%P\n' | sort -n)"
+	for candidate in $versions; do
+		[ ! -h "$(getconfigdir)/$candidate/taxons.tsv" ] && continue
+		version="$candidate"
+	done
+	[ -n "$version" ] || crash "No taxon table found for frequency counting. Please run umgap-setup."
+	debug "using version '$version'"
 fi
 
 # =========================================================================== #
 #  The actual visualization code
 # =========================================================================== #
 
-if [ -n "$url" ]; then
-    umgap taxa2tree < "$inputfile" --url
-else
-    umgap taxa2tree < "$inputfile" > "$outputfile"
-fi
+case "$type" in
+url) umgap taxa2tree < "$inputfile" --url ;;
+html) umgap taxa2tree < "$inputfile" ;;
+csv) grep -v '^>' "$inputfile" | umgap taxa2freq -r "$rank" "$(getconfigdir)/$version/taxons.tsv" ;;
+esac
