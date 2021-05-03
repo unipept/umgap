@@ -103,7 +103,7 @@ pub fn taxa2freq(args: TaxaToFreq) -> errors::Result<()> {
         let taxon = by_id
             .get(taxon)
             .ok_or("LCA taxon id not in taxon list. Check compatibility with index.")?;
-        writeln!(stdout, "{}    {}    {}", count, taxon.id, taxon.name)?;
+        writeln!(stdout, "{}	{}	{}", count, taxon.id, taxon.name)?;
     }
 
     Ok(())

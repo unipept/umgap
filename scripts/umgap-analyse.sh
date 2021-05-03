@@ -76,7 +76,7 @@ debug() {
 crash() {
 	debug "encountered error"
 	echo "$*" >&2
-	finish 1
+	exit 1
 }
 
 # check if a filename contains tabs or newlines
@@ -216,7 +216,7 @@ done
 
 if [ "$count" -eq 0 ]; then
 	echo "$USAGE"
-	finish
+	exit
 fi
 
 # =========================================================================== #
