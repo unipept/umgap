@@ -1,4 +1,5 @@
 //! The `umgap prot2kmer2lca` command.
+#![cfg(target_family = "unix")]
 
 use std::fs;
 use std::io;
