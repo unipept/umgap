@@ -16,7 +16,8 @@ quick_main!(|| -> Result<()> {
         Opt::PeptToLca(args) => commands::pept2lca::pept2lca(args),
         Opt::PrintIndex(args) => commands::printindex::printindex(args),
         Opt::ProtToKmer(args) => commands::prot2kmer::prot2kmer(args),
-        #[cfg(target_family = "unix")] Opt::ProtToKmerToLca(args) => commands::prot2kmer2lca::prot2kmer2lca(args),
+        #[cfg(target_family = "unix")]
+        Opt::ProtToKmerToLca(args) => commands::prot2kmer2lca::prot2kmer2lca(args),
         Opt::ProtToTryp(args) => commands::prot2tryp::prot2tryp(args),
         Opt::ProtToTrypToLca(args) => commands::prot2tryp2lca::prot2tryp2lca(args),
         Opt::SeedExtend(args) => commands::seedextend::seedextend(args),
