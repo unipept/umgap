@@ -20,9 +20,9 @@ fi
 USAGE="
 Visualizing data with the UMGAP.
 
-Usage: $0 -i <input> [-r rank] -t
+Usage: $0 (-i <input>...) [-r rank] -t
        $0 -i <input> -w
-       $0 -i <input> -u
+       $0 (-i <input>...) -u
 
 Where:
   <input>   A (optionally GZIP-compressed) FASTA file of taxa.
@@ -78,10 +78,23 @@ getconfigdir() {
 debug "parsing the arguments"
 
 rank="species"
+inputfiles=""
 while getopts i:c:r:wtu f; do
 	case "$f" in
 	c) configdir="$OPTARG" ;;
-	i) inputfile="$OPTARG" ;;
+	i)
+		filetype="$(file --mime-type "$OPTARG")" || \
+			crash "Could not determine filetype of '$OPTARG'."
+		filename="$(printf '%s' "$OPTARG" | tr -c '[:alnum:].-' '_')"
+		mkfifo "$tmp/$filename"
+		if [ "$filetype" != "${filetype%gzip}" ]; then
+			log "Inputfile is compressed"
+			zcat "$OPTARG" > "$tmp/$filename" &
+		else
+			cat "$OPTARG" > "$tmp/$filename" &
+		fi
+		inputfiles="$inputfiles $tmp/$filename"
+		;;
 	r) rank="$OPTARG" ;;
 	w) type="html" ;;
 	t) type="csv" ;;
@@ -90,17 +103,9 @@ while getopts i:c:r:wtu f; do
 	esac
 done
 
-[ -z "$inputfile" ] && crash "$USAGE"
+[ -z "$inputfiles" ] && crash "$USAGE"
 [ -z "$type" ] && crash "$USAGE"
-
-filetype="$(file --mime-type "$inputfile")" || \
-	crash "Could not determine filetype of '$inputfile'."
-if [ "$filetype" != "${filetype%gzip}" ]; then
-	log "Inputfile is compressed"
-	mkfifo "$tmp/gunzip"
-	zcat "$inputfile" > "$tmp/gunzip" &
-	inputfile="$tmp/gunzip"
-fi
+[ "$type" = "html" -a "$inputfiles" != "${inputfiles% *}" ] && crash "$USAGE"
 
 # =========================================================================== #
 #  Environmental checks.
@@ -128,7 +133,19 @@ fi
 # =========================================================================== #
 
 case "$type" in
-url) umgap taxa2tree < "$inputfile" --url ;;
-html) umgap taxa2tree < "$inputfile" ;;
-csv) grep -v '^>' "$inputfile" | umgap taxa2freq -r "$rank" "$(getconfigdir)/$version/taxons.tsv" ;;
+url)
+	for file in $inputfiles; do
+		printf "%s: " "$file"
+		umgap taxa2tree < "$inputfile" --url
+	done
+	;;
+html)
+	for file in $inputfiles; do
+		printf "%s: " "$file"
+		umgap taxa2tree < "$inputfile"
+	done
+	;;
+csv)
+	umgap taxa2freq -r "$rank" "$(getconfigdir)/$version/taxons.tsv" $inputfiles \
+		| sed '1s_,[^,]*/_,_g' ;;
 esac
