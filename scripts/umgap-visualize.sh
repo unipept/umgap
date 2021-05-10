@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 tmp="$(mktemp -d)"
-trap "rm -rf '$tmp'" EXIT KILL
+trap "rm -rf '$tmp'" EXIT TERM
 
 # What to do if the XDG standard isn't there...
 if [ -z "$XDG_CONFIG_HOME" ]; then
@@ -20,9 +20,9 @@ fi
 USAGE="
 Visualizing data with the UMGAP.
 
-Usage: $0 (-i <input>...) [-r rank] -t
-       $0 -i <input> -w
-       $0 (-i <input>...) -u
+Usage: $0 -t [-r rank] <input>...
+       $0 -w <input>
+       $0 -u <input>...
 
 Where:
   <input>   A (optionally GZIP-compressed) FASTA file of taxa.
@@ -78,23 +78,9 @@ getconfigdir() {
 debug "parsing the arguments"
 
 rank="species"
-inputfiles=""
-while getopts i:c:r:wtu f; do
+while getopts c:r:wtu f; do
 	case "$f" in
 	c) configdir="$OPTARG" ;;
-	i)
-		filetype="$(file --mime-type "$OPTARG")" || \
-			crash "Could not determine filetype of '$OPTARG'."
-		filename="$(printf '%s' "$OPTARG" | tr -c '[:alnum:].-' '_')"
-		mkfifo "$tmp/$filename"
-		if [ "$filetype" != "${filetype%gzip}" ]; then
-			log "Inputfile is compressed"
-			zcat "$OPTARG" > "$tmp/$filename" &
-		else
-			cat "$OPTARG" > "$tmp/$filename" &
-		fi
-		inputfiles="$inputfiles $tmp/$filename"
-		;;
 	r) rank="$OPTARG" ;;
 	w) type="html" ;;
 	t) type="csv" ;;
@@ -102,10 +88,11 @@ while getopts i:c:r:wtu f; do
 	\?) crash "$USAGE" '' ;;
 	esac
 done
+shift "$(( OPTIND - 1 ))"
 
-[ -z "$inputfiles" ] && crash "$USAGE"
+[ "$#" -lt 1 ] && crash "$USAGE"
 [ -z "$type" ] && crash "$USAGE"
-[ "$type" = "html" -a "$inputfiles" != "${inputfiles% *}" ] && crash "$USAGE"
+[ "$type" = "html" -a "$#" -gt 1 ] && crash "$USAGE"
 
 # =========================================================================== #
 #  Environmental checks.
@@ -134,18 +121,36 @@ fi
 
 case "$type" in
 url)
-	for file in $inputfiles; do
+	for file in "$@"; do
+		filetype="$(file --mime-type "$file")" || crash "Could not determine filetype of '$file'."
 		printf "%s: " "$file"
-		umgap taxa2tree < "$inputfile" --url
+		if [ "$filetype" != "${filetype%gzip}" ]; then
+			log "Inputfile '$file' is compressed"
+			zcat "$file"
+		else
+			cat "$file"
+		fi | umgap taxa2tree --url
 	done
 	;;
 html)
-	for file in $inputfiles; do
-		printf "%s: " "$file"
-		umgap taxa2tree < "$inputfile"
-	done
-	;;
+	umgap taxa2tree < "$1" ;;
 csv)
+	inputfiles=""
+	for file in "$@"; do
+		filetype="$(file --mime-type "$file")" || crash "Could not determine filetype of '$file'."
+		filename="$(printf '%s' "$file" | tr -c '[:alnum:].-' '_')"
+		mkfifo "$tmp/$filename"
+		if [ "$filetype" != "${filetype%gzip}" ]; then
+			log "Inputfile '$file' is compressed"
+			zcat "$file" > "$tmp/$filename" &
+		else
+			cat "$file" > "$tmp/$filename" &
+		fi
+		inputfiles="$inputfiles $tmp/$filename"
+	done
 	umgap taxa2freq -r "$rank" "$(getconfigdir)/$version/taxons.tsv" $inputfiles \
-		| sed '1s_,[^,]*/_,_g' ;;
+		| sed '1s_,[^,]*/_,_g'
+	;;
 esac
+
+
