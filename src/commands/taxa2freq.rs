@@ -14,18 +14,18 @@ use crate::rank::Rank;
 use crate::taxon;
 
 #[structopt(verbatim_doc_comment)]
-/// Counts ranked taxon occurrences in a stream of taxon IDs
+/// Counts ranked taxon occurrences in a stream of taxon IDs or arguments
 ///
 /// The `umgap taxa2freq` command creates a frequency table of a list of taxa on a given target rank
-/// (species by default).
+/// (species by default). When invoked with file arguments, it adds a column for each file.
 ///
-/// The input is given on *standard input*, a single taxon ID on each line. Each taxon that is more
-/// specific than the target rank is counted towards its ancestor on the target rank. Each taxon
-/// less specific than the target rank is counted towards root. The command outputs a TSV table of
-/// counts, taxon IDs and their names.
+/// The input is given on *standard input*, or in multiple file arguments, a single taxon ID on each
+/// line. Each taxon that is more specific than the target rank is counted towards its ancestor on
+/// the target rank. Each taxon less specific than the target rank is counted towards root. The
+/// command outputs a CSV table of taxon IDs, their names, and counts for each input.
 ///
-/// The taxonomy to be used is passed as an argument to this command. This is a preprocessed version
-/// of the NCBI taxonomy.
+/// The taxonomy to be used is passed as first argument to this command. This is a preprocessed
+/// version of the NCBI taxonomy.
 ///
 /// ```sh
 /// $ cat input.txt
@@ -41,15 +41,21 @@ use crate::taxon;
 /// 9606
 /// 8287
 /// $ umgap taxa2freq taxons.tsv < input.txt
-/// 2	1	root
-/// 9	9606	Homo sapiens
+/// taxon id,taxon name,stdin
+/// 1,root,2
+/// 9606,Homo sapiens,9
+/// $ umgap taxa2freq taxons.tsv input.txt input.txt
+/// taxon id,taxon name,input.txt,input.txt
+/// 1,root,2,2
+/// 9606,Homo sapiens,9,9
 /// ```
 ///
 /// With the `-r` option, the default species rank can be set to any named rank.
 ///
 /// ```sh
 /// $ umgap taxa2freq -r phylum taxons.tsv < input.txt
-/// 10	7711	Chordata
+/// taxon id,taxon name,stdin
+/// 7711,Chordata,10
 /// ```
 #[derive(Debug, StructOpt)]
 pub struct TaxaToFreq {
@@ -70,7 +76,7 @@ pub struct TaxaToFreq {
     #[structopt(parse(from_os_str))]
     pub taxon_file: PathBuf,
 
-    /// Multiple comparative input files.
+    /// Multiple comparative input files
     #[structopt(parse(from_os_str))]
     pub input_files: Vec<PathBuf>,
 }
