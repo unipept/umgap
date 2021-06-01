@@ -276,13 +276,13 @@ while [ -n "${samples}" ]; do
 	case "$type" in
 	"max-sensitivity")
 		umgap translate -a                             | # translate 6 frames
-		socat - UNIX-CONNECT:"$socket"                 | # map to taxa
+		nc -NU "$socket"                               | # map to taxa
 		umgap seedextend -g1 -s2                       | # seedextend filter
 		umgap uniq -d /                                | # join paired ends
 		umgap taxa2agg -l1 -m rmq -a mrtl "$taxons"   ;; # aggregate
 	"high-sensitivity")
 		umgap translate -a                             | # translate 6 frames
-		socat - UNIX-CONNECT:"$socket"                 | # map to taxa
+		nc -NU "$socket"                               | # map to taxa
 		umgap seedextend -g1 -s3                       | # seedextend filter
 		umgap uniq -d /                                | # join paired ends
 		umgap taxa2agg -l1 -a hybrid -f 0.25 "$taxons";; # aggregate
@@ -298,13 +298,13 @@ while [ -n "${samples}" ]; do
 		umgap taxa2agg -l5 -m rmq -a mrtl "$taxons"   ;; # aggregate
 	"high-precision")
 		fgspp                                          | # gene prediction
-		socat - UNIX-CONNECT:"$socket"                 | # map to taxa
+		nc -NU "$socket"                               | # map to taxa
 		umgap seedextend -g1 -s3                       | # seedextend filter
 		umgap uniq -d /                                | # join paired ends
 		umgap taxa2agg -l2 -a lca\* "$taxons"         ;; # aggregate
 	"max-precision")
 		fgspp                                          | # gene prediction
-		socat - UNIX-CONNECT:"$socket"                 | # map to taxa
+		nc -NU "$socket"                               | # map to taxa
 		umgap seedextend -g1 -s4                       | # seedextend filter
 		umgap uniq -d /                                | # join paired ends
 		umgap taxa2agg -l5 -a lca\* "$taxons"         ;; # aggregate
