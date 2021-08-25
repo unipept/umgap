@@ -1,6 +1,6 @@
 [package]
 name = "umgap"
-version = "0.3.6"
+version = "0.3.7"
 authors = ["Felix Van der Jeugt <felix.vanderjeugt@gmail.com>",
            "Stijn Seghers <stijn.seghers@gmail.com>",
            "Niels De Graef <Niels.DeGraef@UGent.be>",
@@ -13,7 +13,7 @@ readme = "README.md"
 keywords = ["metagenomics", "transcriptonomics", "bio", "DNA", "unipept"]
 categories = ["command-line-utilities", "science"]
 license = "MIT"
-exclude = ["testdata/*"]
+include = ["Cargo.toml", "LICENSE", "README.md", "scripts/umgap*.sh", "src/**/*.rs"]
 edition = "2018"
 
 [dependencies]
