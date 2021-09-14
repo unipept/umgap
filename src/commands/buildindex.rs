@@ -6,6 +6,7 @@ use crate::errors;
 
 #[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
+#[allow(clippy::tabs_in_doc_comments)]
 /// Builds an index mapping short strings to taxon IDs
 ///
 /// The `umgap buildindex` command takes tab-separated strings and taxon IDs, and creates a

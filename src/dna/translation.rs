@@ -180,7 +180,7 @@ impl str::FromStr for &'static TranslationTable {
         let id = s.parse::<usize>()?;
         TABLES[id - 1]
             .as_ref()
-            .ok_or(ErrorKind::UnknownTable(id).into())
+            .ok_or_else(|| ErrorKind::UnknownTable(id).into())
     }
 }
 

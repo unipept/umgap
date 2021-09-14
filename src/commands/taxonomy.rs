@@ -12,6 +12,7 @@ use crate::taxon;
 #[rustfmt::skip]
 #[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
+#[allow(clippy::tabs_in_doc_comments)]
 /// Includes info in a stream of taxon IDs
 ///
 /// The `umgap taxonomy` command takes one or more taxon IDs as input, searches for them in a

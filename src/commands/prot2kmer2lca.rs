@@ -186,7 +186,7 @@ where
             output_mutex
                 .lock()
                 .unwrap()
-                .write(chunk_output.as_bytes())?;
+                .write_all(chunk_output.as_bytes())?;
             Ok(())
         })
         .collect()

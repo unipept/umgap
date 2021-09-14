@@ -49,7 +49,7 @@ impl LCACalculator {
     fn first_occurence(&self, taxon_id: TaxonId) -> taxon::Result<usize> {
         self.first_occurences
             .get(&taxon_id)
-            .ok_or(taxon::ErrorKind::UnknownTaxon(taxon_id).into())
+            .ok_or_else(|| taxon::ErrorKind::UnknownTaxon(taxon_id).into())
             .map(|t| *t)
     }
 }

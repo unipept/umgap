@@ -9,6 +9,7 @@ use crate::errors;
 
 #[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
+#[allow(clippy::tabs_in_doc_comments)]
 /// Prints the key/value pairs in an index
 ///
 /// Outputs the string keys and taxon ID values in TSV format, mostly for debugging purposes.

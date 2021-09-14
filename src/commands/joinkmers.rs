@@ -13,6 +13,7 @@ use crate::tree;
 
 #[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
+#[allow(clippy::tabs_in_doc_comments)]
 /// Aggregates a TSV stream of peptides and taxon IDs
 ///
 /// The `umgap joinkmers` command takes tab-separated peptides and taxon IDs, aggregates the

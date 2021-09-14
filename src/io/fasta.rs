@@ -31,7 +31,7 @@ impl<R: Read> Reader<R> {
         let lines = BufReader::with_capacity(BUFFER_SIZE, reader)
             .lines()
             .peekable();
-        Reader { unwrap, lines }
+        Reader { lines, unwrap }
     }
 
     /// Reads the next record from the FASTA file.
@@ -166,7 +166,7 @@ impl<'a, W: Write> Writer<'a, W> {
         let sequence = record.sequence.join(self.separator);
         if !self.wrap {
             self.buffer.write_all(&[b'\n'])?;
-            self.buffer.write(sequence.as_bytes())?;
+            self.buffer.write_all(sequence.as_bytes())?;
         } else {
             for subseq in sequence.as_bytes().chunks(FASTA_WIDTH) {
                 self.buffer.write_all(&[b'\n'])?;

@@ -139,7 +139,7 @@ pub fn taxa2agg(args: TaxaToAgg) -> errors::Result<()> {
     };
     let aggregator = aggregator?;
 
-    fn with_score(pair: &String) -> errors::Result<(TaxonId, f32)> {
+    fn with_score(pair: &str) -> errors::Result<(TaxonId, f32)> {
         let split = pair.split('=').collect::<Vec<_>>();
         if split.len() != 2 {
             return Err("Taxon without score".into());
@@ -147,7 +147,7 @@ pub fn taxa2agg(args: TaxaToAgg) -> errors::Result<()> {
         Ok((split[0].parse::<TaxonId>()?, split[1].parse::<f32>()?))
     }
 
-    fn not_scored(tid: &String) -> errors::Result<(TaxonId, f32)> {
+    fn not_scored(tid: &str) -> errors::Result<(TaxonId, f32)> {
         Ok((tid.parse::<TaxonId>()?, 1.0))
     }
 
@@ -162,7 +162,7 @@ pub fn taxa2agg(args: TaxaToAgg) -> errors::Result<()> {
         let taxons = record
             .sequence
             .iter()
-            .map(parser)
+            .map(|s| parser(s))
             .collect::<errors::Result<Vec<(TaxonId, f32)>>>()?;
 
         // Create a frequency table of taxons for this read (taking into account the lower bound)

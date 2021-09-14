@@ -68,10 +68,12 @@ pub fn splitkmers(args: SplitKmers) -> errors::Result<()> {
             continue;
         }
         for kmer in sequence.as_bytes().windows(args.length) {
-            if byte.is_none() {
+            if let Some(&b) = byte {
+                if b == kmer[0] {
+                    writer.serialize((String::from_utf8_lossy(&kmer[1..]), tid))?;
+                }
+            } else {
                 writer.serialize((String::from_utf8_lossy(kmer), tid))?;
-            } else if *byte.unwrap() == kmer[0] {
-                writer.serialize((String::from_utf8_lossy(&kmer[1..]), tid))?;
             }
         }
     }

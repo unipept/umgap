@@ -22,11 +22,11 @@ impl Nucleotide {
     /// Complement of the given nucleotide.
     pub fn complement(&self) -> Self {
         match self {
-            &A => T,
-            &C => G,
-            &G => C,
-            &T => A,
-            &N => N,
+            A => T,
+            C => G,
+            G => C,
+            T => A,
+            N => N,
         }
     }
 }
@@ -43,9 +43,9 @@ impl From<u8> for Nucleotide {
     }
 }
 
-impl Into<u8> for Nucleotide {
-    fn into(self) -> u8 {
-        match self {
+impl From<Nucleotide> for u8 {
+    fn from(n: Nucleotide) -> u8 {
+        match n {
             A => b'A',
             C => b'C',
             G => b'G',
@@ -89,7 +89,7 @@ impl<'a> From<&'a Vec<String>> for Strand {
 
 impl Strand {
     /// A reading frame of this strand, 1-indexed.
-    pub fn frame<'a>(&'a self, start: usize) -> Frame<'a> {
+    pub fn frame(&self, start: usize) -> Frame<'_> {
         Frame(if self.0.len() > start - 1 {
             &self.0[start - 1..]
         } else {

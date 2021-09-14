@@ -152,20 +152,17 @@ pub fn taxa2freq(args: TaxaToFreq) -> errors::Result<()> {
 }
 
 fn count_file<T: BufRead>(
-    snapping: &Vec<Option<taxon::TaxonId>>,
+    snapping: &[Option<taxon::TaxonId>],
     counts: &mut HashMap<taxon::TaxonId, Vec<usize>>,
     index: usize,
     numfiles: usize,
     file: T,
 ) -> errors::Result<()> {
     for line in file.lines() {
-        match line?.parse::<taxon::TaxonId>() {
-            Ok(taxon) => {
-                counts
-                    .entry(snapping[taxon].unwrap_or(0))
-                    .or_insert(vec![0; numfiles])[index] += 1
-            }
-            Err(_) => (),
+        if let Ok(taxon) = line?.parse::<taxon::TaxonId>() {
+            counts
+                .entry(snapping[taxon].unwrap_or(0))
+                .or_insert_with(|| vec![0; numfiles])[index] += 1
         }
     }
     Ok(())

@@ -14,7 +14,7 @@ pub trait Aggregator {
     fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> Result<TaxonId>;
 
     /// Aggregates a list of taxons into a resulting taxon id.
-    fn counting_aggregate(&self, taxons: &Vec<TaxonId>) -> Result<TaxonId> {
+    fn counting_aggregate(&self, taxons: &[TaxonId]) -> Result<TaxonId> {
         let taxons = taxons.iter().map(|&t| (t, 1.0));
         self.aggregate(&count(taxons))
     }
