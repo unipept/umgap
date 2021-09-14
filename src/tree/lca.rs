@@ -5,7 +5,7 @@ use std::ops::Add;
 
 use crate::agg;
 use crate::taxon::{TaxonId, TaxonList};
-use crate::tree::tree::Tree;
+use crate::tree::Tree;
 
 /// Struct capable of calculating the LCA of 2 nodes in a TaxonTree.
 pub struct LCACalculator {

@@ -8,7 +8,7 @@ use ordered_float;
 
 use crate::agg;
 use crate::taxon::{TaxonId, TaxonList};
-use crate::tree::tree::Tree;
+use crate::tree::Tree;
 
 /// Struct capable of aggregating of a list of nodes in a TaxonTree, using a
 /// hybrid approach between MRL and LCA. It can either prefer MRL or LCA more,
