@@ -9,6 +9,7 @@ use crate::dna::Strand;
 use crate::errors;
 use crate::io::fasta;
 
+#[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
 /// Translates a FASTA stream of DNA reads to peptides
 ///
@@ -42,7 +43,6 @@ use crate::io::fasta;
 ///
 /// With the `-t` flag, you can select a specific translation table, for instance `-t11` for the
 /// bacterial, archaeal and plant plastid code.
-#[derive(Debug, StructOpt)]
 pub struct Translate {
     /// Replace each start-codon with methionine
     #[structopt(short = "m", long = "methionine")]

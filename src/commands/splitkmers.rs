@@ -6,6 +6,7 @@ use crate::errors;
 use crate::taxon::TaxonId;
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
+#[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
 /// Splits a TSV stream of peptides and taxon IDs into k-mers and taxon IDs
 ///
@@ -38,7 +39,6 @@ use crate::taxon::TaxonId;
 /// KLFCVLAAF       176652
 /// ...
 /// ```
-#[derive(Debug, StructOpt)]
 pub struct SplitKmers {
     /// The k-mer length
     #[structopt(short = "k", long = "length", default_value = "9")]

@@ -6,6 +6,7 @@ use std::io;
 use crate::errors;
 use crate::io::fasta;
 
+#[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
 /// Splits a FASTA stream of peptides into k-mers
 ///
@@ -32,7 +33,6 @@ use crate::io::fasta;
 /// AKAYKKAG*
 /// KAYKKAG*S
 /// ```
-#[derive(Debug, StructOpt)]
 pub struct ProtToKmer {
     /// The k-mer length
     #[structopt(short = "k", long = "length", default_value = "9")]

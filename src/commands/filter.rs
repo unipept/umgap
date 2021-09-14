@@ -6,6 +6,7 @@ use std::io;
 use crate::errors;
 use crate::io::fasta;
 
+#[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
 /// Filters a FASTA stream of peptides
 ///
@@ -45,7 +46,6 @@ use crate::io::fasta;
 /// GLTR
 /// EAVANR
 /// ```
-#[derive(Debug, StructOpt)]
 pub struct Filter {
     /// Minimum length required
     #[structopt(short = "m", long = "minlen", default_value = "5")]

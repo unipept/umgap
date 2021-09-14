@@ -14,6 +14,7 @@ use rayon::iter::{ParallelBridge, ParallelIterator};
 use crate::errors;
 use crate::io::fasta;
 
+#[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
 /// Digests a FASTA stream of peptides and maps all tryptic peptides to taxon IDs
 ///
@@ -37,7 +38,6 @@ use crate::io::fasta;
 /// 571525
 /// 6920
 /// ```
-#[derive(Debug, StructOpt)]
 pub struct ProtToTrypToLca {
     /// Map unknown sequences to 0 instead of ignoring them
     #[structopt(short = "o", long = "one-on-one")]

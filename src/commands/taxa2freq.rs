@@ -13,6 +13,7 @@ use crate::rank;
 use crate::rank::Rank;
 use crate::taxon;
 
+#[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
 /// Counts ranked taxon occurrences in a stream of taxon IDs or arguments
 ///
@@ -58,7 +59,6 @@ use crate::taxon;
 /// taxon id,taxon name,stdin
 /// 7711,Chordata,10
 /// ```
-#[derive(Debug, StructOpt)]
 pub struct TaxaToFreq {
     /// The rank to show
     #[structopt(

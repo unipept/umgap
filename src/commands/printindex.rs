@@ -7,6 +7,7 @@ use fst::Streamer;
 
 use crate::errors;
 
+#[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
 /// Prints the key/value pairs in an index
 ///
@@ -26,7 +27,6 @@ use crate::errors;
 /// AAAAADRPLAEHGGPVPR	1827
 /// ...
 /// ```
-#[derive(Debug, StructOpt)]
 pub struct PrintIndex {
     /// An index that maps strings to taxon IDs
     #[structopt(parse(from_os_str))]

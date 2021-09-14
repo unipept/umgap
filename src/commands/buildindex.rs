@@ -4,6 +4,7 @@ use std::io;
 
 use crate::errors;
 
+#[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
 /// Builds an index mapping short strings to taxon IDs
 ///
@@ -24,7 +25,6 @@ use crate::errors;
 /// AAAAA	2759
 /// BBBBBB	9153
 /// ```
-#[derive(Debug, StructOpt)]
 pub struct BuildIndex {}
 
 /// Implements the buildindex command

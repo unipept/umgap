@@ -9,6 +9,7 @@ use rayon::iter::{ParallelBridge, ParallelIterator};
 use crate::errors;
 use crate::io::fasta;
 
+#[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
 /// Maps a FASTA stream of peptides to taxon IDs
 ///
@@ -43,7 +44,6 @@ use crate::io::fasta;
 /// 0
 /// 3398
 /// ```
-#[derive(Debug, StructOpt)]
 pub struct PeptToLca {
     /// Map unknown sequences to 0 instead of ignoring them
     #[structopt(short = "o", long = "one-on-one")]

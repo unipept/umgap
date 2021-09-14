@@ -5,6 +5,7 @@ use std::io;
 use crate::errors;
 use crate::io::fasta;
 
+#[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
 /// Splits the peptides in a FASTA stream into tryptic peptides
 ///
@@ -38,7 +39,6 @@ use crate::io::fasta;
 /// Using the `-p` flag, you can change the splitting pattern. The default pattern `([KR])([^P])`
 /// splits between any Lysine (K) or Arginine (R), followed by any amino acid that is not Proline
 /// (P).
-#[derive(Debug, StructOpt)]
 pub struct ProtToTryp {
     /// The cleavage-pattern (regex), i.e. the pattern after which
     /// the next peptide will be cleaved for tryptic peptides)

@@ -9,6 +9,7 @@ use crate::errors;
 use crate::io::fasta;
 use crate::taxon::TaxonId;
 
+#[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
 /// Visualizes a stream of taxon IDs using the Unipept API
 ///
@@ -30,7 +31,6 @@ use crate::taxon::TaxonId;
 /// $ umgap taxa2tree --url < input.txt
 /// https://bl.ocks.org/a686a37e1dcd43dd4ec7d467487bd6a1
 /// ```
-#[derive(Debug, StructOpt)]
 pub struct TaxaToTree {
     /// Host the result online and return the URL
     #[structopt(short = "u", long = "url")]

@@ -10,6 +10,7 @@ use crate::io::fastq;
 use crate::utils;
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
+#[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
 /// Interleaves FASTQ files into a FASTA stream
 ///
@@ -51,7 +52,6 @@ use crate::utils;
 /// >record2/2
 /// GGACACGCTCTCAGGACGATGGCGCGATTGCAGGACTTGCTGGATCTCCTCCGTCGCCAAGGGGACGCGCTCGGAGTGGCTCATGGAGCAGACGAGTTCT
 /// ```
-#[derive(Debug, StructOpt)]
 pub struct FastqToFasta {
     /// The input files
     #[structopt(parse(from_os_str))]

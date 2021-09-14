@@ -13,6 +13,7 @@ use crate::taxon;
 use crate::taxon::TaxonId;
 use crate::tree;
 
+#[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
 /// Aggregates taxon IDs in a FASTA stream
 ///
@@ -57,7 +58,6 @@ use crate::tree;
 ///   not have the highest frequency of ancestors in the list, but would have less contradicting
 ///   taxa. Use the `-f` option to select a hybrid close to the MRTL (`-f 0.0`) or to the LCA (`-f
 ///   1.0`).
-#[derive(Debug, StructOpt)]
 pub struct TaxaToAgg {
     /// Each taxon is followed by a score between 0 and 1
     #[structopt(short = "s", long = "scored")]

@@ -5,6 +5,7 @@ use std::io;
 use crate::errors;
 use crate::io::fasta;
 
+#[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
 /// Joins consecutive FASTA records with the same header
 ///
@@ -37,7 +38,6 @@ use crate::io::fasta;
 /// 1883
 /// 1883
 /// ```
-#[derive(Debug, StructOpt)]
 pub struct Uniq {
     /// Separator between output items
     #[structopt(short = "s", long = "separator", default_value = "\n")]

@@ -14,6 +14,7 @@ use rayon::iter::{ParallelBridge, ParallelIterator};
 use crate::errors;
 use crate::io::fasta;
 
+#[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
 /// Maps all k-mers from a FASTA stream of peptides to taxon IDs
 ///
@@ -66,7 +67,6 @@ use crate::io::fasta;
 /// process, reusing the same loaded index. Run `umgap prot2kmer2lca -m -s umgap-socket index` as a
 /// service, and when the index is loaded, change your original pipeline(s) to communicate with the
 /// socket using OpenBSD's netcat: `... | nc -NU /path/to/umgap-socket | ...`.
-#[derive(Debug, StructOpt)]
 pub struct ProtToKmerToLca {
     /// The length of the k-mers in the index
     #[structopt(short = "k", long = "length", default_value = "9")]

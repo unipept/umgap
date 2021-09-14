@@ -11,6 +11,7 @@ use crate::taxon;
 use crate::taxon::TaxonId;
 use crate::tree;
 
+#[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
 /// Aggregates a TSV stream of peptides and taxon IDs
 ///
@@ -41,7 +42,6 @@ use crate::tree;
 /// AAAAA	2759	superkingdom
 /// BBBBBB	9153	family
 /// ```
-#[derive(Debug, StructOpt)]
 pub struct JoinKmers {
     /// An NCBI taxonomy TSV-file as processed by Unipept
     #[structopt(parse(from_os_str))]

@@ -11,6 +11,7 @@ use crate::rank::Rank;
 use crate::taxon;
 use crate::taxon::TaxonId;
 
+#[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
 /// Snaps taxon IDs to a specific rank or listed taxa
 ///
@@ -46,7 +47,6 @@ use crate::taxon::TaxonId;
 /// 1239
 /// 2
 /// ```
-#[derive(Debug, StructOpt)]
 pub struct SnapTaxon {
     /// The rank to snap towards.
     #[structopt(

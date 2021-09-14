@@ -9,6 +9,7 @@ use crate::io::fasta;
 use crate::taxon;
 use crate::taxon::TaxonId;
 
+#[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
 /// Selects promising regions in sequences of taxon IDs
 ///
@@ -59,7 +60,6 @@ use crate::taxon::TaxonId;
 /// extended seeds. Pass a taxonomy using the `-r taxon.tsv` option to activate this. In this scored
 /// mode, extended seeds with gaps are given a penalty of 5, which can be made more or less severe
 /// (higher or lower) with the `-p` option.
-#[derive(Debug, StructOpt)]
 pub struct SeedExtend {
     /// The minimum length of equal taxa to count as seed
     #[structopt(short = "s", long = "min-seed-size", default_value = "2")]

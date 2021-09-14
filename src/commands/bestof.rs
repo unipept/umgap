@@ -6,6 +6,7 @@ use crate::errors;
 use crate::io::fasta;
 use crate::taxon::TaxonId;
 
+#[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
 /// Selects the best read of every fixed size group
 ///
@@ -41,7 +42,6 @@ use crate::taxon::TaxonId;
 ///
 /// Taxon IDs are separated by newlines in the actual output, but are separated by spaces in this
 /// example.
-#[derive(Debug, StructOpt)]
 pub struct BestOf {
     /// The number of frames of which to pick the best
     #[structopt(short = "f", long = "frames", default_value = "6")]
