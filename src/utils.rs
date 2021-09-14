@@ -8,7 +8,7 @@ pub struct Zip<E, I: Iterator<Item = E>> {
 impl<E, I: Iterator<Item = E>> Zip<E, I> {
     /// Constructor for Zip.
     pub fn new(parts: Vec<I>) -> Self {
-        Zip { parts: parts }
+        Zip { parts }
     }
 }
 

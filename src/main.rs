@@ -37,7 +37,7 @@ quick_main!(|| -> Result<()> {
 /// Throughout this documentation, the term peptides is used for both tryptic peptides and k-mers.
 /// The term taxon ID refers to an identifier of a NCBI taxonomy (which should be the same version
 /// in the whole pipeline).
-#[cfg_attr(rustfmt, rustfmt_skip)]
+#[rustfmt::skip]
 #[derive(Debug, StructOpt)]
 pub enum Opt {
     #[structopt(name = "bestof")] BestOf(commands::bestof::BestOf),

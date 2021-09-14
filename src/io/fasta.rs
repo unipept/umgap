@@ -150,8 +150,8 @@ impl<'a, W: Write> Writer<'a, W> {
     pub fn new(write: W, separator: &'a str, wrap: bool) -> Self {
         Writer {
             buffer: io::BufWriter::new(write),
-            separator: separator,
-            wrap: wrap,
+            separator,
+            wrap,
         }
     }
 

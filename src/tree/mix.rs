@@ -30,8 +30,8 @@ impl MixCalculator {
     ///   MRL.
     pub fn new(root: TaxonId, taxonomy: &TaxonList, factor: f32) -> Self {
         MixCalculator {
-            factor: factor,
-            root: root,
+            factor,
+            root,
             parents: taxonomy.ancestry(),
         }
     }
@@ -39,7 +39,7 @@ impl MixCalculator {
 
 impl agg::Aggregator for MixCalculator {
     fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> agg::Result<TaxonId> {
-        if taxons.len() == 0 {
+        if taxons.is_empty() {
             bail!(agg::ErrorKind::EmptyInput);
         }
         let subtree = Tree::new(self.root, &self.parents, taxons)?
@@ -63,7 +63,7 @@ impl agg::Aggregator for MixCalculator {
 }
 
 #[cfg(test)]
-#[cfg_attr(rustfmt, rustfmt_skip)]
+#[rustfmt::skip]
 mod tests {
     use super::MixCalculator;
     use crate::agg::Aggregator;

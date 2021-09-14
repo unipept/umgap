@@ -4,7 +4,7 @@
 use std::cmp::Ordering;
 use strum::IntoEnumIterator;
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
+#[rustfmt::skip]
 #[derive(PartialEq, Eq, Debug, Clone, Copy, Display, EnumString, EnumIter)]
 pub enum Rank {
     #[strum(serialize="no rank")]          NoRank,
@@ -78,7 +78,7 @@ impl Rank {
         *self as usize
     }
 
-    #[cfg_attr(rustfmt, rustfmt_skip)]
+    #[rustfmt::skip]
     pub fn score(&self) -> Option<usize> {
         if self < &Rank::Species { Some(10) }
         else if self < &Rank::SpeciesGroup { Some(9) }

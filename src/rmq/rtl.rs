@@ -28,10 +28,7 @@ impl RTLCalculator {
     pub fn new(root: TaxonId, taxons: &TaxonList) -> Self {
         let mut ancestors = taxons.ancestry();
         ancestors[root] = None;
-        RTLCalculator {
-            root: root,
-            ancestors: ancestors,
-        }
+        RTLCalculator { root, ancestors }
     }
 }
 
@@ -54,12 +51,12 @@ impl agg::Aggregator for RTLCalculator {
             .iter()
             .max_by_key(|&(_, &count)| NotNan::new(count).unwrap())
             .map(|tup| *tup.0)
-            .ok_or(agg::ErrorKind::EmptyInput.into())
+            .ok_or_else(|| agg::ErrorKind::EmptyInput.into())
     }
 }
 
 #[cfg(test)]
-#[cfg_attr(rustfmt, rustfmt_skip)]
+#[rustfmt::skip]
 mod tests {
     use super::RTLCalculator;
     use crate::agg::Aggregator;

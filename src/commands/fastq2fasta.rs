@@ -9,7 +9,7 @@ use crate::io::fasta;
 use crate::io::fastq;
 use crate::utils;
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
+#[rustfmt::skip]
 #[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
 /// Interleaves FASTQ files into a FASTA stream

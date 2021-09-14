@@ -34,10 +34,10 @@ where
 
 /// Filters any taxon in a frequency table with a frequency below the given amount.
 pub fn filter(freq_table: HashMap<TaxonId, f32>, lower_bound: f32) -> HashMap<TaxonId, f32> {
-    return freq_table
+    freq_table
         .into_iter()
         .filter(|&(_, freq)| freq >= lower_bound)
-        .collect();
+        .collect()
 }
 
 error_chain! {

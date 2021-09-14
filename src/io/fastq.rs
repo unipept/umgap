@@ -80,9 +80,9 @@ impl<R: Read> Reader<R> {
         }
 
         Ok(Some(Record {
-            header: header,
-            sequence: sequence,
-            quality: quality,
+            header,
+            sequence,
+            quality,
         }))
     }
 

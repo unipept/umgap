@@ -37,15 +37,15 @@ impl<T: Ord + Display> RMQ<T> {
         let sparse = RMQ::<T>::sparse(&array, &block_min);
         let labels = RMQ::<T>::labels(&array);
         RMQ {
-            array: array,
-            block_min: block_min,
-            sparse: sparse,
-            labels: labels,
+            array,
+            block_min,
+            sparse,
+            labels,
         }
     }
 
     /// Calculates the position of each block's minimum.
-    pub fn block_min(array: &Vec<T>) -> Vec<usize> {
+    pub fn block_min(array: &[T]) -> Vec<usize> {
         array
             .chunks(size())
             .enumerate()
@@ -60,7 +60,7 @@ impl<T: Ord + Display> RMQ<T> {
             .collect()
     }
 
-    fn aggregate_minima(array: &Vec<T>, shift: usize, minima: &Vec<usize>) -> Vec<usize> {
+    fn aggregate_minima(array: &[T], shift: usize, minima: &[usize]) -> Vec<usize> {
         minima
             .iter()
             .zip(minima.iter().skip(shift))
@@ -69,7 +69,7 @@ impl<T: Ord + Display> RMQ<T> {
     }
 
     /// Calculate the values of the sparse field.
-    pub fn sparse(array: &Vec<T>, block_min: &Vec<usize>) -> Vec<Vec<usize>> {
+    pub fn sparse(array: &[T], block_min: &[usize]) -> Vec<Vec<usize>> {
         let length = intlog2(block_min.len());
         let mut sparse = Vec::with_capacity(length);
         sparse.push(RMQ::<T>::aggregate_minima(array, 1, block_min));
@@ -81,7 +81,7 @@ impl<T: Ord + Display> RMQ<T> {
     }
 
     /// Calculate the values of the label field.
-    pub fn labels(array: &Vec<T>) -> Vec<usize> {
+    pub fn labels(array: &[T]) -> Vec<usize> {
         let mut gstack = Vec::with_capacity(size());
         let mut labels = Vec::with_capacity(array.len());
         for i in 0..array.len() {
@@ -94,7 +94,7 @@ impl<T: Ord + Display> RMQ<T> {
             }
             if !gstack.is_empty() {
                 let g = gstack[gstack.len() - 1];
-                labels[i] = labels[g] | ((1 as usize) << (g % size()));
+                labels[i] = labels[g] | ((1_usize) << (g % size()));
             }
             gstack.push(i);
         }
@@ -102,7 +102,7 @@ impl<T: Ord + Display> RMQ<T> {
     }
 
     /// Returns the position of the minimal value in a given block
-    fn min_in_block(labels: &Vec<usize>, left: usize, right: usize) -> usize {
+    fn min_in_block(labels: &[usize], left: usize, right: usize) -> usize {
         let v = clearbits(labels[right], left % size());
         if v == 0 {
             right
@@ -112,7 +112,7 @@ impl<T: Ord + Display> RMQ<T> {
     }
 
     /// Returns the position of the minimal value in a given sublist.
-    #[cfg_attr(rustfmt, rustfmt_skip)]
+    #[rustfmt::skip]
     pub fn query(&self, start: usize, end: usize) -> usize {
         if start == end { return start; }
         let (left, right)  = if start < end { (start, end) } else { (end, start) };
@@ -152,7 +152,7 @@ impl<T: Ord + Display> RMQ<T> {
 }
 
 #[cfg(test)]
-#[cfg_attr(rustfmt, rustfmt_skip)]
+#[rustfmt::skip]
 mod tests {
     use super::*;
 
@@ -160,7 +160,7 @@ mod tests {
     fn test_block_minima() {
         assert_eq!(
             if size() == 32 { vec![3, 33] } else { vec![33] },
-            RMQ::block_min(&vec![12, 17, 23, 2, 20, 4, 8, 27, 26, 19, 31, 22, 28, 16, 24, 14, 5, 29, 32, 11, 7, 9, 25, 30, 21, 13, 6, 18, 15, 33, 10, 3, /**/ 33, 1])
+            RMQ::block_min(&[12, 17, 23, 2, 20, 4, 8, 27, 26, 19, 31, 22, 28, 16, 24, 14, 5, 29, 32, 11, 7, 9, 25, 30, 21, 13, 6, 18, 15, 33, 10, 3, /**/ 33, 1])
         );
     }
 
@@ -171,16 +171,16 @@ mod tests {
                  vec![3, 5, 16, 16, 31, 33],
                  vec![3, 33]],
             RMQ::sparse(
-                &vec![12, 17, 23, 2,
-                      20, 4,  8,  27,
-                      26, 19, 31, 22,
-                      28, 16, 24, 14,
-                      5,  29, 32, 11,
-                      7,  9,  25, 30,
-                      21, 13, 6,  18,
-                      15, 33, 10, 3,
-                      33, 1],
-                &vec![3, 5, 9, 15, 16, 20, 26, 31, 33]
+                &[12, 17, 23, 2,
+                  20, 4,  8,  27,
+                  26, 19, 31, 22,
+                  28, 16, 24, 14,
+                  5,  29, 32, 11,
+                  7,  9,  25, 30,
+                  21, 13, 6,  18,
+                  15, 33, 10, 3,
+                  33, 1],
+                &[3, 5, 9, 15, 16, 20, 26, 31, 33]
             )
         )
     }

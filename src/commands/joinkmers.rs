@@ -72,7 +72,7 @@ pub fn joinkmers(args: JoinKmers) -> errors::Result<()> {
         if let Ok(aggregate) = aggregator.aggregate(&counts) {
             let taxon = ranksnapping[aggregate].unwrap();
             let rank = by_id.get_or_unknown(taxon).unwrap().rank;
-            write!(handle, "{}\t{}\t{}\n", kmer, taxon, rank)
+            writeln!(handle, "{}\t{}\t{}", kmer, taxon, rank)
         } else {
             Ok(())
         }

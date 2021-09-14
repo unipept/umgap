@@ -169,7 +169,7 @@ pub fn seedextend(args: SeedExtend) -> errors::Result<()> {
                 header: record.header,
                 sequence: seeds
                     .into_iter()
-                    .flat_map(|(start, end)| taxons[start..end].into_iter())
+                    .flat_map(|(start, end)| taxons[start..end].iter())
                     .map(|t| t.to_string())
                     .collect(),
             })

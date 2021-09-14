@@ -59,7 +59,7 @@ pub fn prot2tryp(args: ProtToTryp) -> errors::Result<()> {
         let first_run = pattern.replace_all(&sequence[0], "$1\n$2");
 
         writer.write_record(fasta::Record {
-            header: header,
+            header,
             sequence: pattern
                 .replace_all(&first_run, "$1\n$2")
                 .replace("*", "\n")

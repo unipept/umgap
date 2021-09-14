@@ -9,7 +9,7 @@ use crate::errors;
 use crate::rank;
 use crate::taxon;
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
+#[rustfmt::skip]
 #[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
 /// Includes info in a stream of taxon IDs
@@ -101,7 +101,7 @@ pub fn taxonomy(args: Taxonomy) -> errors::Result<()> {
                 write!(handle, "	{}_id	{}_name", rank_name, rank_name)?;
             }
         }
-        write!(handle, "\n")?;
+        writeln!(handle)?;
     }
 
     for line in stdin.lock().lines() {
@@ -123,7 +123,7 @@ pub fn taxonomy(args: Taxonomy) -> errors::Result<()> {
                     }
                 }
             }
-            write!(handle, "\n")?;
+            writeln!(handle)?;
         }
     }
     Ok(())

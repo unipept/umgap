@@ -5,7 +5,7 @@ use std::io;
 use crate::errors;
 use crate::taxon::TaxonId;
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
+#[rustfmt::skip]
 #[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
 /// Splits a TSV stream of peptides and taxon IDs into k-mers and taxon IDs

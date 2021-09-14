@@ -21,8 +21,6 @@ extern crate assert_matches;
 #[macro_use]
 extern crate structopt;
 
-use strum;
-
 #[macro_use]
 extern crate strum_macros;
 
@@ -41,8 +39,8 @@ pub mod utils;
 pub mod fixtures;
 
 /// The current version
-pub const PKG_VERSION: &'static str = env!("CARGO_PKG_VERSION");
+pub const PKG_VERSION: &str = env!("CARGO_PKG_VERSION");
 /// The package name
-pub const PKG_NAME: &'static str = env!("CARGO_PKG_NAME");
+pub const PKG_NAME: &str = env!("CARGO_PKG_NAME");
 /// The authors
-pub const PKG_AUTHORS: &'static str = env!("CARGO_PKG_AUTHORS");
+pub const PKG_AUTHORS: &str = env!("CARGO_PKG_AUTHORS");

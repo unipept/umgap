@@ -1,6 +1,7 @@
 //! Defines operations and data structures over taxons.
 
 use std;
+use std::cmp::Ordering::{Equal, Greater, Less};
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fs::File;
@@ -35,11 +36,11 @@ impl Taxon {
     /// Creates a taxon from the given arguments.
     pub fn new(id: TaxonId, name: String, rank: Rank, parent: TaxonId, valid: bool) -> Taxon {
         Taxon {
-            id: id,
-            name: name,
-            rank: rank,
-            parent: parent,
-            valid: valid,
+            id,
+            name,
+            rank,
+            parent,
+            valid,
         }
     }
 
@@ -186,7 +187,7 @@ impl TaxonList {
                 current = t.parent;
             }
         }
-        return None;
+        None
     }
 
     /// Create the full lineage for the given taxon
@@ -220,10 +221,10 @@ pub struct TaxonTree {
 
 impl TaxonTree {
     /// Creates a taxon tree from the given taxons.
-    pub fn new(taxons: &Vec<Taxon>) -> TaxonTree {
+    pub fn new(taxons: &[Taxon]) -> TaxonTree {
         let mut map = HashMap::with_capacity(taxons.len());
         let mut max = taxons[0].id;
-        let mut roots: HashSet<TaxonId> = taxons.into_iter().map(|t| t.id).collect();
+        let mut roots: HashSet<TaxonId> = taxons.iter().map(|t| t.id).collect();
         for taxon in taxons {
             if taxon.id > max {
                 max = taxon.id
@@ -231,7 +232,7 @@ impl TaxonTree {
             if taxon.id == taxon.parent {
                 continue;
             }
-            let siblings = map.entry(taxon.parent).or_insert(Vec::new());
+            let siblings = map.entry(taxon.parent).or_insert_with(Vec::new);
             siblings.push(taxon.id);
             roots.remove(&taxon.id);
         }
@@ -240,7 +241,7 @@ impl TaxonTree {
         }
         TaxonTree {
             root: roots.into_iter().next().expect("There's no root!"),
-            max: max,
+            max,
             children: map,
         }
     }
@@ -323,9 +324,9 @@ impl EulerIterator {
         } = tree;
         EulerIterator {
             tree: TaxonTree {
-                root: root,
-                children: children,
-                max: max,
+                root,
+                children,
+                max,
             },
             path: Vec::new(),
             current: root,
@@ -339,8 +340,8 @@ impl Iterator for EulerIterator {
     type Item = (TaxonId, Depth);
 
     fn next(&mut self) -> Option<(TaxonId, Depth)> {
-        if self.currentn > self.children {
-            match self.path.pop() {
+        match self.currentn.cmp(&self.children) {
+            Greater => match self.path.pop() {
                 None => None,
                 Some((parent, currentn, children)) => {
                     self.current = parent;
@@ -348,33 +349,35 @@ impl Iterator for EulerIterator {
                     self.children = children;
                     self.next()
                 }
-            }
-        } else if self.currentn == self.children {
-            let current = self.current;
-            match self.path.pop() {
-                None => {
-                    self.current = 0;
-                    self.currentn = 1;
-                    self.children = 0;
-                    Some((self.tree.root, 0))
+            },
+            Equal => {
+                let current = self.current;
+                match self.path.pop() {
+                    None => {
+                        self.current = 0;
+                        self.currentn = 1;
+                        self.children = 0;
+                        Some((self.tree.root, 0))
+                    }
+                    Some((parent, currentn, children)) => {
+                        self.current = parent;
+                        self.currentn = currentn;
+                        self.children = children;
+                        Some((current, self.path.len() + 1))
+                    }
                 }
-                Some((parent, currentn, children)) => {
-                    self.current = parent;
-                    self.currentn = currentn;
-                    self.children = children;
-                    Some((current, self.path.len() + 1))
-                }
             }
-        } else {
-            let current = self.current;
-            // there must be unvisited children, as currentn < children
-            let children = self.tree.children.get(&current).unwrap();
-            self.path
-                .push((self.current, self.currentn + 1, self.children));
-            self.current = children[self.currentn];
-            self.currentn = 0;
-            self.children = self.tree.child_count(self.current);
-            Some((current, self.path.len() - 1))
+            Less => {
+                let current = self.current;
+                // there must be unvisited children, as currentn < children
+                let children = self.tree.children.get(&current).unwrap();
+                self.path
+                    .push((self.current, self.currentn + 1, self.children));
+                self.current = children[self.currentn];
+                self.currentn = 0;
+                self.children = self.tree.child_count(self.current);
+                Some((current, self.path.len() - 1))
+            }
         }
     }
 }
@@ -410,7 +413,7 @@ mod tests {
     use strum::IntoEnumIterator;
 
     #[test]
-    #[cfg_attr(rustfmt, rustfmt_skip)]
+    #[rustfmt::skip]
     fn test_taxon_parsing() {
         assert_eq!(Taxon::from_static(1, "root", Rank::NoRank, 1,  true),  "1	root	no rank	1	\x01".parse().unwrap());
         assert_eq!(Taxon::from_static(1, "root", Rank::Family, 1,  true),  "1	root	family	1	\x01".parse().unwrap());
@@ -426,7 +429,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg_attr(rustfmt, rustfmt_skip)]
+    #[rustfmt::skip]
     fn test_euler_tour() {
         let euler: Vec<(TaxonId, Depth)> = fixtures::tree().into_iter().collect();
         assert_eq!(

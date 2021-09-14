@@ -142,7 +142,7 @@ pub fn taxa2agg(args: TaxaToAgg) -> errors::Result<()> {
     fn with_score(pair: &String) -> errors::Result<(TaxonId, f32)> {
         let split = pair.split('=').collect::<Vec<_>>();
         if split.len() != 2 {
-            Err("Taxon without score")?;
+            return Err("Taxon without score".into());
         }
         Ok((split[0].parse::<TaxonId>()?, split[1].parse::<f32>()?))
     }

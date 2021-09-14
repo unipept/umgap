@@ -48,7 +48,7 @@ pub fn prot2kmer(args: ProtToKmer) -> errors::Result<()> {
             continue;
         }
         writer.write_record(fasta::Record {
-            header: header,
+            header,
             sequence: sequence[0]
                 .as_bytes()
                 .windows(args.length)

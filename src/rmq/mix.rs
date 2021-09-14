@@ -41,7 +41,7 @@ impl MixCalculator {
     pub fn new(taxonomy: TaxonTree, factor: f32) -> Self {
         MixCalculator {
             lca_aggregator: LCACalculator::new(taxonomy),
-            factor: factor,
+            factor,
         }
     }
 }
@@ -53,7 +53,7 @@ fn factorize(weights: Weights, factor: f32) -> f32 {
 impl agg::Aggregator for MixCalculator {
     fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> agg::Result<TaxonId> {
         let mut weights: HashMap<TaxonId, Weights> = HashMap::with_capacity(taxons.len());
-        let mut queue: VecDeque<TaxonId> = taxons.keys().map(|&t| t).collect();
+        let mut queue: VecDeque<TaxonId> = taxons.keys().copied().collect();
 
         // We collect all relevant taxa by starting out with all given taxa and iterate until no
         // more taxa are added. In each iteration, we add the lca of each pair already in the
@@ -70,7 +70,7 @@ impl agg::Aggregator for MixCalculator {
             for (&right, &count) in taxons.iter() {
                 let lca = self.lca_aggregator.lca(left, right)?;
                 if lca == left || lca == right {
-                    let mut weight = weights.entry(left).or_insert(Weights::new());
+                    let mut weight = weights.entry(left).or_insert_with(Weights::new);
                     if lca == left {
                         weight.lca += count;
                     }
@@ -87,12 +87,12 @@ impl agg::Aggregator for MixCalculator {
             .iter()
             .max_by_key(|&(_, w)| NotNan::new(factorize(*w, self.factor)).unwrap())
             .map(|tup| *tup.0)
-            .ok_or(agg::ErrorKind::EmptyInput.into())
+            .ok_or_else(|| agg::ErrorKind::EmptyInput.into())
     }
 }
 
 #[cfg(test)]
-#[cfg_attr(rustfmt, rustfmt_skip)]
+#[rustfmt::skip]
 mod tests {
     use super::MixCalculator;
     use crate::agg::Aggregator;

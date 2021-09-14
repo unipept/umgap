@@ -11,7 +11,7 @@ pub struct LineageAggregator<T: Iterator<Item = (String, TaxonId)>>(Peekable<Lin
 impl<T: Iterator<Item = (String, TaxonId)>> LineageAggregator<T> {
     /// Aggregates the given records using a taxonomy derived from taxa.
     pub fn new(records: T, taxa: Vec<Taxon>) -> Self {
-        LineageAggregator(LineageIterator::new(records.into_iter(), taxa).peekable())
+        LineageAggregator(LineageIterator::new(records, taxa).peekable())
     }
 }
 

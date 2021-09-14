@@ -32,8 +32,8 @@ impl LCACalculator {
 
         // Result
         LCACalculator {
-            first_occurences: first_occurences,
-            euler_tour: euler_tour,
+            first_occurences,
+            euler_tour,
             rmq_info: RMQ::new(depths),
         }
     }
@@ -56,7 +56,7 @@ impl LCACalculator {
 
 impl agg::Aggregator for LCACalculator {
     fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> agg::Result<TaxonId> {
-        if taxons.len() == 0 {
+        if taxons.is_empty() {
             bail!(agg::ErrorKind::EmptyInput);
         }
         let mut indices = taxons.keys().map(|t| self.first_occurence(*t));
@@ -89,7 +89,7 @@ impl agg::Aggregator for LCACalculator {
 }
 
 #[cfg(test)]
-#[cfg_attr(rustfmt, rustfmt_skip)]
+#[rustfmt::skip]
 mod tests {
     use super::LCACalculator;
     use crate::agg::Aggregator;

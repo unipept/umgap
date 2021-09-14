@@ -74,7 +74,7 @@ pub fn filter(args: Filter) -> errors::Result<()> {
         let fasta::Record { header, sequence } = record?;
 
         writer.write_record(fasta::Record {
-            header: header,
+            header,
             sequence: sequence
                 .into_iter()
                 .filter(|seq| {
