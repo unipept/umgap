@@ -22,7 +22,8 @@ use crate::taxon;
 /// The input is given on *standard input*, or in multiple file arguments, a single taxon ID on each
 /// line. Each taxon that is more specific than the target rank is counted towards its ancestor on
 /// the target rank. Each taxon less specific than the target rank is counted towards root. The
-/// command outputs a CSV table of taxon IDs, their names, and counts for each input.
+/// command outputs a CSV table of taxon IDs, their names, and counts for each input, ordered by
+/// descending sum of counts.
 ///
 /// The taxonomy to be used is passed as first argument to this command. This is a preprocessed
 /// version of the NCBI taxonomy.
@@ -127,8 +128,14 @@ pub fn taxa2freq(args: TaxaToFreq) -> errors::Result<()> {
         }
     }
 
+    // Sort rows by total sum
+    let mut sorted_counts = counts
+        .into_iter()
+        .collect::<Vec<(taxon::TaxonId, Vec<usize>)>>();
+    sorted_counts.sort_by_key(|p| p.1.iter().sum::<usize>());
+
     // Print rows
-    for (tid, row) in counts {
+    for (tid, row) in sorted_counts.into_iter().rev() {
         let taxon = by_id
             .get(tid)
             .ok_or("LCA taxon id not in taxon list. Check compatibility with index.")?;
