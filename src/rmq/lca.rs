@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 
 use crate::agg;
-use crate::rmq::rmq::RMQ;
+use crate::rmq::RMQ;
 use crate::taxon;
 use crate::taxon::TaxonId;
 
