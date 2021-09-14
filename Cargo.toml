@@ -1,6 +1,6 @@
 [package]
 name = "umgap"
-version = "0.3.7"
+version = "0.4.0"
 authors = ["Felix Van der Jeugt <felix.vanderjeugt@gmail.com>",
            "Stijn Seghers <stijn.seghers@gmail.com>",
            "Niels De Graef <Niels.DeGraef@UGent.be>",
