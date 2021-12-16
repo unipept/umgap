@@ -1,0 +1,196 @@
+#!/bin/bash
+
+set -e
+
+input_reads="data/HiSeq_input.fa"
+taxons="/run/shm/taxons.tsv"
+tryptic_index="/run/shm/tryptic.index"
+ninemer_index="/data/felix/database/2021-06-02/9-mer.index"
+
+# ====================================================================
+# Prediction
+
+fgs() {
+    local input="$(mktemp)"
+    local output="$(mktemp --suffix='.faa')"
+
+    cat - > "$input"
+
+    (
+        trap "rm '$input' '$output' '${output%.faa}.ffn' '${output%.faa}.out'" EXIT INT TERM HUP
+        cd ../FragGeneScan1.31/
+        ./FragGeneScan -s "$input" -o "${output%.faa}" -w 0 -t "illumina_10" -p 16 > /dev/null
+        cat "$output"
+    )
+}
+
+fgsrs() {
+    FragGeneScanRs -w 0 -t "illumina_10" -p 16
+}
+
+ft6() {
+    umgap translate -a -t11
+}
+
+# ====================================================================
+# Splitting in peptides and looking them up
+
+tryptic() {
+    minlength="$1"
+    maxlength="$2"
+    umgap prot2tryp2lca -o -m -l"$minlength" -L"$maxlength" "$tryptic_index"
+}
+
+kmer9() {
+    # umgap prot2kmer2lca -o -s /tmp/umgap-socket -m -k9 "$ninemer_index"
+    nc -NU /tmp/umgap-socket
+}
+
+seedextend() {
+    # umgap prot2kmer2lca -o -s /tmp/umgap-socket -m -k9 "$ninemer_index"
+    maxgap="$1"
+    minseed="$2"
+    nc -NU /tmp/umgap-socket | umgap seedextend -g "$maxgap" -s "$minseed"
+}
+
+# ====================================================================
+# Joining
+
+taxa2agg() {
+    percentage="$1"
+    minfreq="$2"
+    case "$percentage" in
+    0) aggregator="-m rmq -a mrtl" ;;
+    25) aggregator="-a hybrid -f 0.25" ;;
+    50) aggregator="-a hybrid -f 0.5" ;;
+    75) aggregator="-a hybrid -f 0.75" ;;
+    100) aggregator="-m rmq -a lca*" ;;
+    esac
+    umgap uniq | umgap taxa2agg $aggregator -l "$minfreq" "$taxons"
+}
+
+# ====================================================================
+# Comparing
+
+compare() {
+    sed -e '/^>/!s/,.*//' -e 's/^$/1/' -e '/^>/s/>\(.*\)\..*/\1/' \
+        | umgap snaptaxon -r genus "$taxons" \
+        | sed 'N;s/\n/=/;p;d' \
+        | sed -e 'itotal' -e 's/^1=1$/TN/' -e 's/^\(.*\)=\1$/TP/' -e 's/^1=.*$/FP/' -e 's/^.*=1$/FN/' -e 's/^.*=.*$/FP/' \
+        | sort \
+        | uniq -c
+}
+
+# ====================================================================
+# Benchmark
+
+result="$(mktemp)"
+trap "rm '$result'" EXIT INT TERM HUP
+
+# wait for the socket
+while ! test -e /tmp/umgap-socket \
+  && echo "please start 'umgap prot2kmer2lca -o -s /tmp/umgap-socket -m -k9 '$ninemer_index'' somewhere" >&2 \
+  && sleep 10s; do
+	true
+done
+
+for prediction in "fgsrs" "fgs" "ft6"; do
+for aggregator in $(seq 0 25 100); do
+for minfreq in $(seq 5); do
+for minlength in ""; do
+for maxlength in ""; do
+
+	start="$(date +%s)"
+	"$prediction" < "$input_reads" \
+		| kmer9 \
+		| taxa2agg $aggregator $minfreq \
+		| compare > "$result"
+	stop="$(date +%s)"
+
+	#       t   dt  p   a   mf  agg a1  a2  tot fp  tn  fn  tp
+	printf '%s\t%d\t%s\t%d\t%d\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\n' \
+		"$(date -Is)" \
+		"$((stop - start))" \
+		"$prediction" \
+		"$aggregator" \
+		"$minfreq" \
+		"kmer" \
+		"" \
+		"" \
+		"$(sed -n '/total/s/ *\([0-9]*\).*/\1/p' "$result")" \
+		"$(sed -n '/FP/s/ *\([0-9]*\).*/\1/p' "$result")" \
+		"$(sed -n '/TN/s/ *\([0-9]*\).*/\1/p' "$result")" \
+		"$(sed -n '/FN/s/ *\([0-9]*\).*/\1/p' "$result")" \
+		"$(sed -n '/TP/s/ *\([0-9]*\).*/\1/p' "$result")"
+
+	for maxgap in $(seq 0 4); do
+	for minseed in $(seq 2 4); do
+
+		start="$(date +%s)"
+		"$prediction" < "$input_reads" \
+			| seedextend $maxgap $minseed \
+			| taxa2agg $aggregator $minfreq \
+			| compare > "$result"
+		stop="$(date +%s)"
+
+		#       t   dt  p   a   mf  agg a1  a2  tot fp  tn  fn  tp
+		printf '%s\t%d\t%s\t%d\t%d\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n' \
+			"$(date -Is)" \
+			"$((stop - start))" \
+			"$prediction" \
+			"$aggregator" \
+			"$minfreq" \
+			"seed" \
+			"$maxgap" \
+			"$minseed" \
+			"$(sed -n '/total/s/ *\([0-9]*\).*/\1/p' "$result")" \
+			"$(sed -n '/FP/s/ *\([0-9]*\).*/\1/p' "$result")" \
+			"$(sed -n '/TN/s/ *\([0-9]*\).*/\1/p' "$result")" \
+			"$(sed -n '/FN/s/ *\([0-9]*\).*/\1/p' "$result")" \
+			"$(sed -n '/TP/s/ *\([0-9]*\).*/\1/p' "$result")"
+
+	done
+	done
+
+done
+done
+done
+done
+done
+
+exit
+
+for prediction in "fgs" "fgsrs" "ft6"; do
+for aggregator in $(seq 0 25 100); do
+for minfreq in $(seq 5); do
+for minlength in $(seq 5 10); do
+for maxlength in $(seq 45 50); do
+
+	start="$(date +%s)"
+	"$prediction" < "$input_reads" \
+		| tryptic $minlength $maxlength \
+		| taxa2agg $aggregator $minfreq \
+		| compare > "$result"
+	stop="$(date +%s)"
+
+	#       t   dt  p   a   mf  agg a1  a2  tot fp  tn  fn  tp
+	printf '%s\t%d\t%s\t%d\t%d\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n' \
+		"$(date -Is)" \
+		"$((stop - start))" \
+		"$prediction" \
+		"$aggregator" \
+		"$minfreq" \
+		"tryp" \
+		"$minlength" \
+		"$maxlength" \
+		"$(sed -n '/total/s/ *\([0-9]*\).*/\1/p' "$result")" \
+		"$(sed -n '/FP/s/ *\([0-9]*\).*/\1/p' "$result")" \
+		"$(sed -n '/TN/s/ *\([0-9]*\).*/\1/p' "$result")" \
+		"$(sed -n '/FN/s/ *\([0-9]*\).*/\1/p' "$result")" \
+		"$(sed -n '/TP/s/ *\([0-9]*\).*/\1/p' "$result")"
+
+done
+done
+done
+done
+done
