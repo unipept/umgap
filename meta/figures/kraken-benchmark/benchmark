@@ -158,8 +158,6 @@ done
 done
 done
 
-exit
-
 for prediction in "fgs" "fgsrs" "ft6"; do
 for aggregator in $(seq 0 25 100); do
 for minfreq in $(seq 5); do

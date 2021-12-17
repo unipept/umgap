@@ -1,58 +1,66 @@
 #!/bin/python
 
 import sys
-import math
+from math import sqrt
 from collections import namedtuple, defaultdict
 from itertools import product
 from functools import partial
 import drawSvg as draw # pip install drawSvg
 
+class Run:
+	__slots__ = [ "exectime_s", "translator", "aggregator_p", "minfreq",
+		"fragmentor", "maxgap_mintryp", "minseed_maxtryp", "identified_reads",
+		"fp", "tn", "fn", "tp", "sensitivity", "precision", "specificity",
+		"npv", "mcc" ]
 
-Run = namedtuple('Run', ['tp', 'fn', 'fp', 'tn', 'time', 'sensitivity', 'precision', 'tool'])
+	def __init__(self, realtot, d, dt, p, a, mf, f, a1, a2, tot, fp, tn, fn, tp):
+		self.exectime_s = int(dt)
+		self.translator = p
+		self.aggregator_p = int(a)
+		self.minfreq = int(mf)
+		self.fragmentor = f
+		self.maxgap_mintryp = int(a1) if a1 else None
+		self.minseed_maxtryp = int(a2) if a2 else None
+		self.identified_reads = int(tot)
+		fp = int(fp)
+		tn = int(tn)
+		fn = int(fn) + max(0, realtot - int(tot)) # assuming no true negatives
+		tp = int(tp)
+		self.fp = fp
+		self.tn = tn
+		self.fn = fn
+		self.tp = tp
+		self.sensitivity = tp / max(0.0001, tp + fn)
+		self.precision = tp / max(0.0001, tp + fp)
+		self.specificity = tn / max(0.0001, tn + fp)
+		self.npv = tn / max(0.0001, tn + fn)
+		self.mcc = (tp*tn - fp*fn) / max(0.0001, sqrt((tp + fp)*(tp + fn)*(tn + fp)*(tn + fn)))
 
-def chunks(infile):
-	chunk = {}
-	with open(infile) as stream:
-		for line in stream:
-			line = line.strip()
-			if not line: pass
-			elif 'FN' in line: chunk['fn'] = int(line.split()[0])
-			elif 'FP' in line: chunk['fp'] = int(line.split()[0])
-			elif 'total' in line: chunk['total'] = int(line.split()[0])
-			elif 'TP' in line: chunk['tp'] = int(line.split()[0])
-			elif 'real' in line: chunk['real'] = float(line.split()[-1][2:-1])
-			elif 'user' in line: pass
-			elif 'sys' in line:
-				yield chunk
-				chunk = {}
-			else: chunk['name'] = line
+def parse_results(infile, reads):
+	with open(infile) as f:
+		for line in f:
+			yield Run(reads, *line.split("\t"))
 
-def parse_results(infile):
-	for chunk in chunks(infile):
-		name = chunk['name']
-		tp = chunk.get('tp', 0)
-		#tn = chunk.get('tn', 0)
-		fn = chunk.get('fn', 0)
-		fp = chunk.get('fp', 0)
-		real = chunk['real']
-	
-		sensitivity = tp / (tp + fn)
-		precision = tp / (tp + fp)
-		#specificity = tn / (tn + fp)
-		#npv = tn / (tn + fn)
-		#mcc = (tp*tn - fp*fn) / sqrt((tp + fp)*(tp + fn)*(tn + fp)*(tn + fn))
-	
-		yield Run(tp, fn, fp, 0, real, sensitivity, precision, name)
-
-def show(imgfile, colour_function, infile='HiSeq.benchmark.output', b=0.0, t=1.0, l=0.0, r=1.0):
+def show(imgfile, colour_function, infile='2021-06-02.HiSeq.output', reads=10000, b=0.0, t=1.0, l=0.0, r=1.0):
 	width = 1000
 	height = 700
 	d = draw.Drawing(width, height, viewport_fill='white')
 	d.append(draw.Rectangle(0, 0, width, height, fill='white'))
-	for run in parse_results(infile):
-		colour = colour_function(run.tool)
+	for run in parse_results(infile, reads):
+		colour = colour_function(run)
 		if not colour: continue
-		d.append(draw.Circle(width * (run.sensitivity - l) / (r - l), height * (run.precision - b) / (t - b), 4, fill_opacity=0, stroke_width=2, stroke=colour))
+		x = width * (run.sensitivity - l) / (r - l)
+		y = height * (run.precision - b) / (t - b)
+		if x >= 0.001:
+			if y >= 0.001:
+				d.append(draw.Circle(x, y, 4, fill_opacity=0, stroke_width=2, stroke=colour))
+			else:
+				d.append(draw.Lines(x - 4, 8, x, 0, x + 4, 8, fill_opacity=0, stroke_width=1, stroke=colour))
+		else:
+			if y >= 0.001:
+				d.append(draw.Lines(8, y - 4, 0, y, 8, y + 4, fill_opacity=0, stroke_width=1, stroke=colour))
+			else:
+				d.append(draw.Lines(8, 4, 0, 0, 4, 8, fill_opacity=0, stroke_width=1, stroke=colour))
 	d.saveSvg(imgfile)
 
 def plot(colour_function, name=None, **kwargs):
@@ -70,73 +78,66 @@ colours = [ blue := '#4e79a7'
           , gray := '#bab0ac'
           ]
 
-def digestor(name):
-	return blue  if 'tryptic' in name else orange
+def fragmentor(run):
+	return blue if run.fragmentor == 'tryp' else orange
 
-def tryptic_translator(name):
-	if 'tryptic' not in name: return None
-	if 'ft6' in name: return blue
-	if 'fgspp' in name: return orange
-	if 'fgs' in name: return cyan
+def tryptic_translator(run):
+	if run.fragmentor != 'tryp': return None
+	return dict(ft6=blue, fgsrs=orange, fgs=cyan).get(run.translator)
+
+def tryptic_length(run):
+	if run.fragmentor != 'tryp': return None
+	return colours[run.maxgap_mintryp - 5]
+
+def tryptic_freq(run):
+	if run.fragmentor != 'tryp': return None
+	return colours[run.minfreq - 1]
+
+def kmer_seedornot(run):
+	return dict(kmer=blue, seed=orange).get(run.fragmentor)
+
+def seedextend_translator(run):
+	if run.fragmentor != 'seed': return None
+	return dict(ft6=blue, fgsrs=orange, fgs=cyan).get(run.translator)
+
+def seedextend_translator_seedsize(run):
+	if run.fragmentor != 'seed': return None
+	if run.translator == 'ft6': return colours[run.minseed_maxtryp - 2]
+	if run.translator == 'fgsrs': return colours[run.minseed_maxtryp + 1]
 	return None
 
-def tryptic_length(name):
-	if 'tryptic' not in name: return None
-	return colours[int(name.split()[-2]) - 5]
+def seedextend_settranslator_seedsize(translator, run):
+	if run.fragmentor != 'seed': return None
+	if run.translator != translator: return None
+	return colours[run.minseed_maxtryp + 2]
 
-def tryptic_freq(name):
-	if 'tryptic' not in name: return None
-	return colours[int(name.split()[-4]) - 1]
+def seedextend_settranslator_freq(translator, run):
+	if run.fragmentor != 'seed': return None
+	if run.translator != translator: return None
+	return colours[run.minfreq - 1]
 
-def kmer_seedornot(name):
-	if 'kmer' in name: return blue
-	if 'seedextend' in name and 'scored' not in name: return orange
-	return None
-
-def seedextend_translator(name):
-	if 'seedextend' not in name or 'scored' in name: return None
-	if 'ft6' in name: return blue
-	if 'fgspp' in name: return orange
-	if 'fgs' in name: return cyan
-	return None
-
-def seedextend_translator_seedsize(name):
-	if 'seedextend' not in name or 'scored' in name: return None
-	if 'ft6' in name: return colours[int(name.split()[-1]) - 2]
-	if 'fgs ' in name: return colours[int(name.split()[-1]) + 1]
-	return None
-
-def seedextend_settranslator_seedsize(translator, name):
-	if 'seedextend' not in name or 'scored' in name: return None
-	if translator not in name: return None
-	return colours[int(name.split()[-1]) + 2]
-
-def seedextend_settranslator_freq(translator, name):
-	if 'seedextend' not in name or 'scored' in name: return None
-	if translator not in name: return None
-	return colours[int(name.split()[-4]) - 1]
-
-def seedextend_settranslator_profiler(translator, name):
-	if 'seedextend' not in name or 'scored' in name: return None
-	if translator not in name: return None
-	if 'LCA*' in name or 'lca*' in name: return blue
-	if 'hybrid -f 0.75' in name: return orange
-	if 'hybrid -f 0.5' in name: return red
-	if 'hybrid -f 0.25' in name: return cyan
-	if 'mrtl' in name: return green
-	return None
+def seedextend_settranslator_profiler(translator, run):
+	if run.fragmentor != 'seed': return None
+	if run.translator != translator: return None
+	return {
+		100: blue, # LCA*
+		75: orange, # hybrid -f 0.75
+		50: red, # hybrid -f 0.5
+		25: cyan, # hybrid -f 0.25
+		0: green # mrtl
+	}.get(run.aggregator_p)
 
 def main():
-	plot(digestor, b=0.5, t=1.0, l=0.0, r=1.0)
-	plot(tryptic_translator, b=0.5, t=1.0, l=0.0, r=0.6)
-	plot(tryptic_length, b=0.5, t=1.0, l=0.0, r=0.6)
-	plot(tryptic_freq, b=0.5, t=1.0, l=0.0, r=0.6)
+	plot(fragmentor, b=0.3, t=1.0, l=0.0, r=1.0) # 0.3 and 0.0
+	plot(tryptic_translator, b=0.3, t=1.0, l=0.0, r=0.3)
+	plot(tryptic_length, b=0.3, t=1.0, l=0.0, r=0.3)
+	plot(tryptic_freq, b=0.3, t=1.0, l=0.0, r=0.3)
 	plot(kmer_seedornot, b=0.5, t=1.0, l=0.0, r=1.0)
 	plot(seedextend_translator, b=0.9, t=1.0, l=0.4, r=1.0)
 	plot(seedextend_translator_seedsize, b=0.9, t=1.0, l=0.4, r=1.0)
 	plot(partial(seedextend_settranslator_seedsize, 'ft6'), name='seedextend_6ft_seedsize', b=0.9, t=1.0, l=0.4, r=1.0)
-	plot(partial(seedextend_settranslator_seedsize, 'fgs '), name='seedextend_fgs_seedsize', b=0.9, t=1.0, l=0.4, r=1.0)
+	plot(partial(seedextend_settranslator_seedsize, 'fgsrs'), name='seedextend_fgsrs_seedsize', b=0.9, t=1.0, l=0.4, r=1.0)
 	plot(partial(seedextend_settranslator_freq, 'ft6'), name='seedextend_6ft_freq', b=0.9, t=1.0, l=0.4, r=1.0)
-	plot(partial(seedextend_settranslator_freq, 'fgs '), name='seedextend_fgs_freq', b=0.9, t=1.0, l=0.4, r=1.0)
+	plot(partial(seedextend_settranslator_freq, 'fgsrs'), name='seedextend_fgsrs_freq', b=0.9, t=1.0, l=0.4, r=1.0)
 	plot(partial(seedextend_settranslator_profiler, 'ft6'), name='seedextend_6ft_profiler', b=0.9, t=1.0, l=0.4, r=1.0)
-	plot(partial(seedextend_settranslator_profiler, 'fgs '), name='seedextend_fgs_profiler', b=0.9, t=1.0, l=0.4, r=1.0)
+	plot(partial(seedextend_settranslator_profiler, 'fgsrs'), name='seedextend_fgsrs_profiler', b=0.9, t=1.0, l=0.4, r=1.0)
