@@ -36,6 +36,9 @@ class Run:
 		self.npv = tn / max(0.0001, tn + fn)
 		self.mcc = (tp*tn - fp*fn) / max(0.0001, sqrt((tp + fp)*(tp + fn)*(tn + fp)*(tn + fn)))
 
+	def __repr__(self):
+		return " ".join(f"{k}={getattr(self, k)}" for k in Run.__slots__)
+
 def parse_results(infile, reads):
 	with open(infile) as f:
 		for line in f:

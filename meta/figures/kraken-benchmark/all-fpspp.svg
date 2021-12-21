@@ -6,8 +6,8 @@
    viewport-fill="white"
    version="1.1"
    id="svg126"
-   sodipodi:docname="all.svg"
-   inkscape:version="1.1 (c68e22c387, 2021-05-23)"
+   sodipodi:docname="all-fpspp.svg"
+   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
    inkscape:export-filename="/data/programming/unipept/metapept/articles/2020 UMGAP/figures/metabenchmark/species.png"
    inkscape:export-xdpi="96"
    inkscape:export-ydpi="96"
@@ -5487,9 +5487,9 @@
      inkscape:window-height="1080"
      id="namedview128"
      showgrid="false"
-     inkscape:zoom="0.3005"
-     inkscape:cx="2028.2862"
-     inkscape:cy="1163.0616"
+     inkscape:zoom="1.202"
+     inkscape:cx="497.08819"
+     inkscape:cy="44.509151"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="0"
@@ -5504,6 +5504,20 @@
      inkscape:pagecheckerboard="0" />
   <defs
      id="defs2">
+    <marker
+       style="overflow:visible"
+       id="Arrow1Sstart"
+       refX="0.0"
+       refY="0.0"
+       orient="auto"
+       inkscape:stockid="Arrow1Sstart"
+       inkscape:isstock="true">
+      <path
+         transform="scale(0.2) translate(6,0)"
+         style="fill-rule:evenodd;fill:context-stroke;stroke:context-stroke;stroke-width:1.0pt"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         id="path155159" />
+    </marker>
     <rect
        x="18.295129"
        y="-374.52677"
@@ -156089,18 +156103,17 @@
        id="circle81968" />
     <text
        xml:space="preserve"
-       style="font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';letter-spacing:0px;writing-mode:lr-tb"
+       style="font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';letter-spacing:0px;writing-mode:lr-tb;white-space:pre;inline-size:281.328"
        x="185.26189"
        y="147.47656"
        id="text81972"><tspan
-         sodipodi:role="line"
-         id="tspan81970"
          x="185.26189"
-         y="147.47656">Filtered with seed-and-extend</tspan><tspan
-         sodipodi:role="line"
+         y="147.47656"
+         id="tspan179371">Filtered with seed-and-extend
+</tspan><tspan
          x="185.26189"
          y="170.80994"
-         id="tspan81974">Without filtering</tspan></text>
+         id="tspan179373">Without filtering</tspan></text>
   </g>
   <g
      id="g156268">
@@ -156129,18 +156142,17 @@
        id="circle97713" />
     <text
        xml:space="preserve"
-       style="font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';letter-spacing:0px;writing-mode:lr-tb"
+       style="font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';letter-spacing:0px;writing-mode:lr-tb;white-space:pre;inline-size:206.221"
        x="838.50146"
        y="274.79614"
        id="text97719"><tspan
-         sodipodi:role="line"
-         id="tspan97715"
          x="838.50146"
-         y="274.79614">9-mer fragmentation</tspan><tspan
-         sodipodi:role="line"
+         y="274.79614"
+         id="tspan179375">9-mer fragmentation
+</tspan><tspan
          x="838.50146"
          y="298.12952"
-         id="tspan97717">Tryptic fragmentation</tspan></text>
+         id="tspan179377">Tryptic fragmentation</tspan></text>
   </g>
   <g
      id="g97766">
@@ -156169,22 +156181,21 @@
        id="circle97727" />
     <text
        xml:space="preserve"
-       style="font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';letter-spacing:0px;writing-mode:lr-tb"
+       style="font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';letter-spacing:0px;writing-mode:lr-tb;white-space:pre;inline-size:282.005"
        x="3089.8157"
        y="264.28317"
        id="text97733"><tspan
-         sodipodi:role="line"
          x="3089.8157"
          y="264.28317"
-         id="tspan97737">Seed-and-extend with FGS</tspan><tspan
-         sodipodi:role="line"
+         id="tspan179379">Seed-and-extend with FGS
+</tspan><tspan
          x="3089.8157"
          y="287.61655"
-         id="tspan97743">Seed-and-extend with FGS++</tspan><tspan
-         sodipodi:role="line"
+         id="tspan179381">Seed-and-extend with FGS++
+</tspan><tspan
          x="3089.8157"
          y="310.94992"
-         id="tspan97745">Seed-and-extend with 6FT</tspan></text>
+         id="tspan179383">Seed-and-extend with 6FT</tspan></text>
     <circle
        cx="3068.1243"
        cy="258.55585"
@@ -156224,34 +156235,33 @@
        style="stroke:#b07aa1;stroke-opacity:1" />
     <text
        xml:space="preserve"
-       style="font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';letter-spacing:0px;writing-mode:lr-tb"
+       style="font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';letter-spacing:0px;writing-mode:lr-tb;white-space:pre;inline-size:475.958"
        x="4062.6582"
        y="194.28317"
        id="text97780"><tspan
-         sodipodi:role="line"
          x="4062.6582"
          y="194.28317"
-         id="tspan97774">Seed-and-extend with FGS &amp; minimum seed size 2</tspan><tspan
-         sodipodi:role="line"
+         id="tspan179385">Seed-and-extend with FGS &amp; minimum seed size 2
+</tspan><tspan
          x="4062.6582"
          y="217.61655"
-         id="tspan97776">Seed-and-extend with FGS &amp; minimum seed size 3</tspan><tspan
-         sodipodi:role="line"
+         id="tspan179387">Seed-and-extend with FGS &amp; minimum seed size 3
+</tspan><tspan
          x="4062.6582"
          y="240.94992"
-         id="tspan97794">Seed-and-extend with FGS &amp; minimum seed size 4</tspan><tspan
-         sodipodi:role="line"
+         id="tspan179389">Seed-and-extend with FGS &amp; minimum seed size 4
+</tspan><tspan
          x="4062.6582"
          y="264.28329"
-         id="tspan97778">Seed-and-extend with 6FT &amp; minimum seed size 2</tspan><tspan
-         sodipodi:role="line"
+         id="tspan179391">Seed-and-extend with 6FT &amp; minimum seed size 2
+</tspan><tspan
          x="4062.6582"
          y="287.61667"
-         id="tspan97796">Seed-and-extend with 6FT &amp; minimum seed size 3</tspan><tspan
-         sodipodi:role="line"
+         id="tspan179393">Seed-and-extend with 6FT &amp; minimum seed size 3
+</tspan><tspan
          x="4062.6582"
          y="310.95004"
-         id="tspan97800">Seed-and-extend with 6FT &amp; minimum seed size 4</tspan></text>
+         id="tspan179395">Seed-and-extend with 6FT &amp; minimum seed size 4</tspan></text>
     <circle
        cx="4042.5601"
        cy="258.81488"
@@ -156319,22 +156329,21 @@
        style="stroke:#edc948;stroke-opacity:1" />
     <text
        xml:space="preserve"
-       style="font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';letter-spacing:0px;writing-mode:lr-tb"
+       style="font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';letter-spacing:0px;writing-mode:lr-tb;white-space:pre;inline-size:492.361"
        x="4025.2505"
        y="1066.8713"
        id="text97856"><tspan
-         sodipodi:role="line"
          x="4025.2505"
          y="1066.8713"
-         id="tspan97850">6FT and seed-and-extend with minimum seed size 2</tspan><tspan
-         sodipodi:role="line"
+         id="tspan179397">6FT and seed-and-extend with minimum seed size 2
+</tspan><tspan
          x="4025.2505"
          y="1090.2047"
-         id="tspan97852">6FT and seed-and-extend with minimum seed size 3</tspan><tspan
-         sodipodi:role="line"
+         id="tspan179399">6FT and seed-and-extend with minimum seed size 3
+</tspan><tspan
          x="4025.2505"
          y="1113.5381"
-         id="tspan97854">6FT and seed-and-extend with minimum seed size 4</tspan></text>
+         id="tspan179401">6FT and seed-and-extend with minimum seed size 4</tspan></text>
     <circle
        cx="4013.5591"
        cy="1061.1439"
@@ -162396,22 +162405,21 @@
      style="stroke:#edc948;stroke-opacity:1" />
   <text
      xml:space="preserve"
-     style="font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';letter-spacing:0px;writing-mode:lr-tb"
+     style="font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';letter-spacing:0px;writing-mode:lr-tb;white-space:pre;inline-size:494.653"
      x="2875.8164"
      y="1066.8713"
      id="text156005"><tspan
-       sodipodi:role="line"
        x="2875.8164"
        y="1066.8713"
-       id="tspan155999">FGS and seed-and-extend with minimum seed size 2</tspan><tspan
-       sodipodi:role="line"
+       id="tspan179403">FGS and seed-and-extend with minimum seed size 2
+</tspan><tspan
        x="2875.8164"
        y="1090.2047"
-       id="tspan156001">FGS and seed-and-extend with minimum seed size 3</tspan><tspan
-       sodipodi:role="line"
+       id="tspan179405">FGS and seed-and-extend with minimum seed size 3
+</tspan><tspan
        x="2875.8164"
        y="1113.5381"
-       id="tspan156003">FGS and seed-and-extend with minimum seed size 4</tspan></text>
+       id="tspan179407">FGS and seed-and-extend with minimum seed size 4</tspan></text>
   <circle
      cx="2862.125"
      cy="1061.1439"
@@ -162450,30 +162458,29 @@
        style="stroke:#76b7b2;stroke-opacity:1" />
     <text
        xml:space="preserve"
-       style="font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';letter-spacing:0px;writing-mode:lr-tb"
+       style="font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';letter-spacing:0px;writing-mode:lr-tb;white-space:pre;inline-size:439.46"
        x="4102.6582"
        y="1854.3154"
        id="text156043"><tspan
-         sodipodi:role="line"
          x="4102.6582"
          y="1854.3154"
-         id="tspan156041">6FT, seed-and-extend &amp; minimum frequency 1</tspan><tspan
-         sodipodi:role="line"
+         id="tspan179409">6FT, seed-and-extend &amp; minimum frequency 1
+</tspan><tspan
          x="4102.6582"
          y="1877.6488"
-         id="tspan156071">6FT, seed-and-extend &amp; minimum frequency 2</tspan><tspan
-         sodipodi:role="line"
+         id="tspan179411">6FT, seed-and-extend &amp; minimum frequency 2
+</tspan><tspan
          x="4102.6582"
          y="1900.9822"
-         id="tspan156073">6FT, seed-and-extend &amp; minimum frequency 3</tspan><tspan
-         sodipodi:role="line"
+         id="tspan179413">6FT, seed-and-extend &amp; minimum frequency 3
+</tspan><tspan
          x="4102.6582"
          y="1924.3156"
-         id="tspan156075">6FT, seed-and-extend &amp; minimum frequency 4</tspan><tspan
-         sodipodi:role="line"
+         id="tspan179415">6FT, seed-and-extend &amp; minimum frequency 4
+</tspan><tspan
          x="4102.6582"
-         y="1947.6489"
-         id="tspan156077">6FT, seed-and-extend &amp; minimum frequency 5</tspan></text>
+         y="1947.649"
+         id="tspan179417">6FT, seed-and-extend &amp; minimum frequency 5</tspan></text>
     <circle
        cx="4088.5601"
        cy="1896.8472"
@@ -162531,30 +162538,29 @@
        style="stroke:#76b7b2;stroke-opacity:1" />
     <text
        xml:space="preserve"
-       style="font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';letter-spacing:0px;writing-mode:lr-tb"
+       style="font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';letter-spacing:0px;writing-mode:lr-tb;white-space:pre;inline-size:442.214"
        x="2929.8159"
        y="1854.3154"
        id="text156124"><tspan
-         sodipodi:role="line"
          x="2929.8159"
          y="1854.3154"
-         id="tspan156114">FGS, seed-and-extend &amp; minimum frequency 1</tspan><tspan
-         sodipodi:role="line"
+         id="tspan179419">FGS, seed-and-extend &amp; minimum frequency 1
+</tspan><tspan
          x="2929.8159"
          y="1877.6488"
-         id="tspan156116">FGS, seed-and-extend &amp; minimum frequency 2</tspan><tspan
-         sodipodi:role="line"
+         id="tspan179421">FGS, seed-and-extend &amp; minimum frequency 2
+</tspan><tspan
          x="2929.8159"
          y="1900.9822"
-         id="tspan156118">FGS, seed-and-extend &amp; minimum frequency 3</tspan><tspan
-         sodipodi:role="line"
+         id="tspan179423">FGS, seed-and-extend &amp; minimum frequency 3
+</tspan><tspan
          x="2929.8159"
          y="1924.3156"
-         id="tspan156120">FGS, seed-and-extend &amp; minimum frequency 4</tspan><tspan
-         sodipodi:role="line"
+         id="tspan179425">FGS, seed-and-extend &amp; minimum frequency 4
+</tspan><tspan
          x="2929.8159"
-         y="1947.6489"
-         id="tspan156122">FGS, seed-and-extend &amp; minimum frequency 5</tspan></text>
+         y="1947.649"
+         id="tspan179427">FGS, seed-and-extend &amp; minimum frequency 5</tspan></text>
     <circle
        cx="2915.7178"
        cy="1896.8472"
@@ -162613,30 +162619,29 @@
        style="stroke:#76b7b2;stroke-opacity:1" />
     <text
        xml:space="preserve"
-       style="font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';letter-spacing:0px;writing-mode:lr-tb"
+       style="font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';letter-spacing:0px;writing-mode:lr-tb;white-space:pre;inline-size:436.04"
        x="4102.6582"
        y="1854.3154"
        id="text156206"><tspan
-         sodipodi:role="line"
          x="4102.6582"
          y="1854.3154"
-         id="tspan156196">6FT, seed-and-extend &amp; LCA* profiling</tspan><tspan
-         sodipodi:role="line"
+         id="tspan179429">6FT, seed-and-extend &amp; LCA* profiling
+</tspan><tspan
          x="4102.6582"
          y="1877.6488"
-         id="tspan156198">6FT, seed-and-extend &amp; hybrid profiling (0.25)</tspan><tspan
-         sodipodi:role="line"
+         id="tspan179431">6FT, seed-and-extend &amp; hybrid profiling (0.25)
+</tspan><tspan
          x="4102.6582"
          y="1900.9822"
-         id="tspan156200">6FT, seed-and-extend &amp; hybrid profiling (0.5)</tspan><tspan
-         sodipodi:role="line"
+         id="tspan179433">6FT, seed-and-extend &amp; hybrid profiling (0.5)
+</tspan><tspan
          x="4102.6582"
          y="1924.3156"
-         id="tspan156202">6FT, seed-and-extend &amp; hybrid profiling (0.75)</tspan><tspan
-         sodipodi:role="line"
+         id="tspan179435">6FT, seed-and-extend &amp; hybrid profiling (0.75)
+</tspan><tspan
          x="4102.6582"
-         y="1947.6489"
-         id="tspan156204">6FT, seed-and-extend &amp; MRTL profiling</tspan></text>
+         y="1947.649"
+         id="tspan179437">6FT, seed-and-extend &amp; MRTL profiling</tspan></text>
     <circle
        cx="4088.5601"
        cy="1896.8472"
@@ -162695,30 +162700,29 @@
        style="stroke:#76b7b2;stroke-opacity:1" />
     <text
        xml:space="preserve"
-       style="font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';letter-spacing:0px;writing-mode:lr-tb"
+       style="font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';letter-spacing:0px;writing-mode:lr-tb;white-space:pre;inline-size:437.177"
        x="4102.6582"
        y="1854.3154"
        id="text156246"><tspan
-         sodipodi:role="line"
          x="4102.6582"
          y="1854.3154"
-         id="tspan156236">FGS, seed-and-extend &amp; LCA* profiling</tspan><tspan
-         sodipodi:role="line"
+         id="tspan179439">FGS, seed-and-extend &amp; LCA* profiling
+</tspan><tspan
          x="4102.6582"
          y="1877.6488"
-         id="tspan156238">FGS, seed-and-extend &amp; hybrid profiling (0.25)</tspan><tspan
-         sodipodi:role="line"
+         id="tspan179441">FGS, seed-and-extend &amp; hybrid profiling (0.25)
+</tspan><tspan
          x="4102.6582"
          y="1900.9822"
-         id="tspan156240">FGS, seed-and-extend &amp; hybrid profiling (0.5)</tspan><tspan
-         sodipodi:role="line"
+         id="tspan179443">FGS, seed-and-extend &amp; hybrid profiling (0.5)
+</tspan><tspan
          x="4102.6582"
          y="1924.3156"
-         id="tspan156242">FGS, seed-and-extend &amp; hybrid profiling (0.75)</tspan><tspan
-         sodipodi:role="line"
+         id="tspan179445">FGS, seed-and-extend &amp; hybrid profiling (0.75)
+</tspan><tspan
          x="4102.6582"
-         y="1947.6489"
-         id="tspan156244">FGS, seed-and-extend &amp; MRTL profiling</tspan></text>
+         y="1947.649"
+         id="tspan179447">FGS, seed-and-extend &amp; MRTL profiling</tspan></text>
     <circle
        cx="4088.5601"
        cy="1896.8472"
@@ -162779,34 +162783,34 @@
        style="stroke:#76b7b2;stroke-opacity:1" />
     <text
        xml:space="preserve"
-       style="font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:end;letter-spacing:0px;writing-mode:lr-tb;text-anchor:end"
-       x="546.77777"
+       style="font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:start;letter-spacing:0px;writing-mode:lr-tb;text-anchor:start;white-space:pre;inline-size:387.275"
+       x="174.74715"
        y="625.96082"
-       id="text156316"><tspan
-         sodipodi:role="line"
-         x="546.77777"
+       id="text156316"
+       transform="translate(-10)"><tspan
+         x="174.74715"
          y="625.96082"
-         id="tspan156314">Tryptic peptides with minimum length 5</tspan><tspan
-         sodipodi:role="line"
-         x="546.77777"
-         y="649.29419"
-         id="tspan156360">Tryptic peptides with minimum length 6</tspan><tspan
-         sodipodi:role="line"
-         x="546.77777"
-         y="672.62756"
-         id="tspan156352">Tryptic peptides with minimum length 7</tspan><tspan
-         sodipodi:role="line"
-         x="546.77777"
-         y="695.96094"
-         id="tspan156354">Tryptic peptides with minimum length 8</tspan><tspan
-         sodipodi:role="line"
-         x="546.77777"
-         y="719.29431"
-         id="tspan156356">Tryptic peptides with minimum length 9</tspan><tspan
-         sodipodi:role="line"
-         x="546.77777"
-         y="742.62769"
-         id="tspan156358">Tryptic peptides with minimum length 10</tspan></text>
+         id="tspan179449">Tryptic peptides with minimum length 5
+</tspan><tspan
+         x="174.74715"
+         y="649.29422"
+         id="tspan179451">Tryptic peptides with minimum length 6
+</tspan><tspan
+         x="174.74715"
+         y="672.62759"
+         id="tspan179453">Tryptic peptides with minimum length 7
+</tspan><tspan
+         x="174.74715"
+         y="695.96097"
+         id="tspan179455">Tryptic peptides with minimum length 8
+</tspan><tspan
+         x="174.74715"
+         y="719.29434"
+         id="tspan179457">Tryptic peptides with minimum length 9
+</tspan><tspan
+         x="174.74715"
+         y="742.62772"
+         id="tspan179459">Tryptic peptides with minimum length 10</tspan></text>
     <circle
        cx="150.01225"
        cy="666.49255"
@@ -162855,22 +162859,21 @@
        y="1877.2777" />
     <text
        xml:space="preserve"
-       style="font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:start;letter-spacing:0px;writing-mode:lr-tb;text-anchor:start"
+       style="font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:start;letter-spacing:0px;writing-mode:lr-tb;text-anchor:start;white-space:pre;inline-size:272.871"
        x="158.29492"
        y="1904.7122"
        id="text156398"><tspan
-         sodipodi:role="line"
          x="158.29492"
          y="1904.7122"
-         id="tspan156386">Tryptic peptides with FGS</tspan><tspan
-         sodipodi:role="line"
+         id="tspan179461">Tryptic peptides with FGS
+</tspan><tspan
          x="158.29492"
-         y="1928.0455"
-         id="tspan156388">Tryptic peptides with FGS++</tspan><tspan
-         sodipodi:role="line"
+         y="1928.0456"
+         id="tspan179463">Tryptic peptides with FGS++
+</tspan><tspan
          x="158.29492"
          y="1951.3789"
-         id="tspan156396">Tryptic peptides with 6FT</tspan></text>
+         id="tspan179465">Tryptic peptides with 6FT</tspan></text>
     <circle
        cx="144.01225"
        cy="1945.2439"
@@ -162930,30 +162933,29 @@
        style="stroke:#76b7b2;stroke-opacity:1" />
     <text
        xml:space="preserve"
-       style="font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:start;letter-spacing:0px;writing-mode:lr-tb;text-anchor:start"
+       style="font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:start;letter-spacing:0px;writing-mode:lr-tb;text-anchor:start;white-space:pre;inline-size:409.847"
        x="158.04662"
        y="2224.7585"
        id="text156463"><tspan
-         sodipodi:role="line"
          x="158.04662"
          y="2224.7585"
-         id="tspan156451">Tryptic peptides with minimum frequency 1</tspan><tspan
-         sodipodi:role="line"
+         id="tspan179467">Tryptic peptides with minimum frequency 1
+</tspan><tspan
          x="158.04662"
-         y="2248.092"
-         id="tspan156453">Tryptic peptides with minimum frequency 2</tspan><tspan
-         sodipodi:role="line"
+         y="2248.0921"
+         id="tspan179469">Tryptic peptides with minimum frequency 2
+</tspan><tspan
          x="158.04662"
-         y="2271.4253"
-         id="tspan156455">Tryptic peptides with minimum frequency 3</tspan><tspan
-         sodipodi:role="line"
+         y="2271.4256"
+         id="tspan179471">Tryptic peptides with minimum frequency 3
+</tspan><tspan
          x="158.04662"
-         y="2294.7588"
-         id="tspan156457">Tryptic peptides with minimum frequency 4</tspan><tspan
-         sodipodi:role="line"
+         y="2294.7591"
+         id="tspan179473">Tryptic peptides with minimum frequency 4
+</tspan><tspan
          x="158.04662"
-         y="2318.092"
-         id="tspan156461">Tryptic peptides with minimum frequency 5</tspan></text>
+         y="2318.0926"
+         id="tspan179475">Tryptic peptides with minimum frequency 5</tspan></text>
     <circle
        cx="144.01225"
        cy="2265.2903"
@@ -162986,4 +162988,94 @@
      xml:space="preserve"
      id="text156600"
      style="line-height:1.25;font-family:sans-serif;font-size:18.66670799px;-inkscape-font-specification:'sans-serif, Normal';letter-spacing:0px;writing-mode:tb-rl;white-space:pre;shape-inside:url(#rect156602)" />
+  <path
+     style="fill:none;stroke:#010100;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="M 215.46565,-338.07238 185.9124,-395.22485"
+     id="path152298"
+     sodipodi:nodetypes="cc" />
+  <text
+     xml:space="preserve"
+     style="font-size:37.3333px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle"
+     x="78.431847"
+     y="-400.12201"
+     id="text153182"><tspan
+       sodipodi:role="line"
+       id="tspan153180"
+       x="78.431847"
+       y="-400.12201">tryptic precision</tspan></text>
+  <path
+     style="fill:none;stroke:#010100;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="M 439.01312,-316.28235 311.00362,-452.65458"
+     id="path155415"
+     sodipodi:nodetypes="cc" />
+  <text
+     xml:space="preserve"
+     style="font-size:37.3333px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle"
+     x="282.78094"
+     y="-462.81555"
+     id="text155632"><tspan
+       sodipodi:role="line"
+       id="tspan155630"
+       x="282.78094"
+       y="-462.81555">tryptic sensitivity</tspan></text>
+  <text
+     xml:space="preserve"
+     style="font-size:37.3333px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle"
+     x="535.11523"
+     y="-401.93796"
+     id="text156838"><tspan
+       sodipodi:role="line"
+       id="tspan156836"
+       x="535.11523"
+       y="-401.93796">max precision</tspan></text>
+  <text
+     xml:space="preserve"
+     style="font-size:37.3333px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle"
+     x="997.48981"
+     y="-399.12225"
+     id="text156842"><tspan
+       sodipodi:role="line"
+       id="tspan156840"
+       x="997.48981"
+       y="-399.12225">high sensitivity</tspan></text>
+  <text
+     xml:space="preserve"
+     style="font-size:37.3333px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle"
+     x="988.6521"
+     y="-160.65163"
+     id="text156846"><tspan
+       sodipodi:role="line"
+       id="tspan156844"
+       x="988.6521"
+       y="-160.65163">max sensitivity</tspan></text>
+  <text
+     xml:space="preserve"
+     style="font-size:37.3333px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle"
+     x="746.69653"
+     y="-445.92346"
+     id="text156850"><tspan
+       sodipodi:role="line"
+       id="tspan156848"
+       x="746.69653"
+       y="-445.92346">high precision</tspan></text>
+  <path
+     style="fill:none;stroke:#010100;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 708.92048,-341.09913 -81.74875,-53.36084"
+     id="path158250"
+     sodipodi:nodetypes="cc" />
+  <path
+     style="fill:none;stroke:#010100;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 756.21213,-339.08981 -30.43725,-99.42067"
+     id="path158427"
+     sodipodi:nodetypes="cc" />
+  <path
+     style="fill:none;stroke:#010100;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 872.12934,-300.11098 14.01171,-90.44993"
+     id="path158680"
+     sodipodi:nodetypes="cc" />
+  <path
+     style="fill:none;stroke:#010100;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 912.48714,-252.17057 12.54161,66.87127"
+     id="path158933"
+     sodipodi:nodetypes="cc" />
 </svg>
