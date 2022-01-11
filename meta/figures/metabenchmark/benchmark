@@ -1,0 +1,209 @@
+#!/bin/bash
+
+# Meetdimensies:
+# - Specificiteit
+# - Sensitiviteit
+# - Uitvoeringstijd
+# - Geheugenvereisten
+
+# ====================================================================
+# UMGAP {{{
+
+fgs() {
+    local input="$(mktemp)"
+    local output="$(mktemp --suffix='.faa')"
+
+    cat - > "$input"
+
+    (
+        trap "rm '$input' '$output' '${output%.faa}.ffn' '${output%.faa}.out'" EXIT INT TERM HUP
+        cd ../FragGeneScan1.31
+        ./FragGeneScan -s "$input" -o "${output%.faa}" -w 0 -t "illumina_10" -p 16 > /dev/null
+        cat "$output"
+    )
+}
+
+fgspp() {
+	../FragGeneScanPlusPlus/FGSpp -s stdin -o stdout -w 0 -r "../FragGeneScanPlusPlus/train" -t "illumina_10" -p 16 -c 240
+}
+
+u=umgap
+
+taxons="/data/felix/database/2020-12-02/taxons.tsv"
+tryptic_index="/data/felix/database/2020-12-02/tryptic.fst"
+ninemer_index="/data/felix/database/2020-12-02/ninemer.fst"
+
+umgap_tryptic_precision() {
+	$u fastq2fasta "$1" "$2"                        | # intercalate paired ends
+	  fgspp                                         | # gene prediction
+	  sed '/^>/s_/.*__'                             | # remove paired end indicator
+	  $u prot2tryp2lca -m -l5 -L45 "$tryptic_index" | # map to taxa
+	  $u uniq                                       | # join ends/frames
+	  $u taxa2agg -l2 -m rmq -a mrtl "$taxons"      | # aggregate
+	  $SNAP                                         | # snap to species
+	  grep -v '^>' > "$3"                             # remove headers
+}
+
+umgap_tryptic_sensitivity() {
+	$u fastq2fasta "$1" "$2"                        | # intercalate paired ends
+	  fgspp                                         | # gene prediction
+	  sed '/^>/s_/.*__'                             | # remove paired end indicator
+	  $u prot2tryp2lca -m -l9 -L45 "$tryptic_index" | # map to taxa
+	  $u uniq                                       | # join ends/frames
+	  $u taxa2agg -l1 -m rmq -a mrtl "$taxons"      | # aggregate
+	  $SNAP                                         | # snap to species
+	  grep -v '^>' > "$3"                             # remove headers
+}
+
+umgap_max_sensitivity() {
+	$u fastq2fasta "$1" "$2"                      | # intercalate paired ends
+	  sed '/^>/s_/.*__'                           | # remove paired end indicator
+	  $u translate -a                             | # translate 6 frames
+	  $u prot2kmer2lca -m -o -k9 "$ninemer_index" | # map to taxa
+	  $u seedextend -g0 -s2                       | # filter with seed extend
+	  $u uniq                                     | # join ends/frames
+	  $u taxa2agg -l1 -m rmq -a mrtl "$taxons"    | # aggregate
+	  $SNAP                                       | # snap to species
+	  grep -v '^>' > "$3"                           # remove headers
+}
+
+umgap_high_sensitivity() {
+	$u fastq2fasta "$1" "$2"                      | # intercalate paired ends
+	  sed '/^>/s_/.*__'                           | # remove paired end indicator
+	  $u translate -a                             | # translate 6 frames
+	  $u prot2kmer2lca -m -o -k9 "$ninemer_index" | # map to taxa
+	  $u seedextend -g0 -s3                       | # filter with seed extend
+	  $u uniq                                     | # join ends/frames
+	  $u taxa2agg -l1 -m rmq -a mrtl "$taxons"    | # aggregate
+	  $SNAP                                       | # snap to species
+	  grep -v '^>' > "$3"                           # remove headers
+}
+
+umgap_max_precision() {
+	$u fastq2fasta "$1" "$2"                      | # intercalate paired ends
+	  fgspp                                       | # gene prediction
+	  sed '/^>/s_/.*__'                           | # remove paired end indicator
+	  $u prot2kmer2lca -m -o -k9 "$ninemer_index" | # map to taxa
+	  $u seedextend -g2 -s2                       | # filter with seed extend
+	  $u uniq                                     | # join ends/frames
+	  $u taxa2agg -l5 -a hybrid -f 0.75 "$taxons" | # aggregate
+	  $SNAP                                       | # snap to species
+	  grep -v '^>' > "$3"                           # remove headers
+}
+
+umgap_high_precision() {
+	$u fastq2fasta "$1" "$2"                      | # intercalate paired ends
+	  sed '/^>/s_/.*__'                           | # remove paired end indicator
+	  $u translate -a                             | # translate 6 frames
+	  $u prot2kmer2lca -m -o -k9 "$ninemer_index" | # map to taxa
+	  $u seedextend -g4 -s3                       | # filter with seed extend
+	  $u uniq                                     | # join ends/frames
+	  $u taxa2agg -l4 -a hybrid -f 0.5 "$taxons"  | # aggregate
+	  $SNAP                                       | # snap to species
+	  grep -v '^>' > "$3"                           # remove headers
+}
+
+# }}}
+
+# ====================================================================
+# Kaiju (http://kaiju.binf.ku.dk/) {{{
+
+# multiple configurations
+# de lijn-figuren uit het supplementary stelen?
+
+kaiju() {
+	kaiju/bin/kaiju -t kaiju/db/nodes.dmp -f kaiju/db/nr/kaiju_db_nr.fmi -i "$1" -j "$2" \
+		| cut -f3 | $SNAP > "$3"
+}
+
+# }}}
+
+# ====================================================================
+# Kraken (http://ccb.jhu.edu/software/kraken/) {{{
+
+kraken() {
+	kraken/bin/kraken --preload --threads 16 --db kraken/db/ --fastq-input --paired "$1" "$2" \
+		| cut -f3 | $SNAP > "$3"
+}
+
+kraken2() {
+	kraken2/target/kraken2 --threads 16 --db kraken2/database/ --paired "$1" "$2" \
+		| cut -f3 | $SNAP > "$3"
+}
+
+# }}}
+
+# ====================================================================
+# CLARK (http://clark.cs.ucr.edu/) {{{
+
+# drie varianten: default, limited mem, extra mem)
+# TODO kan ook species
+
+clark_install() {
+	./install.sh
+	./set_targets.sh "$CLARK_DATABASE" bacteria --phylum
+}
+
+clark() {
+	echo "$CLARK_DATABASE"
+	cd clark
+	CLARK_DATABASE="$CLARK_DATABASE" ./classify_metagenome.sh -P "../$1" "../$2" -R "../$3" -n 60 -m 0 -k 20
+	cd ..
+	cut -d, -f4 "${3}.csv" | sed '1d' | grep -v 'NA' | $NNSNAP > "$3"
+	rm "${3}.csv"
+}
+
+# }}}
+
+# ====================================================================
+# MG-RAST (http://www.mg-rast.org/)
+# via website of API
+#
+# EBI Metagenomics (https://www.ebi.ac.uk/metagenomics/)
+# via website
+
+# ====================================================================
+# Running
+
+ranks="
+species
+"
+#phylum
+#genus
+
+tools="
+umgap_high_precision
+umgap_high_sensitivity
+umgap_max_sensitivity
+"
+#kaiju
+#clark
+#kraken
+#kraken2
+#umgap_max_precision
+#umgap_tryptic_precision
+#umgap_tryptic_sensitivity
+
+mkdir -p output
+for rank in $ranks; do
+	data/filter_and_count.py data/accession_map.csv "$rank" "$1" paired_end_1.temp output/abundances.temp
+	data/filter_and_count.py data/accession_map.csv "$rank" "$2" paired_end_2.temp /dev/null
+
+	for tool in $tools; do
+		echo "[$(date)] $rank $tool starting"
+		SNAP="umgap snaptaxon $taxons --rank ${rank}"
+		NSNAP="umgap snaptaxon $taxons --rank ${rank}"
+		NNSNAP="umgap snaptaxon $taxons --rank ${rank}"
+		#NSNAP="umgap snaptaxon unipept-db/2019-01-24-taxons.tsv --rank ${rank}"
+		#NNSNAP="umgap snaptaxon unipept-db/2019-03-14-taxons.tsv --rank ${rank}"
+		CLARK_DATABASE="db-${rank}"
+		time "$tool" paired_end_1.temp paired_end_2.temp "output/${tool}"
+		echo "[$(date)] $rank $tool done"
+	done
+
+	cd output
+	./compare.py abundances.temp $tools
+	cd ..
+done
+
+# vim: set fdm=marker :
