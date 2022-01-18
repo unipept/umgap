@@ -1,0 +1,174 @@
+[Wed Dec 22 08:39:05 CET 2021] species umgap_tryptic_precision starting
+
+real	8m18.522s
+user	77m36.156s
+sys	51m7.280s
+[Wed Dec 22 08:47:24 CET 2021] species umgap_tryptic_precision done
+[Wed Dec 22 08:47:24 CET 2021] species umgap_new_tryptic_precision starting
+
+real	15m50.610s
+user	120m20.320s
+sys	126m32.544s
+[Wed Dec 22 09:03:14 CET 2021] species umgap_new_tryptic_precision done
+[Wed Dec 22 09:03:14 CET 2021] species umgap_tryptic_sensitivity starting
+
+real	8m36.744s
+user	79m13.480s
+sys	54m19.948s
+[Wed Dec 22 09:11:51 CET 2021] species umgap_tryptic_sensitivity done
+[Wed Dec 22 09:11:51 CET 2021] species umgap_new_tryptic_sensitivity starting
+
+real	16m26.604s
+user	128m2.344s
+sys	128m56.272s
+[Wed Dec 22 09:28:17 CET 2021] species umgap_new_tryptic_sensitivity done
+[Wed Dec 22 09:28:17 CET 2021] species umgap_max_precision starting
+
+real	17m30.618s
+user	104m16.708s
+sys	7m21.124s
+[Wed Dec 22 09:45:48 CET 2021] species umgap_max_precision done
+[Wed Dec 22 09:45:48 CET 2021] species umgap_high_precision starting
+
+real	33m56.143s
+user	260m6.632s
+sys	8m25.508s
+[Wed Dec 22 10:19:44 CET 2021] species umgap_high_precision done
+[Wed Dec 22 10:19:44 CET 2021] species umgap_high_sensitivity starting
+
+real	34m18.520s
+user	259m50.028s
+sys	8m38.348s
+[Wed Dec 22 10:54:03 CET 2021] species umgap_high_sensitivity done
+[Wed Dec 22 10:54:03 CET 2021] species umgap_max_sensitivity starting
+
+real	29m34.085s
+user	256m29.444s
+sys	8m15.248s
+[Wed Dec 22 11:23:37 CET 2021] species umgap_max_sensitivity done
+total 26431669
+tool,TP,FP,TN,FN
+umgap_tryptic_precision,284700,371,5726358,20420240,26431669
+umgap_new_tryptic_precision,328615,1209,5726358,20375487,26431669
+umgap_tryptic_sensitivity,2373605,99854,5726358,18231852,26431669
+umgap_new_tryptic_sensitivity,2683086,126258,5726358,17895967,26431669
+umgap_max_precision,8110937,52521,5726358,12541853,26431669
+umgap_high_precision,10075390,156626,5726358,10473295,26431669
+umgap_high_sensitivity,12116075,1497172,5726358,7092064,26431669
+umgap_max_sensitivity,12735847,3395293,5726358,4574171,26431669
+[Wed Dec 22 11:28:46 CET 2021] phylum umgap_tryptic_precision starting
+
+real	9m9.994s
+user	85m18.332s
+sys	57m3.928s
+[Wed Dec 22 11:37:56 CET 2021] phylum umgap_tryptic_precision done
+[Wed Dec 22 11:37:56 CET 2021] phylum umgap_new_tryptic_precision starting
+
+real	17m22.195s
+user	133m12.780s
+sys	137m53.808s
+[Wed Dec 22 11:55:19 CET 2021] phylum umgap_new_tryptic_precision done
+[Wed Dec 22 11:55:19 CET 2021] phylum umgap_tryptic_sensitivity starting
+
+real	9m6.959s
+user	83m59.900s
+sys	57m45.952s
+[Wed Dec 22 12:04:26 CET 2021] phylum umgap_tryptic_sensitivity done
+[Wed Dec 22 12:04:26 CET 2021] phylum umgap_new_tryptic_sensitivity starting
+
+real	16m46.372s
+user	126m19.896s
+sys	135m22.112s
+[Wed Dec 22 12:21:12 CET 2021] phylum umgap_new_tryptic_sensitivity done
+[Wed Dec 22 12:21:12 CET 2021] phylum umgap_max_precision starting
+
+real	14m45.036s
+user	110m32.404s
+sys	7m42.032s
+[Wed Dec 22 12:35:57 CET 2021] phylum umgap_max_precision done
+[Wed Dec 22 12:35:57 CET 2021] phylum umgap_high_precision starting
+
+real	28m41.118s
+user	276m8.684s
+sys	8m49.188s
+[Wed Dec 22 13:04:38 CET 2021] phylum umgap_high_precision done
+[Wed Dec 22 13:04:38 CET 2021] phylum umgap_high_sensitivity starting
+
+real	28m55.500s
+user	277m13.248s
+sys	8m55.680s
+[Wed Dec 22 13:33:34 CET 2021] phylum umgap_high_sensitivity done
+[Wed Dec 22 13:33:34 CET 2021] phylum umgap_max_sensitivity starting
+
+real	29m24.121s
+user	280m2.712s
+sys	8m57.908s
+[Wed Dec 22 14:02:58 CET 2021] phylum umgap_max_sensitivity done
+total 28631752
+tool,TP,FP,TN,FN
+umgap_tryptic_precision,435153,90,5726358,22470151,28631752
+umgap_new_tryptic_precision,478777,193,5726358,22426424,28631752
+umgap_tryptic_sensitivity,4423075,23232,5726358,18459087,28631752
+umgap_new_tryptic_sensitivity,4703277,24985,5726358,18177132,28631752
+umgap_max_precision,15999174,4625,5726358,6901595,28631752
+umgap_high_precision,17983341,10436,5726358,4911617,28631752
+umgap_high_sensitivity,20502541,1591863,5726358,810990,28631752
+umgap_max_sensitivity,21176931,4791366,2663455,0,28631752
+[Wed Dec 22 14:08:26 CET 2021] genus umgap_tryptic_precision starting
+
+real	9m3.574s
+user	84m45.648s
+sys	55m43.648s
+[Wed Dec 22 14:17:30 CET 2021] genus umgap_tryptic_precision done
+[Wed Dec 22 14:17:30 CET 2021] genus umgap_new_tryptic_precision starting
+
+real	17m15.782s
+user	130m38.840s
+sys	138m47.840s
+[Wed Dec 22 14:34:46 CET 2021] genus umgap_new_tryptic_precision done
+[Wed Dec 22 14:34:46 CET 2021] genus umgap_tryptic_sensitivity starting
+
+real	8m59.927s
+user	83m2.992s
+sys	56m34.500s
+[Wed Dec 22 14:43:46 CET 2021] genus umgap_tryptic_sensitivity done
+[Wed Dec 22 14:43:46 CET 2021] genus umgap_new_tryptic_sensitivity starting
+
+real	17m17.462s
+user	129m7.892s
+sys	141m4.128s
+[Wed Dec 22 15:01:03 CET 2021] genus umgap_new_tryptic_sensitivity done
+[Wed Dec 22 15:01:03 CET 2021] genus umgap_max_precision starting
+
+real	15m3.373s
+user	110m28.944s
+sys	8m11.128s
+[Wed Dec 22 15:16:06 CET 2021] genus umgap_max_precision done
+[Wed Dec 22 15:16:06 CET 2021] genus umgap_high_precision starting
+
+real	29m55.518s
+user	277m53.392s
+sys	8m49.384s
+[Wed Dec 22 15:46:02 CET 2021] genus umgap_high_precision done
+[Wed Dec 22 15:46:02 CET 2021] genus umgap_high_sensitivity starting
+
+real	29m55.565s
+user	275m40.232s
+sys	8m55.360s
+[Wed Dec 22 16:15:57 CET 2021] genus umgap_high_sensitivity done
+[Wed Dec 22 16:15:57 CET 2021] genus umgap_max_sensitivity starting
+
+real	28m49.739s
+user	277m19.712s
+sys	8m48.204s
+[Wed Dec 22 16:44:47 CET 2021] genus umgap_max_sensitivity done
+total 28512365
+tool,TP,FP,TN,FN
+umgap_tryptic_precision,382918,3045,5726358,22400044,28512365
+umgap_new_tryptic_precision,430012,4048,5726358,22351947,28512365
+umgap_tryptic_sensitivity,3472295,119439,5726358,19194273,28512365
+umgap_new_tryptic_sensitivity,3800533,143748,5726358,18841726,28512365
+umgap_max_precision,12648073,123107,5726358,10014827,28512365
+umgap_high_precision,14772583,202445,5726358,7810979,28512365
+umgap_high_sensitivity,17492094,1864771,5726358,3429142,28512365
+umgap_max_sensitivity,18325713,4469284,5717368,0,28512365

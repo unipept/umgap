@@ -1,0 +1,239 @@
+[Fri Jul 17 10:09:25 CEST 2020] species kraken2 starting
+Loading database information... done.
+26692153 sequences (5338.43 Mbp) processed in 95.149s (16831.7 Kseq/m, 3366.35 Mbp/m).
+  18874635 sequences classified (70.71%)
+  7817518 sequences unclassified (29.29%)
+
+real    2m23.148s
+user    11m5.684s
+sys     1m58.836s
+[Fri Jul 17 10:11:49 CEST 2020] species kraken2 done
+total 26692153
+tool,TP,FP,TN,FN
+kraken2,17026769,310737,5782564,3572083,26692153
+[Fri Jul 17 10:15:37 CEST 2020] genus kraken2 starting
+Loading database information... done.
+28791955 sequences (5758.39 Mbp) processed in 80.804s (21379.2 Kseq/m, 4275.84 Mbp/m).
+  20970389 sequences classified (72.83%)
+  7821566 sequences unclassified (27.17%)
+
+real    2m3.175s
+user    12m32.068s
+sys     2m1.632s
+[Fri Jul 17 10:17:40 CEST 2020] genus kraken2 done
+total 28791955
+tool,TP,FP,TN,FN
+kraken2,20300993,277404,5782564,2430994,28791955
+[Fri Jul 17 10:21:30 CEST 2020] phylum kraken2 starting
+Loading database information... done.
+28912773 sequences (5782.55 Mbp) processed in 82.760s (20961.3 Kseq/m, 4192.27 Mbp/m).
+  21083814 sequences classified (72.92%)
+  7828959 sequences unclassified (27.08%)
+
+real    2m5.377s
+user    12m33.328s
+sys     2m2.804s
+[Fri Jul 17 10:23:36 CEST 2020] phylum kraken2 done
+total 28912773
+tool,TP,FP,TN,FN
+kraken2,21072530,2639,5782564,2055040,28912773
+running ./benchmark data/setA2_1.fq data/setA2_2.fq
+[Fri Jul 17 10:28:50 CEST 2020] species kraken2 starting
+Loading database information... done.
+26431669 sequences (5286.33 Mbp) processed in 75.142s (21105.5 Kseq/m, 4221.10 Mbp/m).
+  18688827 sequences classified (70.71%)
+  7742842 sequences unclassified (29.29%)
+
+real    1m57.299s
+user    11m25.416s
+sys     1m56.704s
+[Fri Jul 17 10:30:47 CEST 2020] species kraken2 done
+total 26431669
+tool,TP,FP,TN,FN
+kraken2,16855711,308185,5726358,3541415,26431669
+[Fri Jul 17 10:34:29 CEST 2020] genus kraken2 starting
+Loading database information... done.
+28512365 sequences (5702.47 Mbp) processed in 82.761s (20670.9 Kseq/m, 4134.19 Mbp/m).
+  20765378 sequences classified (72.83%)
+  7746987 sequences unclassified (27.17%)
+
+real    2m9.306s
+user    12m24.556s
+sys     2m5.884s
+[Fri Jul 17 10:36:38 CEST 2020] genus kraken2 done
+total 28512365
+tool,TP,FP,TN,FN
+kraken2,20103223,274267,5726358,2408517,28512365
+[Fri Jul 17 10:40:24 CEST 2020] phylum kraken2 starting
+Loading database information... done.
+28631752 sequences (5726.35 Mbp) processed in 81.327s (21123.5 Kseq/m, 4224.69 Mbp/m).
+  20877560 sequences classified (72.92%)
+  7754192 sequences unclassified (27.08%)
+
+real    2m1.576s
+user    12m32.308s
+sys     1m59.544s
+[Fri Jul 17 10:42:26 CEST 2020] phylum kraken2 done
+total 28631752
+tool,TP,FP,TN,FN
+kraken2,20866358,2523,5726358,2036513,28631752
+running ./benchmark data/setA3_1.fq data/setA3_2.fq
+[Fri Jul 17 10:46:00 CEST 2020] species kraken2 starting
+Loading database information... done.
+27081750 sequences (5416.35 Mbp) processed in 76.591s (21215.5 Kseq/m, 4243.09 Mbp/m).
+  19149931 sequences classified (70.71%)
+  7931819 sequences unclassified (29.29%)
+
+real    1m57.303s
+user    11m48.832s
+sys     1m55.704s
+[Fri Jul 17 10:47:58 CEST 2020] species kraken2 done
+total 27081750
+tool,TP,FP,TN,FN
+kraken2,17272826,315233,5866619,3627072,27081750
+[Fri Jul 17 10:51:45 CEST 2020] genus kraken2 starting
+Loading database information... done.
+29210775 sequences (5842.15 Mbp) processed in 83.436s (21005.9 Kseq/m, 4201.18 Mbp/m).
+  21274829 sequences classified (72.83%)
+  7935946 sequences unclassified (27.17%)
+
+real    2m10.873s
+user    12m45.508s
+sys     2m7.876s
+[Fri Jul 17 10:53:56 CEST 2020] genus kraken2 done
+total 29210775
+tool,TP,FP,TN,FN
+kraken2,20594903,280844,5866619,2468409,29210775
+[Fri Jul 17 10:57:46 CEST 2020] phylum kraken2 starting
+Loading database information... done.
+29333060 sequences (5866.61 Mbp) processed in 83.244s (21142.4 Kseq/m, 4228.47 Mbp/m).
+  21389784 sequences classified (72.92%)
+  7943276 sequences unclassified (27.08%)
+
+real    2m11.195s
+user    12m46.476s
+sys     2m9.892s
+[Fri Jul 17 10:59:57 CEST 2020] phylum kraken2 done
+total 29333060
+tool,TP,FP,TN,FN
+kraken2,21378547,2547,5866619,2085347,29333060
+running ./benchmark data/setB1_1.fq data/setB1_2.fq
+[Fri Jul 17 11:04:29 CEST 2020] species kraken2 starting
+Loading database information... done.
+35575039 sequences (7115.01 Mbp) processed in 101.244s (21082.8 Kseq/m, 4216.57 Mbp/m).
+  25574850 sequences classified (71.89%)
+  10000189 sequences unclassified (28.11%)
+
+real    2m23.812s
+user    15m16.384s
+sys     2m22.172s
+[Fri Jul 17 11:06:53 CEST 2020] species kraken2 done
+total 35575039
+tool,TP,FP,TN,FN
+kraken2,22716395,440346,7398105,5020193,35575039
+[Fri Jul 17 11:11:30 CEST 2020] genus kraken2 starting
+Loading database information... done.
+36780702 sequences (7356.14 Mbp) processed in 104.787s (21060.3 Kseq/m, 4212.06 Mbp/m).
+  26780035 sequences classified (72.81%)
+  10000667 sequences unclassified (27.19%)
+
+real    2m29.886s
+user    15m53.760s
+sys     2m28.948s
+[Fri Jul 17 11:14:00 CEST 2020] genus kraken2 done
+total 36780702
+tool,TP,FP,TN,FN
+kraken2,25799737,359146,7398105,3223714,36780702
+[Fri Jul 17 11:18:42 CEST 2020] phylum kraken2 starting
+Loading database information... done.
+36990467 sequences (7398.09 Mbp) processed in 106.418s (20855.8 Kseq/m, 4171.15 Mbp/m).
+  26965944 sequences classified (72.90%)
+  10024523 sequences unclassified (27.10%)
+
+real    2m33.233s
+user    16m4.512s
+sys     2m32.352s
+[Fri Jul 17 11:21:15 CEST 2020] phylum kraken2 done
+total 36990467
+tool,TP,FP,TN,FN
+kraken2,26942602,1642,7398105,2648118,36990467
+running ./benchmark data/setB2_1.fq data/setB2_2.fq
+[Fri Jul 17 11:24:42 CEST 2020] species kraken2 starting
+Loading database information... done.
+25990886 sequences (5198.18 Mbp) processed in 71.946s (21675.4 Kseq/m, 4335.08 Mbp/m).
+  18680506 sequences classified (71.87%)
+  7310380 sequences unclassified (28.13%)
+
+real    1m54.393s
+user    11m19.588s
+sys     1m53.356s
+[Fri Jul 17 11:26:37 CEST 2020] species kraken2 done
+total 25990886
+tool,TP,FP,TN,FN
+kraken2,16588449,322772,5406659,3673006,25990886
+[Fri Jul 17 11:30:02 CEST 2020] genus kraken2 starting
+Loading database information... done.
+26880031 sequences (5376.01 Mbp) processed in 75.214s (21442.7 Kseq/m, 4288.54 Mbp/m).
+  19569236 sequences classified (72.80%)
+  7310795 sequences unclassified (27.20%)
+
+real    1m57.004s
+user    11m35.120s
+sys     1m56.756s
+[Fri Jul 17 11:31:59 CEST 2020] genus kraken2 done
+total 26880031
+tool,TP,FP,TN,FN
+kraken2,18858076,262107,5406659,2353189,26880031
+[Fri Jul 17 11:35:27 CEST 2020] phylum kraken2 starting
+Loading database information... done.
+27033253 sequences (5406.65 Mbp) processed in 74.999s (21627.0 Kseq/m, 4325.40 Mbp/m).
+  19705035 sequences classified (72.89%)
+  7328218 sequences unclassified (27.11%)
+
+real    2m1.299s
+user    11m42.788s
+sys     1m58.828s
+[Fri Jul 17 11:37:28 CEST 2020] phylum kraken2 done
+total 27033253
+tool,TP,FP,TN,FN
+kraken2,19687751,1237,5406659,1937606,27033253
+running ./benchmark data/setB3_1.fq data/setB3_2.fq
+[Fri Jul 17 11:42:40 CEST 2020] species kraken2 starting
+Loading database information... done.
+25668172 sequences (5133.63 Mbp) processed in 72.416s (21267.3 Kseq/m, 4253.47 Mbp/m).
+  18455003 sequences classified (71.90%)
+  7213169 sequences unclassified (28.10%)
+
+real    2m0.251s
+user    11m7.144s
+sys     1m58.780s
+[Fri Jul 17 11:44:41 CEST 2020] species kraken2 done
+total 25668172
+tool,TP,FP,TN,FN
+kraken2,16394531,317518,5336717,3619406,25668172
+[Fri Jul 17 11:49:18 CEST 2020] genus kraken2 starting
+Loading database information... done.
+26532504 sequences (5306.50 Mbp) processed in 75.349s (21127.7 Kseq/m, 4225.55 Mbp/m).
+  19318871 sequences classified (72.81%)
+  7213633 sequences unclassified (27.19%)
+
+real    2m2.408s
+user    11m32.060s
+sys     2m2.320s
+[Fri Jul 17 11:51:20 CEST 2020] genus kraken2 done
+total 26532504
+tool,TP,FP,TN,FN
+kraken2,18608002,258745,5336717,2329040,26532504
+[Fri Jul 17 11:54:49 CEST 2020] phylum kraken2 starting
+Loading database information... done.
+26683544 sequences (5336.71 Mbp) processed in 76.150s (21024.5 Kseq/m, 4204.89 Mbp/m).
+  19452836 sequences classified (72.90%)
+  7230708 sequences unclassified (27.10%)
+
+real    1m57.725s
+user    11m27.748s
+sys     1m55.384s
+[Fri Jul 17 11:56:46 CEST 2020] phylum kraken2 done
+total 26683544
+tool,TP,FP,TN,FN
+kraken2,19435888,1299,5336717,1909640,26683544

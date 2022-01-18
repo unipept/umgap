@@ -1,0 +1,69 @@
+[Sat Jul 11 08:18:37 CEST 2020] species umgap_high_precision starting
+[Sat Jul 11 08:47:49 CEST 2020] species umgap_high_precision done
+[Sat Jul 11 08:47:49 CEST 2020] species umgap_high_sensitivity starting
+[Sat Jul 11 09:17:33 CEST 2020] species umgap_high_sensitivity done
+[Sat Jul 11 09:17:33 CEST 2020] species umgap_max_precision starting
+[Sat Jul 11 09:33:53 CEST 2020] species umgap_max_precision done
+[Sat Jul 11 09:33:53 CEST 2020] species umgap_max_sensitivity starting
+[Sat Jul 11 10:04:01 CEST 2020] species umgap_max_sensitivity done
+[Sat Jul 11 10:04:01 CEST 2020] species umgap_tryptic_precision starting
+[Sat Jul 11 10:10:32 CEST 2020] species umgap_tryptic_precision done
+[Sat Jul 11 10:10:32 CEST 2020] species umgap_tryptic_sensitivity starting
+[Sat Jul 11 10:16:15 CEST 2020] species umgap_tryptic_sensitivity done
+[Sat Jul 11 10:16:15 CEST 2020] species kraken starting
+[Sat Jul 11 13:41:04 CEST 2020] species kraken done
+total 26431669
+tool,TP,FP,TN,FN
+umgap_high_precision,11103142,225606,5726358,9376563,26431669
+umgap_high_sensitivity,12816420,1103610,5726358,6785281,26431669
+umgap_max_precision,9168286,101784,5726358,11435241,26431669
+umgap_max_sensitivity,13315063,3345470,5726358,4044778,26431669
+umgap_tryptic_precision,672400,2199,5726358,20030712,26431669
+umgap_tryptic_sensitivity,3580367,151623,5726358,16973321,26431669
+kraken,16815370,99349,5726358,3790592,26431669
+[Sat Jul 11 13:46:30 CEST 2020] genus umgap_high_precision starting
+[Sat Jul 11 14:17:18 CEST 2020] genus umgap_high_precision done
+[Sat Jul 11 14:17:18 CEST 2020] genus umgap_high_sensitivity starting
+[Sat Jul 11 14:48:21 CEST 2020] genus umgap_high_sensitivity done
+[Sat Jul 11 14:48:21 CEST 2020] genus umgap_max_precision starting
+[Sat Jul 11 15:05:16 CEST 2020] genus umgap_max_precision done
+[Sat Jul 11 15:05:16 CEST 2020] genus umgap_max_sensitivity starting
+[Sat Jul 11 15:36:50 CEST 2020] genus umgap_max_sensitivity done
+[Sat Jul 11 15:36:50 CEST 2020] genus umgap_tryptic_precision starting
+[Sat Jul 11 15:43:47 CEST 2020] genus umgap_tryptic_precision done
+[Sat Jul 11 15:43:47 CEST 2020] genus umgap_tryptic_sensitivity starting
+[Sat Jul 11 15:49:50 CEST 2020] genus umgap_tryptic_sensitivity done
+[Sat Jul 11 15:49:50 CEST 2020] genus kraken starting
+[Sat Jul 11 19:37:53 CEST 2020] genus kraken done
+total 28512365
+tool,TP,FP,TN,FN
+umgap_high_precision,16422000,162124,5726358,6201883,28512365
+umgap_high_sensitivity,18369343,1267052,5726358,3149612,28512365
+umgap_max_precision,14313772,69735,5726358,8402500,28512365
+umgap_max_sensitivity,18979049,4298427,5234889,0,28512365
+umgap_tryptic_precision,1142310,1706,5726358,21641991,28512365
+umgap_tryptic_sensitivity,5725549,112214,5726358,16948244,28512365
+kraken,20030183,95761,5726358,2660063,28512365
+[Sat Jul 11 19:43:35 CEST 2020] phylum umgap_high_precision starting
+[Sat Jul 11 20:14:35 CEST 2020] phylum umgap_high_precision done
+[Sat Jul 11 20:14:35 CEST 2020] phylum umgap_high_sensitivity starting
+[Sat Jul 11 20:45:45 CEST 2020] phylum umgap_high_sensitivity done
+[Sat Jul 11 20:45:45 CEST 2020] phylum umgap_max_precision starting
+[Sat Jul 11 21:02:44 CEST 2020] phylum umgap_max_precision done
+[Sat Jul 11 21:02:44 CEST 2020] phylum umgap_max_sensitivity starting
+[Sat Jul 11 21:34:33 CEST 2020] phylum umgap_max_sensitivity done
+[Sat Jul 11 21:34:33 CEST 2020] phylum umgap_tryptic_precision starting
+[Sat Jul 11 21:41:43 CEST 2020] phylum umgap_tryptic_precision done
+[Sat Jul 11 21:41:43 CEST 2020] phylum umgap_tryptic_sensitivity starting
+[Sat Jul 11 21:47:54 CEST 2020] phylum umgap_tryptic_sensitivity done
+[Sat Jul 11 21:47:54 CEST 2020] phylum kraken starting
+[Sun Jul 12 01:18:40 CEST 2020] phylum kraken done
+total 28631752
+tool,TP,FP,TN,FN
+umgap_high_precision,19017849,6780,5726358,3880765,28631752
+umgap_high_sensitivity,20355100,1091062,5726358,1459232,28631752
+umgap_max_precision,16836526,2205,5726358,6066663,28631752
+umgap_max_sensitivity,21015138,4714412,2902202,0,28631752
+umgap_tryptic_precision,1355137,47,5726358,21550210,28631752
+umgap_tryptic_sensitivity,7001683,21551,5726358,15882160,28631752
+kraken,20409110,7739,5726358,2488545,28631752
