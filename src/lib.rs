@@ -25,7 +25,7 @@ extern crate structopt;
 extern crate strum_macros;
 
 pub mod agg;
-pub mod commands;
+pub mod cli;
 pub mod dna;
 pub mod errors;
 pub mod io;

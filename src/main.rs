@@ -2,32 +2,32 @@ use error_chain::quick_main;
 
 use structopt::StructOpt;
 
-use umgap::commands;
+use umgap::cli;
 use umgap::errors::Result;
 
 quick_main!(|| -> Result<()> {
     match Opt::from_args() {
-        Opt::BestOf(args) => commands::bestof::bestof(args),
-        Opt::BuildIndex(args) => commands::buildindex::buildindex(args),
-        Opt::FastqToFasta(args) => commands::fastq2fasta::fastq2fasta(args),
-        Opt::Filter(args) => commands::filter::filter(args),
-        Opt::JoinKmers(args) => commands::joinkmers::joinkmers(args),
-        Opt::PeptToLca(args) => commands::pept2lca::pept2lca(args),
-        Opt::PrintIndex(args) => commands::printindex::printindex(args),
-        Opt::ProtToKmer(args) => commands::prot2kmer::prot2kmer(args),
+        Opt::BestOf(args) => cli::bestof::bestof(args),
+        Opt::BuildIndex(args) => cli::buildindex::buildindex(args),
+        Opt::FastqToFasta(args) => cli::fastq2fasta::fastq2fasta(args),
+        Opt::Filter(args) => cli::filter::filter(args),
+        Opt::JoinKmers(args) => cli::joinkmers::joinkmers(args),
+        Opt::PeptToLca(args) => cli::pept2lca::pept2lca(args),
+        Opt::PrintIndex(args) => cli::printindex::printindex(args),
+        Opt::ProtToKmer(args) => cli::prot2kmer::prot2kmer(args),
         #[cfg(target_family = "unix")]
-        Opt::ProtToKmerToLca(args) => commands::prot2kmer2lca::prot2kmer2lca(args),
-        Opt::ProtToTryp(args) => commands::prot2tryp::prot2tryp(args),
-        Opt::ProtToTrypToLca(args) => commands::prot2tryp2lca::prot2tryp2lca(args),
-        Opt::SeedExtend(args) => commands::seedextend::seedextend(args),
-        Opt::SnapTaxon(args) => commands::snaptaxon::snaptaxon(args),
-        Opt::SplitKmers(args) => commands::splitkmers::splitkmers(args),
-        Opt::TaxaToAgg(args) => commands::taxa2agg::taxa2agg(args),
-        Opt::TaxaToFreq(args) => commands::taxa2freq::taxa2freq(args),
-        Opt::TaxaToTree(args) => commands::taxa2tree::taxa2tree(args),
-        Opt::Taxonomy(args) => commands::taxonomy::taxonomy(args),
-        Opt::Translate(args) => commands::translate::translate(args),
-        Opt::Uniq(args) => commands::uniq::uniq(args),
+        Opt::ProtToKmerToLca(args) => cli::prot2kmer2lca::prot2kmer2lca(args),
+        Opt::ProtToTryp(args) => cli::prot2tryp::prot2tryp(args),
+        Opt::ProtToTrypToLca(args) => cli::prot2tryp2lca::prot2tryp2lca(args),
+        Opt::SeedExtend(args) => cli::seedextend::seedextend(args),
+        Opt::SnapTaxon(args) => cli::snaptaxon::snaptaxon(args),
+        Opt::SplitKmers(args) => cli::splitkmers::splitkmers(args),
+        Opt::TaxaToAgg(args) => cli::taxa2agg::taxa2agg(args),
+        Opt::TaxaToFreq(args) => cli::taxa2freq::taxa2freq(args),
+        Opt::TaxaToTree(args) => cli::taxa2tree::taxa2tree(args),
+        Opt::Taxonomy(args) => cli::taxonomy::taxonomy(args),
+        Opt::Translate(args) => cli::translate::translate(args),
+        Opt::Uniq(args) => cli::uniq::uniq(args),
     }
 });
 
@@ -40,24 +40,24 @@ quick_main!(|| -> Result<()> {
 #[rustfmt::skip]
 #[derive(Debug, StructOpt)]
 pub enum Opt {
-    #[structopt(name = "bestof")] BestOf(commands::bestof::BestOf),
-    #[structopt(name = "buildindex")] BuildIndex(commands::buildindex::BuildIndex),
-    #[structopt(name = "fastq2fasta")] FastqToFasta(commands::fastq2fasta::FastqToFasta),
-    #[structopt(name = "filter")] Filter(commands::filter::Filter),
-    #[structopt(name = "joinkmers")] JoinKmers(commands::joinkmers::JoinKmers),
-    #[structopt(name = "pept2lca")] PeptToLca(commands::pept2lca::PeptToLca),
-    #[structopt(name = "printindex")] PrintIndex(commands::printindex::PrintIndex),
-    #[cfg(target_family = "unix")] #[structopt(name = "prot2kmer2lca")] ProtToKmerToLca(commands::prot2kmer2lca::ProtToKmerToLca),
-    #[structopt(name = "prot2kmer")] ProtToKmer(commands::prot2kmer::ProtToKmer),
-    #[structopt(name = "prot2tryp2lca")] ProtToTrypToLca(commands::prot2tryp2lca::ProtToTrypToLca),
-    #[structopt(name = "prot2tryp")] ProtToTryp(commands::prot2tryp::ProtToTryp),
-    #[structopt(name = "seedextend")] SeedExtend(commands::seedextend::SeedExtend),
-    #[structopt(name = "snaptaxon")] SnapTaxon(commands::snaptaxon::SnapTaxon),
-    #[structopt(name = "splitkmers")] SplitKmers(commands::splitkmers::SplitKmers),
-    #[structopt(name = "taxa2agg")] TaxaToAgg(commands::taxa2agg::TaxaToAgg),
-    #[structopt(name = "taxa2freq")] TaxaToFreq(commands::taxa2freq::TaxaToFreq),
-    #[structopt(name = "taxa2tree")] TaxaToTree(commands::taxa2tree::TaxaToTree),
-    #[structopt(name = "taxonomy")] Taxonomy(commands::taxonomy::Taxonomy),
-    #[structopt(name = "translate")] Translate(commands::translate::Translate),
-    #[structopt(name = "uniq")] Uniq(commands::uniq::Uniq),
+    #[structopt(name = "bestof")] BestOf(cli::bestof::BestOf),
+    #[structopt(name = "buildindex")] BuildIndex(cli::buildindex::BuildIndex),
+    #[structopt(name = "fastq2fasta")] FastqToFasta(cli::fastq2fasta::FastqToFasta),
+    #[structopt(name = "filter")] Filter(cli::filter::Filter),
+    #[structopt(name = "joinkmers")] JoinKmers(cli::joinkmers::JoinKmers),
+    #[structopt(name = "pept2lca")] PeptToLca(cli::pept2lca::PeptToLca),
+    #[structopt(name = "printindex")] PrintIndex(cli::printindex::PrintIndex),
+    #[cfg(target_family = "unix")] #[structopt(name = "prot2kmer2lca")] ProtToKmerToLca(cli::prot2kmer2lca::ProtToKmerToLca),
+    #[structopt(name = "prot2kmer")] ProtToKmer(cli::prot2kmer::ProtToKmer),
+    #[structopt(name = "prot2tryp2lca")] ProtToTrypToLca(cli::prot2tryp2lca::ProtToTrypToLca),
+    #[structopt(name = "prot2tryp")] ProtToTryp(cli::prot2tryp::ProtToTryp),
+    #[structopt(name = "seedextend")] SeedExtend(cli::seedextend::SeedExtend),
+    #[structopt(name = "snaptaxon")] SnapTaxon(cli::snaptaxon::SnapTaxon),
+    #[structopt(name = "splitkmers")] SplitKmers(cli::splitkmers::SplitKmers),
+    #[structopt(name = "taxa2agg")] TaxaToAgg(cli::taxa2agg::TaxaToAgg),
+    #[structopt(name = "taxa2freq")] TaxaToFreq(cli::taxa2freq::TaxaToFreq),
+    #[structopt(name = "taxa2tree")] TaxaToTree(cli::taxa2tree::TaxaToTree),
+    #[structopt(name = "taxonomy")] Taxonomy(cli::taxonomy::Taxonomy),
+    #[structopt(name = "translate")] Translate(cli::translate::Translate),
+    #[structopt(name = "uniq")] Uniq(cli::uniq::Uniq),
 }
