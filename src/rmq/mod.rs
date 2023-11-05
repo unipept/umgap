@@ -1,5 +1,5 @@
-//! Implements aggregation operations using [Range Minimum Query]
-//! (https://en.wikipedia.org/wiki/Range_minimum_query) (RMQ)
+//! Implements aggregation operations using
+//! [Range Minimum Query](https://en.wikipedia.org/wiki/Range_minimum_query) (RMQ)
 
 pub mod lca;
 pub mod mix;
@@ -15,10 +15,10 @@ pub struct RMQ<T: Ord + Display> {
     pub array: Vec<T>,
     /// The absolute position (i.e. the index in array) of the minimum for each block.
     pub block_min: Vec<usize>,
-    /// `sparse[i][j]` is the position of the minimum in block[i] to block[i + 2^(j+1) - 1].
+    /// `sparse[i][j]` is the position of the minimum in `block[i]` to `block[i + 2^(j+1) - 1]`.
     pub sparse: Vec<Vec<usize>>,
-    /// The j'th bit of labels[i] is 1 iff j is the first position (in the block) left of i where
-    /// array[j] < array[i].
+    /// The j'th bit of `labels[i]` is 1 iff j is the first position (in the block) left of i where
+    /// `array[j] < array[i]`.
     pub labels: Vec<usize>,
 }
 

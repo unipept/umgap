@@ -3,7 +3,9 @@
 use std::io;
 
 use crate::errors;
+use crate::interfaces::fragment_ids::FragmentIds;
 use crate::io::fasta;
+use crate::pipes;
 use crate::taxon::TaxonId;
 
 #[derive(Debug, StructOpt)]
@@ -50,30 +52,26 @@ pub struct BestOf {
 
 /// Implements the bestof command.
 pub fn bestof(args: BestOf) -> errors::Result<()> {
-    let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
-
-    // Combine frames and process them
-    let mut chunk = Vec::with_capacity(args.frames);
-    for record in fasta::Reader::new(io::stdin(), false).records() {
-        let record = record?;
-        if chunk.len() < args.frames - 1 {
-            chunk.push(record);
-        } else {
-            // process chunk
-            writer.write_record_ref(
-                chunk
+    let mut fragment_ids_iter = fasta::Reader::new(io::stdin(), false)
+        .records()
+        .map(|record| {
+            let record = record?;
+            Ok(FragmentIds {
+                header: record.header,
+                taxa: record
+                    .sequence
                     .iter()
-                    .max_by_key(|&rec| {
-                        rec.sequence
-                            .iter()
-                            .map(|tid| tid.parse::<TaxonId>().unwrap_or(0))
-                            .filter(|&s| s != 0 && s != 1)
-                            .count()
-                    })
-                    .unwrap(),
-            )?;
-            chunk.clear();
-        }
-    }
-    Ok(())
+                    .map(|tid| tid.parse::<TaxonId>().unwrap_or(0))
+                    .collect(),
+            })
+        });
+
+    let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
+    pipes::bestof::pipe(args.frames, &mut fragment_ids_iter).try_for_each(|selection| {
+        let selection = selection?;
+        writer.write_record_ref(&fasta::Record {
+            header: selection.header,
+            sequence: selection.taxa.iter().map(TaxonId::to_string).collect(),
+        })
+    })
 }

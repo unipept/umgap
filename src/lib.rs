@@ -28,7 +28,9 @@ pub mod agg;
 pub mod cli;
 pub mod dna;
 pub mod errors;
+pub mod interfaces;
 pub mod io;
+pub mod pipes;
 pub mod rank;
 pub mod rmq;
 pub mod taxon;
@@ -44,3 +46,9 @@ pub const PKG_VERSION: &str = env!("CARGO_PKG_VERSION");
 pub const PKG_NAME: &str = env!("CARGO_PKG_NAME");
 /// The authors
 pub const PKG_AUTHORS: &str = env!("CARGO_PKG_AUTHORS");
+
+/// The size of IO buffers
+const BUFFER_SIZE: usize = 10_000_000; // 10MB
+
+/// The width of wrapped FASTA output
+const FASTA_WIDTH: usize = 70;

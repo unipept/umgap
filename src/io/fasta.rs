@@ -10,9 +10,8 @@ use std::iter::Peekable;
 
 use crate::errors;
 use crate::errors::Result;
-
-const BUFFER_SIZE: usize = 10_000_000; // 10MB
-const FASTA_WIDTH: usize = 70;
+use crate::BUFFER_SIZE;
+use crate::FASTA_WIDTH;
 
 /// Reads a FASTA-formatted source (e.g. a file).
 pub struct Reader<R: Read> {

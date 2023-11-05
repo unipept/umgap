@@ -14,7 +14,10 @@ use strum;
 
 use crate::rank::*;
 
-/// A unique identifier for a [Taxon](struct.Taxon.html).
+/// A unique identifier for a [Taxon](struct.Taxon.html). Throughout the
+/// code, it is assumed that 0 does not occur as taxon identifier (and
+/// is used to indicate "no taxon") and that the taxon with ID 1 is the
+/// root of the taxonomy.
 pub type TaxonId = usize;
 
 /// Represents a group of organisms with similar qualities.

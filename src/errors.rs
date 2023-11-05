@@ -11,6 +11,7 @@ use regex;
 
 use crate::agg;
 use crate::dna::translation;
+use crate::pipes::bestof;
 use crate::taxon;
 
 error_chain! {
@@ -18,6 +19,7 @@ error_chain! {
         Taxon(taxon::Error, taxon::ErrorKind) #[doc = "Error propagated from Taxon"];
         Translation(translation::Error, translation::ErrorKind) #[doc = "Error propagated from Translation"];
         Aggregation(agg::Error, agg::ErrorKind) #[doc = "Error propagated from Aggregation"];
+        BestOf(bestof::Error, bestof::ErrorKind) #[doc = "Error propagated from BestOf"];
     }
     foreign_links {
         Csv(csv::Error) #[doc = "CSV"];
@@ -32,6 +34,11 @@ error_chain! {
         InvalidInvocation(message: String) {
             description("Invalid invocation")
             display("Invalid invocation: {}", message)
+        }
+        /// An error to be used in tests.
+        Test(v: &'static str) {
+            description("Test")
+            display("Test: {}", v)
         }
     }
 }
