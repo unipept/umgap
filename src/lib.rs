@@ -35,7 +35,6 @@ pub mod rank;
 pub mod rmq;
 pub mod taxon;
 pub mod tree;
-pub mod utils;
 
 #[cfg(test)]
 pub mod fixtures;

@@ -73,13 +73,23 @@ impl<R: Read> Reader<R> {
 
 /// A record extending the FASTA format. A single header can be followed by multiple
 /// sequences/items.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Record {
     /// The record header (without the preceding '>')
     pub header: String,
 
     /// The actual sequence of nucleotides
     pub sequence: Vec<String>,
+}
+
+impl Record {
+    #[allow(missing_docs)]
+    pub fn new(header: &str, sequence: &str) -> Self {
+        Record {
+            header: header.to_string(),
+            sequence: vec![sequence.to_string()],
+        }
+    }
 }
 
 /// Convenience struct which allows for iteration (e.g. using for..in).

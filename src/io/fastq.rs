@@ -107,6 +107,17 @@ pub struct Record {
     pub quality: String,
 }
 
+impl Record {
+    #[allow(missing_docs)]
+    pub fn new(header: &str, sequence: &str, quality: &str) -> Self {
+        Record {
+            header: header.to_string(),
+            sequence: sequence.to_string(),
+            quality: quality.to_string(),
+        }
+    }
+}
+
 impl fmt::Display for Record {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(

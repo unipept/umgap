@@ -1,4 +1,4 @@
-//! The bestof pipe.
+//! The [bestof](crate::cli::bestof::BestOf) pipe.
 
 use crate::errors;
 use crate::interfaces::fragment_ids::FragmentIds;

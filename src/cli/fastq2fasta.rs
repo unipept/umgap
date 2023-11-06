@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use crate::errors;
 use crate::io::fasta;
 use crate::io::fastq;
-use crate::utils;
+use crate::pipes;
 
 #[rustfmt::skip]
 #[derive(Debug, StructOpt)]
@@ -65,20 +65,12 @@ pub fn fastq2fasta(args: FastqToFasta) -> errors::Result<()> {
         .iter()
         .map(fs::File::open)
         .collect::<io::Result<Vec<fs::File>>>()?;
-    let readers = handles
+    let readers: Vec<_> = handles
         .iter()
         .map(fastq::Reader::new)
         .map(fastq::Reader::records)
         .collect();
+
     let mut writer = fasta::Writer::new(io::stdout(), "", false);
-    for recordzip in utils::Zip::new(readers) {
-        for record in recordzip {
-            let record = record?;
-            writer.write_record(fasta::Record {
-                header: record.header,
-                sequence: vec![record.sequence],
-            })?;
-        }
-    }
-    Ok(())
+    pipes::fastq2fasta::pipe(readers).try_for_each(|record| writer.write_record(record?))
 }
