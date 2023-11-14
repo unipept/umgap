@@ -1,10 +1,11 @@
 //! The `umgap filter` command.
 
-use std::collections::HashSet;
 use std::io;
 
 use crate::errors;
 use crate::io::fasta;
+use crate::interfaces::fragments::Fragments;
+use crate::pipes;
 
 #[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
@@ -66,28 +67,33 @@ pub struct Filter {
 
 /// Implements the filter command.
 pub fn filter(args: Filter) -> errors::Result<()> {
-    let contains = args.contains.chars().collect::<HashSet<char>>();
-    let lacks = args.lacks.chars().collect::<HashSet<char>>();
+    let fragments_iter = fasta::Reader::new(io::stdin(), false)
+        .records()
+        .map(|record| {
+            let record = record?;
+            let mut index = 0;
+            let mut peptide = String::new();
+            let mut fragments = Vec::with_capacity(record.sequence.len());
+            for fragment in record.sequence {
+                peptide.push_str(&fragment);
+                fragments.push((index, fragment.len()));
+                index += fragment.len();
+            }
+            Ok(Fragments {
+                header: record.header,
+                peptide,
+                fragments,
+            })
+        });
 
     let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
-    for record in fasta::Reader::new(io::stdin(), false).records() {
-        let fasta::Record { header, sequence } = record?;
-
-        writer.write_record(fasta::Record {
-            header,
-            sequence: sequence
-                .into_iter()
-                .filter(|seq| {
-                    let length = seq.len();
-                    length >= args.min_length && length <= args.max_length
-                })
-                .filter(|seq| {
-                    let set = seq.chars().collect::<HashSet<char>>();
-                    contains.intersection(&set).count() == contains.len()
-                        && lacks.intersection(&set).count() == 0
-                })
-                .collect(),
-        })?;
-    }
-    Ok(())
+    pipes::filter::pipe(args.min_length, args.max_length, args.contains, args.lacks, fragments_iter).try_for_each(|fragments| {
+        let Fragments { header, peptide, fragments } = fragments?;
+        writer.write_record_members(
+            &header,
+            fragments.iter().cloned().map(|(start, length)| {
+                &peptide[start .. start + length]
+            }).collect(),
+        )
+    })
 }

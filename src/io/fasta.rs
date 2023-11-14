@@ -171,8 +171,16 @@ impl<'a, W: Write> Writer<'a, W> {
 
     /// Writes a Record to the Write, in FASTA format
     pub fn write_record_ref(&mut self, record: &Record) -> Result<()> {
-        write!(self.buffer, ">{}", record.header)?;
-        let sequence = record.sequence.join(self.separator);
+        self.write_joined_record(&record.header, record.sequence.join(self.separator))
+    }
+
+    /// Write a header and a list of sequences in FASTA format
+    pub fn write_record_members(&mut self, header: &str, sequence: Vec<&str>) -> Result<()> {
+        self.write_joined_record(header, sequence.join(self.separator))
+    }
+
+    fn write_joined_record(&mut self, header: &str, sequence: String) -> Result<()> {
+        write!(self.buffer, ">{}", header)?;
         if !self.wrap {
             self.buffer.write_all(&[b'\n'])?;
             self.buffer.write_all(sequence.as_bytes())?;
