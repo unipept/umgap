@@ -3,31 +3,41 @@
 use crate::errors;
 use crate::interfaces::fragment_ids::FragmentIds;
 
-/// An iterator over the best [FragmentIds] found in each chunk of [FragmentIds], made by the [pipe]
-/// function.
-pub struct BestOf<'a> {
+/// An iterator adapter which yields the best [FragmentIds]
+/// of each chunk of `frames` FragmentIds in the input
+/// iterator. See also: [bestof].
+pub fn pipe<I: Iterator<Item = errors::Result<FragmentIds>>>(
     frames: usize,
-    input: &'a mut dyn Iterator<Item = errors::Result<FragmentIds>>,
+    input: I
+) -> BestOf<I> {
+    BestOf { frames, input }
 }
 
-impl Iterator for BestOf<'_> {
+/// An iterator over the best [FragmentIds] found in each chunk of [FragmentIds], made by the [pipe]
+/// function.
+pub struct BestOf<I: Iterator<Item = errors::Result<FragmentIds>>> {
+    frames: usize,
+    input: I
+}
+
+impl<I: Iterator<Item = errors::Result<FragmentIds>>> Iterator for BestOf<I> {
     type Item = Result<FragmentIds>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let chunk: errors::Result<Vec<FragmentIds>> = self.input.take(self.frames).collect();
-        match chunk.chain_err(|| "unable to read one of the frames") {
-            Err(err) => Some(Err(err)),
-            Ok(chunk) => {
-                if chunk.len() == 0 {
-                    None
-                } else if chunk.len() < self.frames {
-                    Some(Err(
-                        ErrorKind::MissingFrames(chunk.len(), self.frames).into()
-                    ))
-                } else {
-                    Some(Ok(bestof(chunk)))
-                }
+        let mut chunk: Vec<FragmentIds> = Vec::with_capacity(self.frames);
+        for _c in 0..self.frames {
+            match self.input.next() {
+                Some(Err(err)) => return Some(Err(err).chain_err(|| "unabled to read one of the frames")),
+                Some(Ok(item)) => chunk.push(item),
+                None => {},
             }
+        }
+        if chunk.len() == self.frames {
+            Some(Ok(bestof(chunk)))
+        } else if chunk.is_empty() {
+            None
+        } else {
+            Some(Err(ErrorKind::MissingFrames(chunk.len(), self.frames).into()))
         }
     }
 }
@@ -46,13 +56,6 @@ pub fn bestof(chunk: Vec<FragmentIds>) -> FragmentIds {
                 .count()
         })
         .unwrap()
-}
-
-/// An iterator adapter which yields the best [FragmentIds]
-/// of each chunk of `frames` FragmentIds in the input
-/// iterator. See also: [bestof].
-pub fn pipe(frames: usize, input: &mut dyn Iterator<Item = errors::Result<FragmentIds>>) -> BestOf {
-    BestOf { frames, input }
 }
 
 error_chain! {

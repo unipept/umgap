@@ -52,7 +52,7 @@ pub struct BestOf {
 
 /// Implements the bestof command.
 pub fn bestof(args: BestOf) -> errors::Result<()> {
-    let mut fragment_ids_iter = fasta::Reader::new(io::stdin(), false)
+    let fragment_ids_iter = fasta::Reader::new(io::stdin(), false)
         .records()
         .map(|record| {
             let record = record?;
@@ -67,7 +67,7 @@ pub fn bestof(args: BestOf) -> errors::Result<()> {
         });
 
     let mut writer = fasta::Writer::new(io::stdout(), "\n", false);
-    pipes::bestof::pipe(args.frames, &mut fragment_ids_iter).try_for_each(|selection| {
+    pipes::bestof::pipe(args.frames, fragment_ids_iter).try_for_each(|selection| {
         let selection = selection?;
         writer.write_record_ref(&fasta::Record {
             header: selection.header,
