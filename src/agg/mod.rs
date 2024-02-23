@@ -9,7 +9,7 @@ use crate::taxon;
 use crate::taxon::TaxonId;
 
 /// Allows to aggregate over a taxon tree.
-pub trait Aggregator {
+pub trait Aggregator: Send + Sync {
     /// Aggregates a set of scored taxons into a resulting taxon id.
     fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> Result<TaxonId>;
 
