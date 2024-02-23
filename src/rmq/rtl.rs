@@ -32,6 +32,8 @@ impl RTLCalculator {
     }
 }
 
+impl agg::MultiThreadSafeAggregator for RTLCalculator {}
+
 impl agg::Aggregator for RTLCalculator {
     /// Returns the taxon with the MRL for a given list of taxons.
     fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> agg::Result<TaxonId> {

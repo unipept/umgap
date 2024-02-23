@@ -37,6 +37,8 @@ impl MixCalculator {
     }
 }
 
+impl agg::MultiThreadSafeAggregator for MixCalculator {}
+
 impl agg::Aggregator for MixCalculator {
     fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> agg::Result<TaxonId> {
         if taxons.is_empty() {
