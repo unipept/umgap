@@ -50,6 +50,8 @@ fn factorize(weights: Weights, factor: f32) -> f32 {
     weights.lca * factor + weights.rtl * (1.0 - factor)
 }
 
+impl agg::MultiThreadSafeAggregator for MixCalculator {}
+
 impl agg::Aggregator for MixCalculator {
     fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> agg::Result<TaxonId> {
         let mut weights: HashMap<TaxonId, Weights> = HashMap::with_capacity(taxons.len());
@@ -70,7 +72,7 @@ impl agg::Aggregator for MixCalculator {
             for (&right, &count) in taxons.iter() {
                 let lca = self.lca_aggregator.lca(left, right)?;
                 if lca == left || lca == right {
-                    let mut weight = weights.entry(left).or_insert_with(Weights::new);
+                    let weight = weights.entry(left).or_insert_with(Weights::new);
                     if lca == left {
                         weight.lca += count;
                     }

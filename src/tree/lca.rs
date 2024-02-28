@@ -28,6 +28,7 @@ impl LCACalculator {
         }
     }
 }
+impl agg::MultiThreadSafeAggregator for LCACalculator {}
 
 impl agg::Aggregator for LCACalculator {
     fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> Result<TaxonId, agg::Error> {

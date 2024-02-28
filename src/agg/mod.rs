@@ -9,7 +9,7 @@ use crate::taxon;
 use crate::taxon::TaxonId;
 
 /// Allows to aggregate over a taxon tree.
-pub trait Aggregator: Send + Sync {
+pub trait Aggregator {
     /// Aggregates a set of scored taxons into a resulting taxon id.
     fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> Result<TaxonId>;
 
@@ -19,6 +19,9 @@ pub trait Aggregator: Send + Sync {
         self.aggregate(&count(taxons))
     }
 }
+
+/// Allows reusing a single aggregator across multiple threads
+pub trait MultiThreadSafeAggregator: Aggregator + Sync + Send {}
 
 /// Returns how many times each taxon occurs in a vector of taxons.
 pub fn count<T>(taxons: T) -> HashMap<TaxonId, f32>
