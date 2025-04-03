@@ -8,6 +8,7 @@ use strum::IntoEnumIterator;
 #[derive(PartialEq, Eq, Debug, Clone, Copy, Display, EnumString, EnumIter)]
 pub enum Rank {
     #[strum(serialize="no rank")]          NoRank,
+    #[strum(serialize="superkingdom")]     Superkingdom,
     #[strum(serialize="domain")]           Domain,
     #[strum(serialize="realm")]            Realm,
     #[strum(serialize="kingdom")]          Kingdom,
@@ -40,9 +41,10 @@ pub enum Rank {
     #[strum(serialize="strain")]           Strain,
 }
 
-pub const RANK_COUNT: usize = 30;
+pub const RANK_COUNT: usize = 32;
 
 static RANKS: &[&str] = &[
+    "superkingdom",
     "domain",
     "realm",
     "kingdom",
@@ -82,16 +84,17 @@ impl Rank {
 
     #[rustfmt::skip]
     pub fn score(&self) -> Option<usize> {
-        if self < &Rank::Species { Some(11)           }
-        else if self < &Rank::SpeciesGroup { Some(10) }
-        else if self < &Rank::Genus {        Some(9)  }
-        else if self < &Rank::Tribe {        Some(8)  }
-        else if self < &Rank::Superfamily {  Some(7)  }
-        else if self < &Rank::Superorder {   Some(6)  }
-        else if self < &Rank::Superclass {   Some(5)  }
-        else if self < &Rank::Superphylum {  Some(4)  }
-        else if self < &Rank::Realm {        Some(3)  }
-        else if self < &Rank::Domain {       Some(2)  }
+        if self < &Rank::Species { Some(12)           }
+        else if self < &Rank::SpeciesGroup { Some(11) }
+        else if self < &Rank::Genus {        Some(10) }
+        else if self < &Rank::Tribe {        Some(9)  }
+        else if self < &Rank::Superfamily {  Some(8)  }
+        else if self < &Rank::Superorder {   Some(7)  }
+        else if self < &Rank::Superclass {   Some(6)  }
+        else if self < &Rank::Superphylum {  Some(5)  }
+        else if self < &Rank::Realm {        Some(4)  }
+        else if self < &Rank::Domain {       Some(3)  }
+        else if self < &Rank::Superkingdom { Some(2)  }
         else { None }
     }
 
