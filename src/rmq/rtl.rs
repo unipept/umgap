@@ -53,7 +53,7 @@ impl agg::Aggregator for RTLCalculator {
             .iter()
             .max_by_key(|&(_, &count)| NotNan::new(count).unwrap())
             .map(|tup| *tup.0)
-            .ok_or_else(|| agg::Error::EmptyInput)
+            .ok_or(agg::Error::EmptyInput)
     }
 }
 
@@ -68,26 +68,26 @@ mod tests {
     #[test]
     fn test_all_on_same_path() {
         let aggregator = RTLCalculator::new(fixtures::ROOT, &fixtures::by_id());
-        assert_matches!(aggregator.counting_aggregate(&vec![1]), Ok(1));
-        assert_matches!(aggregator.counting_aggregate(&vec![1, 12884]), Ok(12884));
-        assert_matches!(aggregator.counting_aggregate(&vec![1, 12884, 185751]), Ok(185751));
+        assert_matches!(aggregator.counting_aggregate(&[1]), Ok(1));
+        assert_matches!(aggregator.counting_aggregate(&[1, 12884]), Ok(12884));
+        assert_matches!(aggregator.counting_aggregate(&[1, 12884, 185751]), Ok(185751));
     }
 
     #[test]
     fn favouring_root() {
         let aggregator = RTLCalculator::new(fixtures::ROOT, &fixtures::by_id());
-        assert_matches!(aggregator.counting_aggregate(&vec![1, 1, 1, 185751, 1, 1]), Ok(185751));
+        assert_matches!(aggregator.counting_aggregate(&[1, 1, 1, 185751, 1, 1]), Ok(185751));
     }
 
     #[test]
     fn leaning_close() {
         let aggregator = RTLCalculator::new(fixtures::ROOT, &fixtures::by_id());
-        assert_matches!(aggregator.counting_aggregate(&vec![1, 1, 185752, 185751, 185751, 1]), Ok(185751));
+        assert_matches!(aggregator.counting_aggregate(&[1, 1, 185752, 185751, 185751, 1]), Ok(185751));
     }
 
     #[test]
     fn non_deterministic() {
         let aggregator = RTLCalculator::new(fixtures::ROOT, &fixtures::by_id());
-        assert!(vec![185751, 185752].contains(&aggregator.counting_aggregate(&vec![1, 1, 185752, 185751, 1]).unwrap()));
+        assert!([185751, 185752].contains(&aggregator.counting_aggregate(&[1, 1, 185752, 185751, 1]).unwrap()));
     }
 }

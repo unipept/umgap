@@ -49,8 +49,8 @@ impl LCACalculator {
     fn first_occurence(&self, taxon_id: TaxonId) -> taxon::Result<usize> {
         self.first_occurences
             .get(&taxon_id)
-            .ok_or_else(|| taxon::Error::UnknownTaxon(taxon_id).into())
-            .map(|t| *t)
+            .ok_or(taxon::Error::UnknownTaxon(taxon_id))
+            .copied()
     }
 }
 
@@ -102,30 +102,30 @@ mod tests {
     #[test]
     fn test_two_on_same_path() {
         let aggregator = LCACalculator::new(fixtures::tree());
-        assert_matches!(aggregator.counting_aggregate(&vec![12884, 185752]), Ok(185752));
-        assert_matches!(aggregator.counting_aggregate(&vec![185752, 12884]), Ok(185752));
-        assert_matches!(aggregator.counting_aggregate(&vec![1, 2]), Ok(2));
-        assert_matches!(aggregator.counting_aggregate(&vec![2, 1]), Ok(2));
+        assert_matches!(aggregator.counting_aggregate(&[12884, 185752]), Ok(185752));
+        assert_matches!(aggregator.counting_aggregate(&[185752, 12884]), Ok(185752));
+        assert_matches!(aggregator.counting_aggregate(&[1, 2]), Ok(2));
+        assert_matches!(aggregator.counting_aggregate(&[2, 1]), Ok(2));
     }
 
     #[test]
     fn test_two_on_fork() {
         let aggregator = LCACalculator::new(fixtures::tree());
-        assert_matches!(aggregator.counting_aggregate(&vec![2, 10239]), Ok(1));
-        assert_matches!(aggregator.counting_aggregate(&vec![10239, 2]), Ok(1));
-        assert_matches!(aggregator.counting_aggregate(&vec![185751, 185752]), Ok(12884));
-        assert_matches!(aggregator.counting_aggregate(&vec![185752, 185751]), Ok(12884));
+        assert_matches!(aggregator.counting_aggregate(&[2, 10239]), Ok(1));
+        assert_matches!(aggregator.counting_aggregate(&[10239, 2]), Ok(1));
+        assert_matches!(aggregator.counting_aggregate(&[185751, 185752]), Ok(12884));
+        assert_matches!(aggregator.counting_aggregate(&[185752, 185751]), Ok(12884));
     }
 
     #[test]
     fn test_three_on_triangle() {
         let aggregator = LCACalculator::new(fixtures::tree());
-        assert_matches!(aggregator.counting_aggregate(&vec![12884, 185751, 185752]), Ok(12884));
-        assert_matches!(aggregator.counting_aggregate(&vec![12884, 185752, 185751]), Ok(12884));
-        assert_matches!(aggregator.counting_aggregate(&vec![185751, 12884, 185752]), Ok(12884));
-        assert_matches!(aggregator.counting_aggregate(&vec![185752, 12884, 185751]), Ok(12884));
-        assert_matches!(aggregator.counting_aggregate(&vec![185751, 185752, 12884]), Ok(12884));
-        assert_matches!(aggregator.counting_aggregate(&vec![185752, 185751, 12884]), Ok(12884));
+        assert_matches!(aggregator.counting_aggregate(&[12884, 185751, 185752]), Ok(12884));
+        assert_matches!(aggregator.counting_aggregate(&[12884, 185752, 185751]), Ok(12884));
+        assert_matches!(aggregator.counting_aggregate(&[185751, 12884, 185752]), Ok(12884));
+        assert_matches!(aggregator.counting_aggregate(&[185752, 12884, 185751]), Ok(12884));
+        assert_matches!(aggregator.counting_aggregate(&[185751, 185752, 12884]), Ok(12884));
+        assert_matches!(aggregator.counting_aggregate(&[185752, 185751, 12884]), Ok(12884));
     }
 
     fn taxon(id: TaxonId, parent: TaxonId) -> Taxon {
@@ -155,10 +155,10 @@ mod tests {
     #[test]
     fn test_with_deeper_interns() {
         let large_aggregator = LCACalculator::new(TaxonTree::new(&large_taxon_list()));
-        assert_matches!(large_aggregator.counting_aggregate(&vec![9, 7]),  Ok(3));
-        assert_matches!(large_aggregator.counting_aggregate(&vec![9, 10]), Ok(3));
-        assert_matches!(large_aggregator.counting_aggregate(&vec![7, 9]),  Ok(3));
-        assert_matches!(large_aggregator.counting_aggregate(&vec![14, 8]), Ok(3));
-        assert_matches!(large_aggregator.counting_aggregate(&vec![14, 8]), Ok(3));
+        assert_matches!(large_aggregator.counting_aggregate(&[9, 7]),  Ok(3));
+        assert_matches!(large_aggregator.counting_aggregate(&[9, 10]), Ok(3));
+        assert_matches!(large_aggregator.counting_aggregate(&[7, 9]),  Ok(3));
+        assert_matches!(large_aggregator.counting_aggregate(&[14, 8]), Ok(3));
+        assert_matches!(large_aggregator.counting_aggregate(&[14, 8]), Ok(3));
     }
 }

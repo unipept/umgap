@@ -11,7 +11,7 @@ use crate::dna::{Frame, Nucleotide};
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub struct Codon(Nucleotide, Nucleotide, Nucleotide);
 
-impl<'a> From<&'a [Nucleotide]> for Codon {
+impl From<&[Nucleotide]> for Codon {
     fn from(b: &[Nucleotide]) -> Self {
         Codon(b[0], b[1], b[2])
     }

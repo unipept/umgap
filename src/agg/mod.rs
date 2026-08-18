@@ -93,7 +93,7 @@ mod tests {
     fn test_singleton_is_singleton() {
         for aggregator in aggregators(&fixtures::by_id()) {
             for taxon in fixtures::taxon_list() {
-                assert_matches!(aggregator.counting_aggregate(&vec![taxon.id]), Ok(tid) if tid == taxon.id);
+                assert_matches!(aggregator.counting_aggregate(&[taxon.id]), Ok(tid) if tid == taxon.id);
             }
         }
     }
@@ -102,13 +102,11 @@ mod tests {
     fn test_invalid_taxa() {
         for aggregator in aggregators(&fixtures::by_id()) {
             assert_matches!(
-                aggregator.counting_aggregate(&vec![5]).unwrap_err(),
+                aggregator.counting_aggregate(&[5]).unwrap_err(),
                 Error::Taxon(taxon::Error::UnknownTaxon(5))
             );
             assert_matches!(
-                aggregator
-                    .counting_aggregate(&vec![1, 2, 5, 1])
-                    .unwrap_err(),
+                aggregator.counting_aggregate(&[1, 2, 5, 1]).unwrap_err(),
                 Error::Taxon(taxon::Error::UnknownTaxon(5))
             );
         }

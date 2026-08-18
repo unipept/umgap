@@ -138,8 +138,7 @@ pub fn taxa2agg(args: TaxaToAgg) -> errors::Result<()> {
         (m, s) => Err(errors::Error::InvalidInvocation(format!(
             "{:?} and {:?} cannot be combined",
             m, s
-        ))
-        .into()),
+        ))),
     };
     let aggregator = aggregator?;
 
@@ -208,7 +207,7 @@ impl FromStr for Method {
         match s {
             "tree" => Ok(Method::Tree),
             "rmq" => Ok(Method::RangeMinimumQuery),
-            _ => Err(Error::ParseMethodError(s.to_string()).into()),
+            _ => Err(Error::ParseMethodError(s.to_string())),
         }
     }
 }
@@ -237,7 +236,7 @@ impl FromStr for Strategy {
             "lca*" => Ok(Strategy::LowestCommonAncestor),
             "hybrid" => Ok(Strategy::Hybrid),
             "mrtl" => Ok(Strategy::MaximumRootToLeafPath),
-            _ => Err(Error::ParseStrategyError(s.to_string()).into()),
+            _ => Err(Error::ParseStrategyError(s.to_string())),
         }
     }
 }

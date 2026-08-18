@@ -41,7 +41,7 @@ impl<T: Default + Copy> Tree<T> {
             if !tree.contains_key(&parent) {
                 queue.push_back(parent);
             }
-            let siblings = tree.entry(parent).or_insert_with(HashSet::new);
+            let siblings = tree.entry(parent).or_default();
             siblings.insert(id);
         }
         Ok(Tree::create(root, &tree, taxons))
@@ -62,7 +62,7 @@ impl<T: Default + Copy> Tree<T> {
                         .map(|&tid| Tree::create(tid, children, taxons))
                         .collect()
                 })
-                .unwrap_or_else(Vec::new),
+                .unwrap_or_default(),
         }
     }
 

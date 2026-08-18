@@ -6,7 +6,6 @@ pub mod mix;
 pub mod rtl;
 
 use std::fmt::Display;
-use std::mem::size_of;
 
 /// Represents a Range Minimum Query (RMQ), which can efficiently return the minimal value in a
 /// given range of an array.
@@ -28,7 +27,7 @@ fn clearbits(n: usize, x: usize) -> usize {
 }
 
 fn size() -> usize {
-    size_of::<usize>() * 8
+    usize::BITS as usize
 }
 
 fn intlog2(n: usize) -> usize {

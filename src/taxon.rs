@@ -174,7 +174,7 @@ impl TaxonList {
     /// Retrieve a taxon from the taxon list by id, returns UnknownTaxon if
     /// the taxon is not present.
     pub fn get_or_unknown(&self, index: TaxonId) -> Result<&Taxon> {
-        Ok(self.get(index).ok_or(Error::UnknownTaxon(index))?)
+        self.get(index).ok_or(Error::UnknownTaxon(index))
     }
 
     /// Retrieve the rank score of a taxon in the list.
@@ -250,7 +250,7 @@ impl TaxonTree {
     // passes the filter.
     fn with_filtered<F>(
         &self,
-        mut ancestors: &mut Vec<Option<TaxonId>>,
+        ancestors: &mut Vec<Option<TaxonId>>,
         current: TaxonId,
         ancestor: Option<TaxonId>,
         filter: &F,
@@ -265,7 +265,7 @@ impl TaxonTree {
         ancestors[current] = ancestor;
         if let Some(children) = self.children.get(&current) {
             for child in children {
-                self.with_filtered(&mut ancestors, *child, ancestor, filter);
+                self.with_filtered(ancestors, *child, ancestor, filter);
             }
         }
     }
