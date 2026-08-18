@@ -12,10 +12,12 @@ Statistics at [Ghent University].
 
 1. Install [Rust], according to [their installation instructions][rust-install],
    or use your favourite package manager (e.g. `apt install rustc`). The
-   pipeline is developed for the latest stable release, but should work on 1.35
-   and higher.
+   pipeline is developed for the latest stable release and needs at least Rust
+   1.88.
 
-2. Clone this repository and go to the repository root.
+2. Clone this repository and go to the repository root. The preconfigured
+   pipelines and the setup script live here; they are not part of the published
+   crate.
 
    ```sh
    git clone https://github.com/unipept/umgap.git
@@ -27,6 +29,13 @@ Statistics at [Ghent University].
    ```sh
    cargo build --release
    cargo install --path .
+   ```
+
+   If you only need the `umgap` command itself and not the pipeline scripts,
+   you can skip the clone and install it from [crates.io][crate] instead:
+
+   ```sh
+   cargo install umgap
    ```
 
    For a multiuser installation, instead of `cargo install`, use `install` to
@@ -73,10 +82,10 @@ Statistics at [Ghent University].
    ./scripts/umgap-analyse.sh -1 testdata/A1.fq -2 testdata/A2.fq -o - | tee output.fa
    ```
 
-7. (optional) NOT YET INTEGRATED - Visualize some test data! Running
+7. (optional) Visualize some test data! Running
 
    ```sh
-   ./scripts/umgap-visualize.sh output.fa output.html
+   ./scripts/umgap-visualize.sh -w output.fa > output.html
    ```
 
    will give you an HTML-file, which will show you a visualization of the test
@@ -133,7 +142,8 @@ for more info.
 [Unipept]: https://unipept.ugent.be/
 [Ghent University]: https://www.ugent.be/
 [Rust]: https://www.rust-lang.org/
-[metagenomics casestudy]: https://unipept.ugent.be/clidocs/casestudies/metagenomics
+[metagenomics casestudy]: https://unipept.ugent.be/umgap/casestudies
+[crate]: https://crates.io/crates/umgap
 [rust-install]: https://www.rust-lang.org/tools/install
 [FragGeneScanPlusPlus]: https://github.com/unipept/FragGeneScanPlusPlus
 [EditorConfig]: https://editorconfig.org/
