@@ -6,6 +6,7 @@ use std::path::PathBuf;
 use fst::Streamer;
 
 use crate::errors;
+use crate::utils;
 
 #[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
@@ -40,7 +41,7 @@ pub fn printindex(args: PrintIndex) -> errors::Result<()> {
         .delimiter(b'\t')
         .from_writer(io::stdout());
 
-    let index = unsafe { fst::Map::from_path(args.fst_file) }?;
+    let index = utils::load_fst(&args.fst_file, false)?;
     let mut stream = index.stream();
 
     while let Some((k, v)) = stream.next() {
