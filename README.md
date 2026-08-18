@@ -44,8 +44,9 @@ Statistics at [Ghent University].
    umgap -V
    ```
 
-4. (optional) Install [FragGeneScanPlusPlus] to use as gene predictor in the
-   pipeline.
+4. (optional) Install [FragGeneScanRs] to use as gene predictor in the
+   pipeline, for example with `cargo install frag_gene_scan_rs`. The setup
+   script picks it up from your `PATH`, or you can point at it with `-f`.
 
 5. Run [`scripts/umgap-setup.sh`](scripts/umgap-setup.sh) to interactively
    configure the UMGAP and download the data files required for some steps of
@@ -135,6 +136,6 @@ for more info.
 [Rust]: https://www.rust-lang.org/
 [metagenomics casestudy]: https://unipept.ugent.be/clidocs/casestudies/metagenomics
 [rust-install]: https://www.rust-lang.org/tools/install
-[FragGeneScanPlusPlus]: https://github.com/unipept/FragGeneScanPlusPlus
+[FragGeneScanRs]: https://github.com/unipept/FragGeneScanRs
 [EditorConfig]: https://editorconfig.org/
 [RustFMT]: https://github.com/rust-lang/rustfmt

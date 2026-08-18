@@ -57,8 +57,8 @@ Usage: $0 [options]
 
 Options:
   -c dir   The configuration directory. Defaults to '$config_default'.
-  -f dir   Directory containing the FragGeneScan++ binary (FGSpp) and
-           training data.
+  -f path  The FragGeneScanRs binary, or a directory containing it. Defaults
+           to the FragGeneScanRs on your PATH.
   -d dir   The data directory. The database files will be downloaded here.
            Defaults to '$data_default'.
   -y       Download all files of the latest version without asking.
@@ -67,7 +67,7 @@ Options:
 while getopts c:f:d:y f; do
 	case "$f" in
 	c) configdir="$OPTARG" ;;
-	f) fgsppdir="$OPTARG" ;;
+	f) fgsrsbin="$OPTARG" ;;
 	d) datadir="$OPTARG" ;;
 	y) download_all="true" ;;
 	\?) crash "$USAGE" ;;
@@ -93,22 +93,32 @@ if [ ! -d "$configdir" ]; then
 	fi
 fi
 
-# If FGSpp is found and works, link it in the config directory.
-if [ -z "$fgsppdir" ]; then
-	if ! yesno 'FragGeneScan++ (-f) was not provided, only pipelines not using it will be available.'; then
-		crash 'Pass the location of FragGeneScan++ with -f.'
+# If FragGeneScanRs is found and works, link it in the config directory.
+if [ -d "$fgsrsbin" ]; then
+	fgsrsbin="$fgsrsbin/FragGeneScanRs"
+fi
+if [ -z "$fgsrsbin" ]; then
+	fgsrsbin="$(command -v FragGeneScanRs || true)"
+fi
+if [ -z "$fgsrsbin" ]; then
+	if ! yesno 'FragGeneScanRs was not found, only pipelines not using it will be available.'; then
+		crash 'Install FragGeneScanRs, or pass its location with -f.'
 	fi
 else
-	cd "$fgsppdir"
-	if ! printf '>a\nA' | ./FGSpp -s stdin -o stdout -w 0 -t illumina_10 -c 240 > /dev/null; then
-		crash 'Invoking FGSpp failed, follow installation instructions at https://github.com/unipept/FragGeneScanPlusPlus.'
+	# A real read, so this checks that a prediction actually comes out, not just
+	# that the binary starts. FragGeneScanRs also panics on input too short to
+	# hold a codon, so a placeholder sequence is not usable here.
+	testread='ATCGCGCACGCGGCCGATGCCCCAGAAGAGATTGACAGCGGTGGGGCGGGCGGCGGCGAGGTGGTCGCAGATCTCGGCGACCTCTGCGTTGAGGGTCGGG'
+	if ! printf '>a\n%s\n' "$testread" \
+	     | "$fgsrsbin" -s stdin -o stdout -w 0 -t illumina_10 \
+	     | grep -q '^[A-Z]'; then
+		crash 'Invoking FragGeneScanRs failed, follow installation instructions at https://github.com/unipept/FragGeneScanRs.'
 	fi
-	fgsppdir="$(pwd -P)" # make path absolute
-	cd - > /dev/null
-	if ln -f -s "$fgsppdir" "$configdir/FGSpp"; then
-		echo 'Found, tested and remembered the FragGeneScan++ location.'
+	fgsrsbin="$(cd "$(dirname "$fgsrsbin")" && pwd -P)/$(basename "$fgsrsbin")" # absolute
+	if ln -f -s "$fgsrsbin" "$configdir/FragGeneScanRs"; then
+		echo 'Found, tested and remembered the FragGeneScanRs location.'
 	else
-		crash 'Could not link the FragGeneScan++ location.'
+		crash 'Could not link the FragGeneScanRs location.'
 	fi
 fi
 
