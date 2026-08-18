@@ -124,11 +124,7 @@ impl TranslationTable {
     /// Translate the given codon to an AA. Translate each start codon to methionine if asked.
     pub fn translate(&self, methionine: bool, codon: &Codon) -> u8 {
         let &(start, codon) = self.table.get(codon).unwrap_or(&(false, b'-'));
-        if start && methionine {
-            b'M'
-        } else {
-            codon
-        }
+        if start && methionine { b'M' } else { codon }
     }
 
     /// Translate the given DNA frame to a peptide. Translate each start codon to methionine if

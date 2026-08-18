@@ -4,10 +4,10 @@ use std::fmt;
 use std::io;
 use std::str::FromStr;
 
-use crate::dna::translation::TranslationTable;
 use crate::dna::Strand;
-use clap::builder::{PossibleValuesParser, TypedValueParser};
+use crate::dna::translation::TranslationTable;
 use clap::Args;
+use clap::builder::{PossibleValuesParser, TypedValueParser};
 
 use crate::errors;
 use crate::io::fasta;
@@ -128,10 +128,12 @@ pub fn translate(args: Translate) -> errors::Result<()> {
                     } else {
                         header.clone() + "|" + &name.to_string()
                     },
-                    sequence: vec![String::from_utf8(
-                        table.translate_frame(args.methionine, strand.frame(frame)),
-                    )
-                    .unwrap()],
+                    sequence: vec![
+                        String::from_utf8(
+                            table.translate_frame(args.methionine, strand.frame(frame)),
+                        )
+                        .unwrap(),
+                    ],
                 })?;
             }
         }

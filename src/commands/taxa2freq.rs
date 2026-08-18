@@ -10,8 +10,8 @@ use std::path::PathBuf;
 
 use std::str::FromStr;
 
-use clap::builder::{PossibleValuesParser, TypedValueParser};
 use clap::Args;
+use clap::builder::{PossibleValuesParser, TypedValueParser};
 
 use crate::errors;
 use crate::rank;
