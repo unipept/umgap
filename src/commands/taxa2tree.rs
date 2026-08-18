@@ -48,10 +48,18 @@ pub fn taxa2tree(args: TaxaToTree) -> errors::Result<()> {
 
     let json = json!({
         "counts": taxa,
-        "link": args.url.to_string(),
+        "link": args.url,
     });
 
-    let res = attohttpc::post("http://api.unipept.ugent.be/api/v1/taxa2tree")
+    // The API serves the interactive page from a separate `.html` route; the bare route
+    // always answers with JSON.
+    let url = if args.url {
+        "https://api.unipept.ugent.be/api/v1/taxa2tree"
+    } else {
+        "https://api.unipept.ugent.be/api/v1/taxa2tree.html"
+    };
+
+    let res = attohttpc::post(url)
         .json(&json)
         .map_err(|err| err.to_string())?
         .send()
