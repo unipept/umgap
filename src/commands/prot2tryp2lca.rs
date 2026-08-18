@@ -1,11 +1,8 @@
 //! The `umgap prot2tryp2lca` command.
 
 use std::collections::HashSet;
-use std::fs;
 use std::io;
 use std::path::PathBuf;
-
-use fst;
 
 use regex;
 
@@ -13,6 +10,7 @@ use rayon::iter::{ParallelBridge, ParallelIterator};
 
 use crate::errors;
 use crate::io::fasta;
+use crate::utils;
 
 #[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
@@ -86,12 +84,7 @@ pub struct ProtToTrypToLca {
 
 /// Implements the prot2tryp2lca command.
 pub fn prot2tryp2lca(args: ProtToTrypToLca) -> errors::Result<()> {
-    let fst = if args.fst_in_memory {
-        let bytes = fs::read(&args.fst_file)?;
-        fst::Map::from_bytes(bytes)?
-    } else {
-        unsafe { fst::Map::from_path(&args.fst_file) }?
-    };
+    let fst = utils::load_fst(&args.fst_file, args.fst_in_memory)?;
     let default = if args.one_on_one { Some(0) } else { None };
     let pattern = regex::Regex::new(&args.pattern)?;
     let contains = args.contains.chars().collect::<HashSet<char>>();

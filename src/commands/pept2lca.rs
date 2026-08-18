@@ -1,6 +1,5 @@
 //! The `umgap pept2lca` command.
 
-use std::fs;
 use std::io;
 use std::path::PathBuf;
 
@@ -8,6 +7,7 @@ use rayon::iter::{ParallelBridge, ParallelIterator};
 
 use crate::errors;
 use crate::io::fasta;
+use crate::utils;
 
 #[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
@@ -71,12 +71,7 @@ pub struct PeptToLca {
 
 /// Implements the pept2lca command
 pub fn pept2lca(args: PeptToLca) -> errors::Result<()> {
-    let fst = if args.fst_in_memory {
-        let bytes = fs::read(args.fst_file)?;
-        fst::Map::from_bytes(bytes)?
-    } else {
-        unsafe { fst::Map::from_path(args.fst_file) }?
-    };
+    let fst = utils::load_fst(&args.fst_file, args.fst_in_memory)?;
 
     let default = if args.one_on_one { Some(0) } else { None };
 

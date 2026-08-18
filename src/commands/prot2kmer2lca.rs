@@ -1,7 +1,6 @@
 //! The `umgap prot2kmer2lca` command.
 #![cfg(target_family = "unix")]
 
-use std::fs;
 use std::io;
 use std::io::Read;
 use std::io::Write;
@@ -13,6 +12,7 @@ use rayon::iter::{ParallelBridge, ParallelIterator};
 
 use crate::errors;
 use crate::io::fasta;
+use crate::utils;
 
 #[derive(Debug, StructOpt)]
 #[structopt(verbatim_doc_comment)]
@@ -106,12 +106,7 @@ pub struct ProtToKmerToLca {
 
 /// Implements the prot2kmer2lca command
 pub fn prot2kmer2lca(args: ProtToKmerToLca) -> errors::Result<()> {
-    let fst = if args.fst_in_memory {
-        let bytes = fs::read(&args.fst_file)?;
-        fst::Map::from_bytes(bytes)?
-    } else {
-        unsafe { fst::Map::from_path(&args.fst_file) }?
-    };
+    let fst = utils::load_fst(&args.fst_file, args.fst_in_memory)?;
     let default = if args.one_on_one { Some(0) } else { None };
     if let Some(socket_addr) = &args.socket {
         let listener = UnixListener::bind(socket_addr)?;
@@ -150,7 +145,7 @@ pub fn prot2kmer2lca(args: ProtToKmerToLca) -> errors::Result<()> {
 fn stream_prot2kmer2lca<R, W>(
     input: R,
     output: W,
-    fst: &fst::Map,
+    fst: &fst::Map<utils::FstData>,
     k: usize,
     chunk_size: usize,
     default: Option<u64>,
