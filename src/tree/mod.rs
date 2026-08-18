@@ -34,7 +34,7 @@ impl<T: Default + Copy> Tree<T> {
         let mut tree: HashMap<TaxonId, HashSet<TaxonId>> = HashMap::with_capacity(taxons.len());
         let mut queue: VecDeque<TaxonId> = taxons.keys().copied().collect();
         while let Some(id) = queue.pop_front() {
-            let parent = parents[id].ok_or(taxon::ErrorKind::UnknownTaxon(id))?;
+            let parent = parents[id].ok_or(taxon::Error::UnknownTaxon(id))?;
             if id == parent {
                 continue;
             }

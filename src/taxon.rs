@@ -90,7 +90,7 @@ impl FromStr for Taxon {
         let split: Vec<&str> = s.trim_end().split('\t').collect();
 
         if split.len() != 5 {
-            bail!("Taxon requires five fields");
+            return Err(Error::Msg("Taxon requires five fields".to_string()));
         }
         match (
             split[0].parse::<TaxonId>(),
@@ -108,7 +108,7 @@ impl FromStr for Taxon {
             (Err(e), _, _, _, _) => Err(e.into()),
             (_, _, Err(e), _, _) => Err(e.into()),
             (_, _, _, Err(e), _) => Err(e.into()),
-            _ => bail!("Couldn't parse the valid byte"),
+            _ => Err(Error::Msg("Couldn't parse the valid byte".to_string())),
         }
     }
 }
@@ -117,11 +117,11 @@ impl FromStr for Taxon {
 ///
 /// See [Taxon::from_str()](struct.Taxon.html#method.from_str) for more details on the line format.
 pub fn read_taxa_file<P: AsRef<Path>>(filename: P) -> Result<Vec<Taxon>> {
-    let file = File::open(filename).chain_err(|| "Failed opening taxon file.")?;
+    let file = File::open(filename).map_err(Error::OpenTaxonFile)?;
     let reader = io::BufReader::new(file);
     let mut taxa = Vec::new();
     for mline in reader.lines() {
-        let line = mline.map_err(|_| "Failed to read all lines.")?;
+        let line = mline.map_err(|_| Error::Msg("Failed to read all lines.".to_string()))?;
         taxa.push(line.parse::<Taxon>()?);
     }
     Ok(taxa)
@@ -174,7 +174,7 @@ impl TaxonList {
     /// Retrieve a taxon from the taxon list by id, returns UnknownTaxon if
     /// the taxon is not present.
     pub fn get_or_unknown(&self, index: TaxonId) -> Result<&Taxon> {
-        Ok(self.get(index).ok_or(ErrorKind::UnknownTaxon(index))?)
+        Ok(self.get(index).ok_or(Error::UnknownTaxon(index))?)
     }
 
     /// Retrieve the rank score of a taxon in the list.
@@ -391,19 +391,40 @@ impl IntoIterator for TaxonTree {
     }
 }
 
-error_chain! {
-    foreign_links {
-        UnknownRank(strum::ParseError) #[doc = "Encountered an unknown rank"];
-        InvalidID(std::num::ParseIntError) #[doc = "Indicates failure to parse a Taxon ID"];
-    }
-    errors {
-        /// Encountered an unknown taxon ID
-        UnknownTaxon(tid: TaxonId) {
-            description("Encountered an unknown taxon ID")
-            display("Unknown Taxon ID: {}", tid)
-        }
+/// Anything that can go wrong while handling taxa.
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    /// Encountered an unknown rank
+    #[error(transparent)]
+    UnknownRank(#[from] strum::ParseError),
+    /// Indicates failure to parse a Taxon ID
+    #[error(transparent)]
+    InvalidID(#[from] std::num::ParseIntError),
+    /// Encountered an unknown taxon ID
+    #[error("Unknown Taxon ID: {0}")]
+    UnknownTaxon(TaxonId),
+    /// Failed opening the taxon file
+    #[error("Failed opening taxon file.")]
+    OpenTaxonFile(#[source] std::io::Error),
+    /// Anything else that went wrong while parsing a taxon
+    #[error("{0}")]
+    Msg(String),
+}
+
+impl From<String> for Error {
+    fn from(message: String) -> Self {
+        Error::Msg(message)
     }
 }
+
+impl From<&str> for Error {
+    fn from(message: &str) -> Self {
+        Error::Msg(message.to_string())
+    }
+}
+
+/// A Result with a taxon Error
+pub type Result<T> = std::result::Result<T, Error>;
 
 #[cfg(test)]
 mod tests {
@@ -420,12 +441,12 @@ mod tests {
         assert_eq!(Taxon::from_static(1, "root", Rank::NoRank, 22, true),  "1	root	no rank	22	\x01".parse().unwrap());
         assert_eq!(Taxon::from_static(1, "root", Rank::NoRank, 1,  false), "1	root	no rank	1	\x00".parse().unwrap());
 
-        assert_matches!(*"hello world".parse::<Taxon>().unwrap_err().kind(), ErrorKind::Msg(_));
-        assert_matches!(*"a	root	no_rank	1	\x00".parse::<Taxon>().unwrap_err().kind(),  ErrorKind::InvalidID(_));
-        assert_matches!(*"1	root	no_rank	1	\x00".parse::<Taxon>().unwrap_err().kind(),  ErrorKind::UnknownRank(_));
-        assert_matches!(*"1	root	no rank	#	\x00".parse::<Taxon>().unwrap_err().kind(),  ErrorKind::InvalidID(_));
-        assert_matches!(*"1	root	no rank		\x00".parse::<Taxon>().unwrap_err().kind(),  ErrorKind::InvalidID(_));
-        assert_matches!(*"1	root	no rank	7	hello".parse::<Taxon>().unwrap_err().kind(), ErrorKind::Msg(_));
+        assert_matches!("hello world".parse::<Taxon>().unwrap_err(), Error::Msg(_));
+        assert_matches!("a	root	no_rank	1	\x00".parse::<Taxon>().unwrap_err(),  Error::InvalidID(_));
+        assert_matches!("1	root	no_rank	1	\x00".parse::<Taxon>().unwrap_err(),  Error::UnknownRank(_));
+        assert_matches!("1	root	no rank	#	\x00".parse::<Taxon>().unwrap_err(),  Error::InvalidID(_));
+        assert_matches!("1	root	no rank		\x00".parse::<Taxon>().unwrap_err(),  Error::InvalidID(_));
+        assert_matches!("1	root	no rank	7	hello".parse::<Taxon>().unwrap_err(), Error::Msg(_));
     }
 
     #[test]

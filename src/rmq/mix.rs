@@ -89,7 +89,7 @@ impl agg::Aggregator for MixCalculator {
             .iter()
             .max_by_key(|&(_, w)| NotNan::new(factorize(*w, self.factor)).unwrap())
             .map(|tup| *tup.0)
-            .ok_or_else(|| agg::ErrorKind::EmptyInput.into())
+            .ok_or_else(|| agg::Error::EmptyInput)
     }
 }
 

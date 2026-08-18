@@ -45,7 +45,7 @@ impl agg::Aggregator for RTLCalculator {
                 next = ancestor;
             }
             if next != self.root {
-                bail!(agg::ErrorKind::Taxon(taxon::ErrorKind::UnknownTaxon(next)));
+                return Err(agg::Error::Taxon(taxon::Error::UnknownTaxon(next)));
             }
         }
 
@@ -53,7 +53,7 @@ impl agg::Aggregator for RTLCalculator {
             .iter()
             .max_by_key(|&(_, &count)| NotNan::new(count).unwrap())
             .map(|tup| *tup.0)
-            .ok_or_else(|| agg::ErrorKind::EmptyInput.into())
+            .ok_or_else(|| agg::Error::EmptyInput)
     }
 }
 

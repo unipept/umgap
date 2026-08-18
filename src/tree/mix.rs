@@ -42,7 +42,7 @@ impl agg::MultiThreadSafeAggregator for MixCalculator {}
 impl agg::Aggregator for MixCalculator {
     fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> agg::Result<TaxonId> {
         if taxons.is_empty() {
-            bail!(agg::ErrorKind::EmptyInput);
+            return Err(agg::Error::EmptyInput);
         }
         let subtree = Tree::new(self.root, &self.parents, taxons)?
             .collapse(&Add::add)

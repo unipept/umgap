@@ -78,7 +78,7 @@ pub struct SnapTaxon {
 pub fn snaptaxon(args: SnapTaxon) -> errors::Result<()> {
     let taxons = taxon::read_taxa_file(&args.taxon_file)?;
     if args.rank.map(|r| r == rank::Rank::NoRank).unwrap_or(false) {
-        return Err(errors::ErrorKind::InvalidInvocation("Snap to an actual rank.".into()).into());
+        return Err(errors::Error::InvalidInvocation("Snap to an actual rank.".into()).into());
     }
 
     // Parsing the taxons
