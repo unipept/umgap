@@ -2,10 +2,12 @@
 
 use std::io;
 
+use clap::Args;
+
 use crate::errors;
 
-#[derive(Debug, StructOpt)]
-#[structopt(verbatim_doc_comment)]
+#[derive(Debug, Args)]
+#[command(verbatim_doc_comment)]
 #[allow(clippy::tabs_in_doc_comments)]
 /// Builds an index mapping short strings to taxon IDs
 ///

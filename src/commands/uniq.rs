@@ -2,11 +2,13 @@
 
 use std::io;
 
+use clap::Args;
+
 use crate::errors;
 use crate::io::fasta;
 
-#[derive(Debug, StructOpt)]
-#[structopt(verbatim_doc_comment)]
+#[derive(Debug, Args)]
+#[command(verbatim_doc_comment)]
 /// Joins consecutive FASTA records with the same header
 ///
 /// The `umgap uniq` command can for example be used to join together the predictions of 2 paired
@@ -40,15 +42,15 @@ use crate::io::fasta;
 /// ```
 pub struct Uniq {
     /// Separator between output items
-    #[structopt(short = "s", long = "separator", default_value = "\n")]
+    #[arg(short = 's', long = "separator", default_value = "\n")]
     pub separator: String,
 
     /// Wrap the output sequences
-    #[structopt(short = "w", long = "wrap")]
+    #[arg(short = 'w', long = "wrap")]
     pub wrap: bool,
 
     /// Strip FASTA headers after this string
-    #[structopt(short = "d", long = "delimiter")]
+    #[arg(short = 'd', long = "delimiter")]
     pub delimiter: Option<String>,
 }
 

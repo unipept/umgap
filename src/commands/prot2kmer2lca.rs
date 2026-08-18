@@ -10,12 +10,14 @@ use std::sync::Mutex;
 
 use rayon::iter::{ParallelBridge, ParallelIterator};
 
+use clap::Args;
+
 use crate::errors;
 use crate::io::fasta;
 use crate::utils;
 
-#[derive(Debug, StructOpt)]
-#[structopt(verbatim_doc_comment)]
+#[derive(Debug, Args)]
+#[command(verbatim_doc_comment)]
 /// Maps all k-mers from a FASTA stream of peptides to taxon IDs
 ///
 /// The `umgap prot2kmer2lca` command takes one or more peptides as input and outputs the lowest
@@ -69,15 +71,14 @@ use crate::utils;
 /// socket using OpenBSD's netcat: `... | nc -NU /path/to/umgap-socket | ...`.
 pub struct ProtToKmerToLca {
     /// The length of the k-mers in the index
-    #[structopt(short = "k", long = "length", default_value = "9")]
+    #[arg(short = 'k', long = "length", default_value = "9")]
     pub length: usize,
 
     /// Map unknown sequences to 0 instead of ignoring them
-    #[structopt(short = "o", long = "one-on-one")]
+    #[arg(short = 'o', long = "one-on-one")]
     pub one_on_one: bool,
 
     /// An index that maps k-mers to taxon IDs
-    #[structopt(parse(from_os_str))]
     pub fst_file: PathBuf,
 
     /// Instead of reading from stdin and writing to stdout, create a Unix
@@ -85,13 +86,13 @@ pub struct ProtToKmerToLca {
     /// This is especially useful in combination with the `--in-memory` flag:
     /// you only have to load the index in memory once, after which you can
     /// query it without having the loading time overhead each time.
-    #[structopt(parse(from_os_str), short = "s", long = "socket")]
+    #[arg(short = 's', long = "socket")]
     pub socket: Option<PathBuf>,
 
     /// Load index in memory instead of memory mapping the file contents. This
     /// makes querying significantly faster, but requires some initialization
     /// time.
-    #[structopt(short = "m", long = "in-memory")]
+    #[arg(short = 'm', long = "in-memory")]
     pub fst_in_memory: bool,
 
     /// Number of reads grouped into one chunk. Bigger chunks decrease
@@ -100,7 +101,7 @@ pub struct ProtToKmerToLca {
     /// a multiple of 12 (all 6 translations multiplied by the two paired-end
     /// reads) will keep FASTA records that originate from the same reads
     /// together.
-    #[structopt(short = "c", long = "chunksize", default_value = "240")]
+    #[arg(short = 'c', long = "chunksize", default_value = "240")]
     pub chunk_size: usize,
 }
 

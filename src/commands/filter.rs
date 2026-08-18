@@ -3,11 +3,13 @@
 use std::collections::HashSet;
 use std::io;
 
+use clap::Args;
+
 use crate::errors;
 use crate::io::fasta;
 
-#[derive(Debug, StructOpt)]
-#[structopt(verbatim_doc_comment)]
+#[derive(Debug, Args)]
+#[command(verbatim_doc_comment)]
 /// Filters a FASTA stream of peptides
 ///
 /// The `umgap filter` command takes a FASTA stream of peptides as input and outputs a filtered
@@ -48,19 +50,19 @@ use crate::io::fasta;
 /// ```
 pub struct Filter {
     /// Minimum length required
-    #[structopt(short = "m", long = "minlen", default_value = "5")]
+    #[arg(short = 'm', long = "minlen", default_value = "5")]
     pub min_length: usize,
 
     /// Maximum length allowed
-    #[structopt(short = "M", long = "maxlen", default_value = "50")]
+    #[arg(short = 'M', long = "maxlen", default_value = "50")]
     pub max_length: usize,
 
     /// Amino acid symbols that a sequence must contain
-    #[structopt(short = "c", long = "contains", default_value = "")]
+    #[arg(short = 'c', long = "contains", default_value = "")]
     pub contains: String,
 
     /// Amino acid symbols that a sequence may not contain
-    #[structopt(short = "l", long = "lacks", default_value = "")]
+    #[arg(short = 'l', long = "lacks", default_value = "")]
     pub lacks: String,
 }
 

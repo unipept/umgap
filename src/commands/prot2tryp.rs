@@ -2,11 +2,13 @@
 
 use std::io;
 
+use clap::Args;
+
 use crate::errors;
 use crate::io::fasta;
 
-#[derive(Debug, StructOpt)]
-#[structopt(verbatim_doc_comment)]
+#[derive(Debug, Args)]
+#[command(verbatim_doc_comment)]
 /// Splits the peptides in a FASTA stream into tryptic peptides
 ///
 /// The `umgap prot2tryp` command takes one or more amino acid sequences as input and applies an *in
@@ -42,7 +44,7 @@ use crate::io::fasta;
 pub struct ProtToTryp {
     /// The cleavage-pattern (regex), i.e. the pattern after which
     /// the next peptide will be cleaved for tryptic peptides)
-    #[structopt(short = "p", long = "pattern", default_value = "([KR])([^P])")]
+    #[arg(short = 'p', long = "pattern", default_value = "([KR])([^P])")]
     pub pattern: String,
 }
 

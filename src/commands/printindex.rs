@@ -5,11 +5,13 @@ use std::path::PathBuf;
 
 use fst::Streamer;
 
+use clap::Args;
+
 use crate::errors;
 use crate::utils;
 
-#[derive(Debug, StructOpt)]
-#[structopt(verbatim_doc_comment)]
+#[derive(Debug, Args)]
+#[command(verbatim_doc_comment)]
 #[allow(clippy::tabs_in_doc_comments)]
 /// Prints the key/value pairs in an index
 ///
@@ -31,7 +33,6 @@ use crate::utils;
 /// ```
 pub struct PrintIndex {
     /// An index that maps strings to taxon IDs
-    #[structopt(parse(from_os_str))]
     pub fst_file: PathBuf,
 }
 

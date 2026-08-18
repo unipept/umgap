@@ -5,14 +5,19 @@ use std::io::BufRead;
 use std::io::Write;
 use std::path::PathBuf;
 
+use std::str::FromStr;
+
+use clap::builder::{PossibleValuesParser, TypedValueParser};
+use clap::Args;
+
 use crate::errors;
 use crate::rank;
 use crate::rank::Rank;
 use crate::taxon;
 use crate::taxon::TaxonId;
 
-#[derive(Debug, StructOpt)]
-#[structopt(verbatim_doc_comment)]
+#[derive(Debug, Args)]
+#[command(verbatim_doc_comment)]
 /// Snaps taxon IDs to a specific rank or listed taxa
 ///
 /// The `umgap snaptaxon` command takes one or more taxon IDs. For each taxon, it searches amongst
@@ -49,23 +54,23 @@ use crate::taxon::TaxonId;
 /// ```
 pub struct SnapTaxon {
     /// The rank to snap towards.
-    #[structopt(
-        short = "r",
+    #[arg(
+        short = 'r',
         long = "rank",
-        possible_values = &Rank::variants()
+        value_parser = PossibleValuesParser::new(Rank::variants().iter().copied())
+            .map(|s| Rank::from_str(&s).expect("a possible value always parses")),
     )]
     pub rank: Option<Rank>,
 
     /// A taxon to snap towards (allow multiple times).
-    #[structopt(short = "t", long = "taxons")]
+    #[arg(short = 't', long = "taxons")]
     pub taxons: Vec<TaxonId>,
 
     /// Include the invalidated taxa from the taxonomy
-    #[structopt(short = "i", long = "invalid")]
+    #[arg(short = 'i', long = "invalid")]
     pub invalid: bool,
 
     /// An NCBI taxonomy TSV-file as processed by Unipept
-    #[structopt(parse(from_os_str))]
     pub taxon_file: PathBuf,
 }
 

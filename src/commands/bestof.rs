@@ -2,12 +2,14 @@
 
 use std::io;
 
+use clap::Args;
+
 use crate::errors;
 use crate::io::fasta;
 use crate::taxon::TaxonId;
 
-#[derive(Debug, StructOpt)]
-#[structopt(verbatim_doc_comment)]
+#[derive(Debug, Args)]
+#[command(verbatim_doc_comment)]
 /// Selects the best read of every fixed size group
 ///
 /// The `umgap bestof` command takes groups of taxon IDs as input and outputs for each group the
@@ -44,7 +46,7 @@ use crate::taxon::TaxonId;
 /// example.
 pub struct BestOf {
     /// The number of frames of which to pick the best
-    #[structopt(short = "f", long = "frames", default_value = "6")]
+    #[arg(short = 'f', long = "frames", default_value = "6")]
     pub frames: usize,
 }
 

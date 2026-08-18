@@ -2,12 +2,14 @@
 
 use std::io;
 
+use clap::Args;
+
 use crate::errors;
 use crate::taxon::TaxonId;
 
 #[rustfmt::skip]
-#[derive(Debug, StructOpt)]
-#[structopt(verbatim_doc_comment)]
+#[derive(Debug, Args)]
+#[command(verbatim_doc_comment)]
 /// Splits a TSV stream of peptides and taxon IDs into k-mers and taxon IDs
 ///
 /// The `umgap splitkmers` command takes tab-separated taxon IDs and protein sequences and outputs
@@ -41,11 +43,11 @@ use crate::taxon::TaxonId;
 /// ```
 pub struct SplitKmers {
     /// The k-mer length
-    #[structopt(short = "k", long = "length", default_value = "9")]
+    #[arg(short = 'k', long = "length", default_value = "9")]
     pub length: usize,
 
     /// Print only the (k-1)-mer suffixes of the k-mers starting with this character, if any
-    #[structopt(short = "p", long = "prefix", default_value = "")]
+    #[arg(short = 'p', long = "prefix", default_value = "")]
     pub prefix: String,
 }
 

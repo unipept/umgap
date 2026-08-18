@@ -8,13 +8,18 @@ use std::io::BufReader;
 use std::io::Write;
 use std::path::PathBuf;
 
+use std::str::FromStr;
+
+use clap::builder::{PossibleValuesParser, TypedValueParser};
+use clap::Args;
+
 use crate::errors;
 use crate::rank;
 use crate::rank::Rank;
 use crate::taxon;
 
-#[derive(Debug, StructOpt)]
-#[structopt(verbatim_doc_comment)]
+#[derive(Debug, Args)]
+#[command(verbatim_doc_comment)]
 /// Counts ranked taxon occurrences in a stream of taxon IDs or arguments
 ///
 /// The `umgap taxa2freq` command creates a frequency table of a list of taxa on a given target rank
@@ -61,24 +66,23 @@ use crate::taxon;
 /// ```
 pub struct TaxaToFreq {
     /// The rank to show
-    #[structopt(
-        short = "r",
+    #[arg(
+        short = 'r',
         long = "rank",
         default_value = "species",
-        possible_values = &Rank::variants()
+        value_parser = PossibleValuesParser::new(Rank::variants().iter().copied())
+            .map(|s| Rank::from_str(&s).expect("a possible value always parses")),
     )]
     pub rank: Rank,
 
     /// The minimum frequency to be reported
-    #[structopt(short = "f", long = "frequency", default_value = "1")]
+    #[arg(short = 'f', long = "frequency", default_value = "1")]
     pub min_frequency: usize,
 
     /// An NCBI taxonomy TSV-file as processed by Unipept
-    #[structopt(parse(from_os_str))]
     pub taxon_file: PathBuf,
 
     /// Multiple comparative input files
-    #[structopt(parse(from_os_str))]
     pub input_files: Vec<PathBuf>,
 }
 

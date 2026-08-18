@@ -5,13 +5,15 @@ use std::io::BufRead;
 use std::io::Write;
 use std::path::PathBuf;
 
+use clap::Args;
+
 use crate::errors;
 use crate::rank;
 use crate::taxon;
 
 #[rustfmt::skip]
-#[derive(Debug, StructOpt)]
-#[structopt(verbatim_doc_comment)]
+#[derive(Debug, Args)]
+#[command(verbatim_doc_comment)]
 #[allow(clippy::tabs_in_doc_comments)]
 /// Includes info in a stream of taxon IDs
 ///
@@ -72,16 +74,15 @@ use crate::taxon;
 /// ```
 pub struct Taxonomy {
     /// An NCBI taxonomy TSV-file as processed by Unipept
-    #[structopt(parse(from_os_str))]
     pub taxon_file: PathBuf,
 
     /// Show the full lineage of a taxon. Ranks below the given taxon
     /// whill be empty.
-    #[structopt(short = "a", long = "all")]
+    #[arg(short = 'a', long = "all")]
     pub all_ranks: bool,
 
     /// Do not output the TSV header
-    #[structopt(short = "H", long = "no-header")]
+    #[arg(short = 'H', long = "no-header")]
     pub no_header: bool,
 }
 

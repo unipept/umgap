@@ -3,11 +3,13 @@
 use std::borrow::Cow;
 use std::io;
 
+use clap::Args;
+
 use crate::errors;
 use crate::io::fasta;
 
-#[derive(Debug, StructOpt)]
-#[structopt(verbatim_doc_comment)]
+#[derive(Debug, Args)]
+#[command(verbatim_doc_comment)]
 /// Splits a FASTA stream of peptides into k-mers
 ///
 /// The `umgap prot2kmer` command takes one or more peptides as input and outputs all their k-length
@@ -35,7 +37,7 @@ use crate::io::fasta;
 /// ```
 pub struct ProtToKmer {
     /// The k-mer length
-    #[structopt(short = "k", long = "length", default_value = "9")]
+    #[arg(short = 'k', long = "length", default_value = "9")]
     pub length: usize,
 }
 

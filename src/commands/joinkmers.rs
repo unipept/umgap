@@ -6,13 +6,15 @@ use std::path::PathBuf;
 
 use crate::agg;
 use crate::agg::Aggregator;
+use clap::Args;
+
 use crate::errors;
 use crate::taxon;
 use crate::taxon::TaxonId;
 use crate::tree;
 
-#[derive(Debug, StructOpt)]
-#[structopt(verbatim_doc_comment)]
+#[derive(Debug, Args)]
+#[command(verbatim_doc_comment)]
 #[allow(clippy::tabs_in_doc_comments)]
 /// Aggregates a TSV stream of peptides and taxon IDs
 ///
@@ -45,7 +47,6 @@ use crate::tree;
 /// ```
 pub struct JoinKmers {
     /// An NCBI taxonomy TSV-file as processed by Unipept
-    #[structopt(parse(from_os_str))]
     pub taxon_file: PathBuf,
 }
 
