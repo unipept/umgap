@@ -135,7 +135,7 @@ pub fn taxa2agg(args: TaxaToAgg) -> errors::Result<()> {
             &by_id,
             args.factor,
         ))),
-        (m, s) => Err(errors::ErrorKind::InvalidInvocation(format!(
+        (m, s) => Err(errors::Error::InvalidInvocation(format!(
             "{:?} and {:?} cannot be combined",
             m, s
         ))
@@ -208,7 +208,7 @@ impl FromStr for Method {
         match s {
             "tree" => Ok(Method::Tree),
             "rmq" => Ok(Method::RangeMinimumQuery),
-            _ => Err(ErrorKind::ParseMethodError(s.to_string()).into()),
+            _ => Err(Error::ParseMethodError(s.to_string()).into()),
         }
     }
 }
@@ -237,22 +237,21 @@ impl FromStr for Strategy {
             "lca*" => Ok(Strategy::LowestCommonAncestor),
             "hybrid" => Ok(Strategy::Hybrid),
             "mrtl" => Ok(Strategy::MaximumRootToLeafPath),
-            _ => Err(ErrorKind::ParseStrategyError(s.to_string()).into()),
+            _ => Err(Error::ParseStrategyError(s.to_string()).into()),
         }
     }
 }
 
-error_chain! {
-    errors {
-        /// Unparseable Method
-        ParseMethodError(method: String) {
-            description("Unparseable method")
-            display("Unparseable method: {}", method)
-        }
-        /// Unparseable Strategy
-        ParseStrategyError(strategy: String) {
-            description("Unparseable strategy")
-            display("Unparseable strategy: {}", strategy)
-        }
-    }
+/// Anything that can go wrong while parsing the aggregation options.
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    /// Unparseable Method
+    #[error("Unparseable method: {0}")]
+    ParseMethodError(String),
+    /// Unparseable Strategy
+    #[error("Unparseable strategy: {0}")]
+    ParseStrategyError(String),
 }
+
+/// A Result with an option parsing Error
+pub type Result<T> = std::result::Result<T, Error>;

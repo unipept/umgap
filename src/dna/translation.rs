@@ -180,22 +180,23 @@ impl str::FromStr for &'static TranslationTable {
         let id = s.parse::<usize>()?;
         TABLES[id - 1]
             .as_ref()
-            .ok_or_else(|| ErrorKind::UnknownTable(id).into())
+            .ok_or_else(|| Error::UnknownTable(id).into())
     }
 }
 
-error_chain! {
-    foreign_links {
-        ParseTableNumber(std::num::ParseIntError) #[doc = "Indicates failure to parse the table number as a number"];
-    }
-    errors {
-        /// Unknown table number
-        UnknownTable(id: usize) {
-            description("Table is unknown")
-            display("Unknown table: {}", id)
-        }
-    }
+/// Anything that can go wrong while translating.
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    /// Indicates failure to parse the table number as a number
+    #[error(transparent)]
+    ParseTableNumber(#[from] std::num::ParseIntError),
+    /// Unknown table number
+    #[error("Unknown table: {0}")]
+    UnknownTable(usize),
 }
+
+/// A Result with a translation Error
+pub type Result<T> = std::result::Result<T, Error>;
 
 #[cfg(test)]
 mod tests {
@@ -220,7 +221,7 @@ mod tests {
                 }
                 None => {
                     assert!(result.is_err());
-                    assert_matches!(*result.unwrap_err().kind(), ErrorKind::UnknownTable(_));
+                    assert_matches!(result.unwrap_err(), Error::UnknownTable(_));
                 }
             }
         }

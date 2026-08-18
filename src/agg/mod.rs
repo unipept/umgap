@@ -43,18 +43,19 @@ pub fn filter(freq_table: HashMap<TaxonId, f32>, lower_bound: f32) -> HashMap<Ta
         .collect()
 }
 
-error_chain! {
-    links {
-        Taxon(taxon::Error, taxon::ErrorKind) #[doc = "Taxon"];
-    }
-    errors {
-        /// Aggregation called on an empty list
-        EmptyInput {
-            description("Aggregration called on an empty list")
-            display("Aggregration called on an empty list")
-        }
-    }
+/// Anything that can go wrong while aggregating.
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    /// Error propagated from Taxon
+    #[error(transparent)]
+    Taxon(#[from] taxon::Error),
+    /// Aggregation called on an empty list
+    #[error("Aggregration called on an empty list")]
+    EmptyInput,
 }
+
+/// A Result with an aggregation Error
+pub type Result<T> = std::result::Result<T, Error>;
 
 #[cfg(test)]
 mod tests {
@@ -82,11 +83,8 @@ mod tests {
     fn test_empty_query() {
         for aggregator in aggregators(&fixtures::by_id()) {
             assert_matches!(
-                *aggregator
-                    .counting_aggregate(&Vec::new())
-                    .unwrap_err()
-                    .kind(),
-                ErrorKind::EmptyInput
+                aggregator.counting_aggregate(&Vec::new()).unwrap_err(),
+                Error::EmptyInput
             );
         }
     }
@@ -104,15 +102,14 @@ mod tests {
     fn test_invalid_taxa() {
         for aggregator in aggregators(&fixtures::by_id()) {
             assert_matches!(
-                *aggregator.counting_aggregate(&vec![5]).unwrap_err().kind(),
-                ErrorKind::Taxon(taxon::ErrorKind::UnknownTaxon(5))
+                aggregator.counting_aggregate(&vec![5]).unwrap_err(),
+                Error::Taxon(taxon::Error::UnknownTaxon(5))
             );
             assert_matches!(
-                *aggregator
+                aggregator
                     .counting_aggregate(&vec![1, 2, 5, 1])
-                    .unwrap_err()
-                    .kind(),
-                ErrorKind::Taxon(taxon::ErrorKind::UnknownTaxon(5))
+                    .unwrap_err(),
+                Error::Taxon(taxon::Error::UnknownTaxon(5))
             );
         }
     }

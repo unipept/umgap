@@ -42,9 +42,9 @@ impl<R: Read> Reader<R> {
         };
 
         if !header.starts_with('>') {
-            bail!(errors::ErrorKind::Io(io::Error::new(
+            return Err(errors::Error::Io(io::Error::new(
                 io::ErrorKind::Other,
-                "Expected > at beginning of fasta header."
+                "Expected > at beginning of fasta header.",
             )));
         }
         let _ = header.remove(0);

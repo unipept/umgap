@@ -1,11 +1,22 @@
-use error_chain::quick_main;
-
 use clap::Parser;
 
 use umgap::commands;
 use umgap::errors::Result;
 
-quick_main!(|| -> Result<()> {
+fn main() {
+    if let Err(err) = run() {
+        // Mirrors what error_chain's quick_main! used to print.
+        eprintln!("Error: {}", err);
+        let mut source = std::error::Error::source(&err);
+        while let Some(cause) = source {
+            eprintln!("Caused by: {}", cause);
+            source = cause.source();
+        }
+        std::process::exit(1);
+    }
+}
+
+fn run() -> Result<()> {
     match Opt::parse() {
         Opt::BestOf(args) => commands::bestof::bestof(args),
         Opt::BuildIndex(args) => commands::buildindex::buildindex(args),
@@ -29,7 +40,7 @@ quick_main!(|| -> Result<()> {
         Opt::Translate(args) => commands::translate::translate(args),
         Opt::Uniq(args) => commands::uniq::uniq(args),
     }
-});
+}
 
 /// UMGAP is a collection of tools to be used in metagenomics analysis pipelines. Use the
 /// `umgap-analyse.sh` script for some prebuild pipelines.

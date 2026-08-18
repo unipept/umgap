@@ -33,7 +33,7 @@ impl agg::MultiThreadSafeAggregator for LCACalculator {}
 impl agg::Aggregator for LCACalculator {
     fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> Result<TaxonId, agg::Error> {
         if taxons.is_empty() {
-            bail!(agg::ErrorKind::EmptyInput);
+            return Err(agg::Error::EmptyInput);
         }
         let subtree = Tree::new(self.root, &self.parents, taxons)?.collapse(&Add::add);
         Ok(subtree.root)

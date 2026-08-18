@@ -169,7 +169,7 @@ impl FromStr for Frame {
             "1R" => Ok(Frame::Reverse1),
             "2R" => Ok(Frame::Reverse2),
             "3R" => Ok(Frame::Reverse3),
-            _ => Err(ErrorKind::ParseFrameError(s.to_string()).into()),
+            _ => Err(Error::ParseFrameError(s.to_string()).into()),
         }
     }
 }
@@ -191,12 +191,13 @@ impl fmt::Display for Frame {
     }
 }
 
-error_chain! {
-    errors {
-        /// Unparseable Frame
-        ParseFrameError(frame: String) {
-            description("Unparseable frame")
-            display("Unparseable frame: {}", frame)
-        }
-    }
+/// Anything that can go wrong while parsing a reading frame.
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    /// Unparseable Frame
+    #[error("Unparseable frame: {0}")]
+    ParseFrameError(String),
 }
+
+/// A Result with a frame parsing Error
+pub type Result<T> = std::result::Result<T, Error>;

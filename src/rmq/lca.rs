@@ -49,7 +49,7 @@ impl LCACalculator {
     fn first_occurence(&self, taxon_id: TaxonId) -> taxon::Result<usize> {
         self.first_occurences
             .get(&taxon_id)
-            .ok_or_else(|| taxon::ErrorKind::UnknownTaxon(taxon_id).into())
+            .ok_or_else(|| taxon::Error::UnknownTaxon(taxon_id).into())
             .map(|t| *t)
     }
 }
@@ -59,7 +59,7 @@ impl agg::MultiThreadSafeAggregator for LCACalculator {}
 impl agg::Aggregator for LCACalculator {
     fn aggregate(&self, taxons: &HashMap<TaxonId, f32>) -> agg::Result<TaxonId> {
         if taxons.is_empty() {
-            bail!(agg::ErrorKind::EmptyInput);
+            return Err(agg::Error::EmptyInput);
         }
         let mut indices = taxons.keys().map(|t| self.first_occurence(*t));
         let mut consensus = indices.next().unwrap()?;
