@@ -178,9 +178,12 @@ impl str::FromStr for &'static TranslationTable {
 
     fn from_str(s: &str) -> Result<Self> {
         let id = s.parse::<usize>()?;
-        TABLES[id - 1]
-            .as_ref()
-            .ok_or_else(|| Error::UnknownTable(id).into())
+        // Tables are numbered from one, and not every number in the range is used, so
+        // both the subtraction and the lookup can fail.
+        id.checked_sub(1)
+            .and_then(|index| TABLES.get(index))
+            .and_then(|table| table.as_ref())
+            .ok_or(Error::UnknownTable(id))
     }
 }
 
@@ -224,6 +227,18 @@ mod tests {
                     assert_matches!(result.unwrap_err(), Error::UnknownTable(_));
                 }
             }
+        }
+    }
+
+    #[test]
+    fn test_translation_table_out_of_range() {
+        // Zero underflowed the index, anything past the end ran off it, and both
+        // panicked rather than reporting an unknown table.
+        for id in &["0", "24", "99", "1000000"] {
+            assert_matches!(
+                id.parse::<&TranslationTable>().unwrap_err(),
+                Error::UnknownTable(_)
+            );
         }
     }
 
