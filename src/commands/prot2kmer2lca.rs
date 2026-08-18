@@ -165,7 +165,7 @@ where
             let mut chunk_output = String::new();
             for read in chunk {
                 // Ignore empty reads and reads with a length smaller than k
-                if let Some(prot) = read.sequence.get(0).filter(|p| p.len() >= k) {
+                if let Some(prot) = read.sequence.first().filter(|p| p.len() >= k) {
                     chunk_output.push_str(&format!(">{}\n", read.header));
                     let mut lcas = (0..(prot.len() - k + 1))
                         .map(|i| &prot[i..i + k])

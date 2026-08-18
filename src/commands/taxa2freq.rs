@@ -90,7 +90,9 @@ pub struct TaxaToFreq {
 pub fn taxa2freq(args: TaxaToFreq) -> errors::Result<()> {
     let taxons = taxon::read_taxa_file(&args.taxon_file)?;
     if args.rank == rank::Rank::NoRank {
-        return Err(errors::Error::InvalidInvocation("Snap to an actual rank.".into()).into());
+        return Err(errors::Error::InvalidInvocation(
+            "Snap to an actual rank.".into(),
+        ));
     }
     let numfiles = args.input_files.len();
 

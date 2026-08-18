@@ -169,7 +169,7 @@ impl FromStr for Frame {
             "1R" => Ok(Frame::Reverse1),
             "2R" => Ok(Frame::Reverse2),
             "3R" => Ok(Frame::Reverse3),
-            _ => Err(Error::ParseFrameError(s.to_string()).into()),
+            _ => Err(Error::ParseFrameError(s.to_string())),
         }
     }
 }

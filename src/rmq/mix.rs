@@ -72,7 +72,7 @@ impl agg::Aggregator for MixCalculator {
             for (&right, &count) in taxons.iter() {
                 let lca = self.lca_aggregator.lca(left, right)?;
                 if lca == left || lca == right {
-                    let mut weight = weights.entry(left).or_insert_with(Weights::new);
+                    let weight = weights.entry(left).or_insert_with(Weights::new);
                     if lca == left {
                         weight.lca += count;
                     }
@@ -89,7 +89,7 @@ impl agg::Aggregator for MixCalculator {
             .iter()
             .max_by_key(|&(_, w)| NotNan::new(factorize(*w, self.factor)).unwrap())
             .map(|tup| *tup.0)
-            .ok_or_else(|| agg::Error::EmptyInput)
+            .ok_or(agg::Error::EmptyInput)
     }
 }
 
@@ -103,25 +103,25 @@ mod tests {
     #[test]
     fn test_full_rtl() {
         let aggregator = MixCalculator::new(fixtures::tree(), 0.0);
-        assert_matches!(aggregator.counting_aggregate(&vec![12884, 185751]), Ok(185751));
-        assert_matches!(aggregator.counting_aggregate(&vec![12884, 185751, 185752, 185752]), Ok(185752));
-        assert_matches!(aggregator.counting_aggregate(&vec![1, 1, 10239, 10239, 10239, 12884, 185751, 185752]), Ok(10239));
+        assert_matches!(aggregator.counting_aggregate(&[12884, 185751]), Ok(185751));
+        assert_matches!(aggregator.counting_aggregate(&[12884, 185751, 185752, 185752]), Ok(185752));
+        assert_matches!(aggregator.counting_aggregate(&[1, 1, 10239, 10239, 10239, 12884, 185751, 185752]), Ok(10239));
     }
 
     #[test]
     fn test_full_lca() {
         let aggregator = MixCalculator::new(fixtures::tree(), 1.0);
-        assert_matches!(aggregator.counting_aggregate(&vec![12884, 185751]), Ok(12884));
-        assert_matches!(aggregator.counting_aggregate(&vec![12884, 185751, 185752, 185752]), Ok(12884));
-        assert_matches!(aggregator.counting_aggregate(&vec![1, 1, 10239, 10239, 10239, 12884, 185751, 185752]), Ok(1));
+        assert_matches!(aggregator.counting_aggregate(&[12884, 185751]), Ok(12884));
+        assert_matches!(aggregator.counting_aggregate(&[12884, 185751, 185752, 185752]), Ok(12884));
+        assert_matches!(aggregator.counting_aggregate(&[1, 1, 10239, 10239, 10239, 12884, 185751, 185752]), Ok(1));
     }
 
     /* third example might fail because 12884 and 185751 have the same score. */
     #[test]
     fn test_one_half() {
         let aggregator = MixCalculator::new(fixtures::tree(), 0.5);
-        assert_matches!(aggregator.counting_aggregate(&vec![12884, 12884, 185751]), Ok(12884));
-        assert_matches!(aggregator.counting_aggregate(&vec![12884, 185751, 185751]), Ok(185751));
-        assert_matches!(aggregator.counting_aggregate(&vec![1, 12884, 12884, 185751, 185752]), Ok(12884));
+        assert_matches!(aggregator.counting_aggregate(&[12884, 12884, 185751]), Ok(12884));
+        assert_matches!(aggregator.counting_aggregate(&[12884, 185751, 185751]), Ok(185751));
+        assert_matches!(aggregator.counting_aggregate(&[1, 12884, 12884, 185751, 185752]), Ok(12884));
     }
 }

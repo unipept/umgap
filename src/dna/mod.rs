@@ -55,7 +55,7 @@ impl From<Nucleotide> for u8 {
     }
 }
 
-impl<'a> From<&'a u8> for Nucleotide {
+impl From<&u8> for Nucleotide {
     fn from(ch: &u8) -> Self {
         Nucleotide::from(*ch)
     }
@@ -69,13 +69,13 @@ pub struct Frame<'a>(&'a [Nucleotide]);
 #[derive(Debug, PartialEq)]
 pub struct Strand(Vec<Nucleotide>);
 
-impl<'a> From<&'a [u8]> for Strand {
+impl From<&[u8]> for Strand {
     fn from(read: &[u8]) -> Self {
         Strand(read.iter().map(Nucleotide::from).collect())
     }
 }
 
-impl<'a> From<&'a Vec<String>> for Strand {
+impl From<&Vec<String>> for Strand {
     fn from(lines: &Vec<String>) -> Self {
         Strand(
             lines

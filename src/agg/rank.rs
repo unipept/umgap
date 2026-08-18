@@ -32,7 +32,7 @@ impl<T: Iterator<Item = (String, TaxonId)>> RankAggregator<T> {
 
     fn raise_to_rank(&self, taxon: TaxonId, target: Rank) -> Option<TaxonId> {
         let mut ancestor = Some(taxon);
-        while ancestor.map_or(false, |a| self.ranks[a].map_or(true, |r| target < r)) {
+        while ancestor.is_some_and(|a| self.ranks[a].is_none_or(|r| target < r)) {
             ancestor = ancestor.and_then(|a| self.ancestors[a]);
         }
         ancestor
@@ -58,7 +58,7 @@ impl<T: Iterator<Item = (String, TaxonId)>> Iterator for RankAggregator<T> {
             let (mut aggregate, mut aggregate_rank) =
                 self.with_rank(initial_tid).expect("reeeeeeee");
 
-            while self.records.peek().map_or(false, |(s, _)| *s == sequence) {
+            while self.records.peek().is_some_and(|(s, _)| *s == sequence) {
                 let (_, next) = self.records.next().expect("we just peeked at it");
                 let (next_taxon, next_rank) = self.with_rank(next).expect("reeeeeee");
 

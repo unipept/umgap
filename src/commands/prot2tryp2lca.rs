@@ -121,7 +121,7 @@ pub fn prot2tryp2lca(args: ProtToTrypToLca) -> errors::Result<()> {
                             }
                         })
                     {
-                        if let Some(lca) = fst.get(&peptide).map(Some).unwrap_or(default) {
+                        if let Some(lca) = fst.get(peptide).map(Some).unwrap_or(default) {
                             chunk_output.push_str(&format!("{}\n", lca));
                         }
                     }

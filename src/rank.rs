@@ -108,6 +108,14 @@ impl Rank {
     }
 }
 
+// Deliberately not `Some(self.cmp(other))`: NoRank is treated as incomparable, so that
+// `score()` falls through every branch for it and `raise_to_rank` stops climbing. Making
+// this canonical would give NoRank a score of 12 and change aggregation.
+//
+// Note this does contradict the Ord impl below, which reports NoRank as Less rather than
+// incomparable, so `min()` and `<` disagree about it. Left as is because both behaviours
+// are relied on; worth revisiting deliberately rather than as a lint fix.
+#[allow(clippy::non_canonical_partial_ord_impl)]
 impl PartialOrd for Rank {
     fn partial_cmp(&self, other: &Rank) -> Option<Ordering> {
         if self == &Rank::NoRank || other == &Rank::NoRank {

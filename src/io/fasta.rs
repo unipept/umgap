@@ -42,8 +42,7 @@ impl<R: Read> Reader<R> {
         };
 
         if !header.starts_with('>') {
-            return Err(errors::Error::Io(io::Error::new(
-                io::ErrorKind::Other,
+            return Err(errors::Error::Io(io::Error::other(
                 "Expected > at beginning of fasta header.",
             )));
         }
@@ -165,16 +164,16 @@ impl<'a, W: Write> Writer<'a, W> {
         write!(self.buffer, ">{}", record.header)?;
         let sequence = record.sequence.join(self.separator);
         if !self.wrap {
-            self.buffer.write_all(&[b'\n'])?;
+            self.buffer.write_all(b"\n")?;
             self.buffer.write_all(sequence.as_bytes())?;
         } else {
             for subseq in sequence.as_bytes().chunks(FASTA_WIDTH) {
-                self.buffer.write_all(&[b'\n'])?;
+                self.buffer.write_all(b"\n")?;
                 self.buffer.write_all(subseq)?;
             }
         }
         if !sequence.is_empty() {
-            self.buffer.write_all(&[b'\n'])?;
+            self.buffer.write_all(b"\n")?;
         }
         Ok(())
     }
