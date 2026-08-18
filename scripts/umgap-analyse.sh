@@ -226,6 +226,11 @@ fi
 if [ "$fgs_used" = "true" ]; then
 	debug "checking if FragGeneScanRs is installed"
 	if ! [ -h "$(getconfigdir)/FragGeneScanRs" ]; then
+		if [ -h "$(getconfigdir)/FGSpp" ]; then
+			crash "This configuration still points at FragGeneScan++, which UMGAP no longer
+uses. Install FragGeneScanRs (https://github.com/unipept/FragGeneScanRs) and run
+umgap-setup again."
+		fi
 		crash "FragGeneScanRs not found. Please run umgap-setup."
 	fi
 fi

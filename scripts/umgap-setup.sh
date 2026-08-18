@@ -93,6 +93,21 @@ if [ ! -d "$configdir" ]; then
 	fi
 fi
 
+# Point people coming from the old FragGeneScan++ setup at the change, rather
+# than letting them fail the check below with a confusing message.
+case "$fgsrsbin" in
+*/FGSpp|FGSpp) oldfgs="$fgsrsbin" ;;
+esac
+if [ -d "$fgsrsbin" ] && [ -x "$fgsrsbin/FGSpp" ] && [ ! -x "$fgsrsbin/FragGeneScanRs" ]; then
+	oldfgs="$fgsrsbin/FGSpp"
+fi
+if [ -n "$oldfgs" ]; then
+	crash "'$oldfgs' is a FragGeneScan++ installation. UMGAP now uses FragGeneScanRs
+instead, which is a single binary and carries its own training data. Install it, for
+example with 'cargo install frag_gene_scan_rs', then either put it on your PATH or
+pass it with -f. See https://github.com/unipept/FragGeneScanRs."
+fi
+
 # If FragGeneScanRs is found and works, link it in the config directory.
 if [ -d "$fgsrsbin" ]; then
 	fgsrsbin="$fgsrsbin/FragGeneScanRs"
