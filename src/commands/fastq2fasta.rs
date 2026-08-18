@@ -4,14 +4,16 @@ use std::fs;
 use std::io;
 use std::path::PathBuf;
 
+use clap::Args;
+
 use crate::errors;
 use crate::io::fasta;
 use crate::io::fastq;
 use crate::utils;
 
 #[rustfmt::skip]
-#[derive(Debug, StructOpt)]
-#[structopt(verbatim_doc_comment)]
+#[derive(Debug, Args)]
+#[command(verbatim_doc_comment)]
 /// Interleaves FASTQ files into a FASTA stream
 ///
 /// The `umgap fastq2fasta` command takes one or more FASTQ files and interleaves them into a single
@@ -54,7 +56,6 @@ use crate::utils;
 /// ```
 pub struct FastqToFasta {
     /// The input files
-    #[structopt(parse(from_os_str))]
     pub input: Vec<PathBuf>,
 }
 

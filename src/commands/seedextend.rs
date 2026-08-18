@@ -4,13 +4,15 @@ use std::cmp;
 use std::io;
 use std::path::PathBuf;
 
+use clap::Args;
+
 use crate::errors;
 use crate::io::fasta;
 use crate::taxon;
 use crate::taxon::TaxonId;
 
-#[derive(Debug, StructOpt)]
-#[structopt(verbatim_doc_comment)]
+#[derive(Debug, Args)]
+#[command(verbatim_doc_comment)]
 /// Selects promising regions in sequences of taxon IDs
 ///
 /// The `umgap seedextend` command takes one or more sequences of taxon IDs and selects regions of
@@ -62,19 +64,19 @@ use crate::taxon::TaxonId;
 /// (higher or lower) with the `-p` option.
 pub struct SeedExtend {
     /// The minimum length of equal taxa to count as seed
-    #[structopt(short = "s", long = "min-seed-size", default_value = "2")]
+    #[arg(short = 's', long = "min-seed-size", default_value = "2")]
     pub min_seed_size: usize,
 
     /// The maximum length of a gap between seeds in an extension
-    #[structopt(short = "g", long = "max-gap-size", default_value = "0")]
+    #[arg(short = 'g', long = "max-gap-size", default_value = "0")]
     pub max_gap_size: usize,
 
     /// Use taxon ranks in given NCBI taxonomy tsv-file to pick extended seed with highest score
-    #[structopt(short = "r", long = "ranked", parse(from_os_str))]
+    #[arg(short = 'r', long = "ranked")]
     pub ranked: Option<PathBuf>,
 
     /// The score penalty for gaps in extended seeds
-    #[structopt(short = "p", long = "penalty", default_value = "5")]
+    #[arg(short = 'p', long = "penalty", default_value = "5")]
     pub penalty: usize,
 }
 

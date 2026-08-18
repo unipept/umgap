@@ -5,12 +5,14 @@ use std::path::PathBuf;
 
 use rayon::iter::{ParallelBridge, ParallelIterator};
 
+use clap::Args;
+
 use crate::errors;
 use crate::io::fasta;
 use crate::utils;
 
-#[derive(Debug, StructOpt)]
-#[structopt(verbatim_doc_comment)]
+#[derive(Debug, Args)]
+#[command(verbatim_doc_comment)]
 /// Maps a FASTA stream of peptides to taxon IDs
 ///
 /// The `umgap pept2lca` command takes one or more amino acid sequences and looks up the
@@ -46,17 +48,16 @@ use crate::utils;
 /// ```
 pub struct PeptToLca {
     /// Map unknown sequences to 0 instead of ignoring them
-    #[structopt(short = "o", long = "one-on-one")]
+    #[arg(short = 'o', long = "one-on-one")]
     pub one_on_one: bool,
 
     /// An index that maps peptides to taxon IDs
-    #[structopt(parse(from_os_str))]
     pub fst_file: PathBuf,
 
     /// Load index in memory instead of memory mapping the file contents. This
     /// makes querying significantly faster, but requires some initialization
     /// time.
-    #[structopt(short = "m", long = "in-memory")]
+    #[arg(short = 'm', long = "in-memory")]
     pub fst_in_memory: bool,
 
     /// Number of reads grouped into one chunk. Bigger chunks decrease
@@ -65,7 +66,7 @@ pub struct PeptToLca {
     /// a multiple of 12 (all 6 translations multiplied by the two paired-end
     /// reads) will keep FASTA records that originate from the same reads
     /// together.
-    #[structopt(short = "c", long = "chunksize", default_value = "240")]
+    #[arg(short = 'c', long = "chunksize", default_value = "240")]
     pub chunk_size: usize,
 }
 

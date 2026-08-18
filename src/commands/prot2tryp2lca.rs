@@ -8,12 +8,14 @@ use regex;
 
 use rayon::iter::{ParallelBridge, ParallelIterator};
 
+use clap::Args;
+
 use crate::errors;
 use crate::io::fasta;
 use crate::utils;
 
-#[derive(Debug, StructOpt)]
-#[structopt(verbatim_doc_comment)]
+#[derive(Debug, Args)]
+#[command(verbatim_doc_comment)]
 /// Digests a FASTA stream of peptides and maps all tryptic peptides to taxon IDs
 ///
 /// The `umgap prot2tryp2lca` command takes one or more peptides and splits these into
@@ -38,17 +40,16 @@ use crate::utils;
 /// ```
 pub struct ProtToTrypToLca {
     /// Map unknown sequences to 0 instead of ignoring them
-    #[structopt(short = "o", long = "one-on-one")]
+    #[arg(short = 'o', long = "one-on-one")]
     pub one_on_one: bool,
 
     /// An index that maps tryptic peptides to taxon IDs
-    #[structopt(parse(from_os_str))]
     pub fst_file: PathBuf,
 
     /// Load index in memory instead of memory mapping the file contents. This
     /// makes querying significantly faster, but requires some initialization
     /// time.
-    #[structopt(short = "m", long = "in-memory")]
+    #[arg(short = 'm', long = "in-memory")]
     pub fst_in_memory: bool,
 
     /// Number of reads grouped into one chunk. Bigger chunks decrease
@@ -57,28 +58,28 @@ pub struct ProtToTrypToLca {
     /// a multiple of 12 (all 6 translations multiplied by the two paired-end
     /// reads) will keep FASTA records that originate from the same reads
     /// together.
-    #[structopt(short = "c", long = "chunksize", default_value = "240")]
+    #[arg(short = 'c', long = "chunksize", default_value = "240")]
     pub chunk_size: usize,
 
     /// The cleavage-pattern (regex), i.e. the pattern after which
     /// the next peptide will be cleaved for tryptic peptides)
-    #[structopt(short = "p", long = "pattern", default_value = "([KR])([^P])")]
+    #[arg(short = 'p', long = "pattern", default_value = "([KR])([^P])")]
     pub pattern: String,
 
     /// Minimum length of tryptic peptides to be mapped
-    #[structopt(short = "l", long = "minlen", default_value = "5")]
+    #[arg(short = 'l', long = "minlen", default_value = "5")]
     pub min_length: usize,
 
     /// Maximum length of tryptic peptides to be mapped
-    #[structopt(short = "L", long = "maxlen", default_value = "50")]
+    #[arg(short = 'L', long = "maxlen", default_value = "50")]
     pub max_length: usize,
 
     /// Amino acid symbols that a peptide must contain to be processed
-    #[structopt(short = "k", long = "keep", default_value = "")]
+    #[arg(short = 'k', long = "keep", default_value = "")]
     pub contains: String,
 
     /// Amino acid symbols that a peptide may not contain to be processed
-    #[structopt(short = "d", long = "drop", default_value = "")]
+    #[arg(short = 'd', long = "drop", default_value = "")]
     pub lacks: String,
 }
 

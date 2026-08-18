@@ -6,11 +6,14 @@ use std::str::FromStr;
 
 use crate::dna::translation::TranslationTable;
 use crate::dna::Strand;
+use clap::builder::{PossibleValuesParser, TypedValueParser};
+use clap::Args;
+
 use crate::errors;
 use crate::io::fasta;
 
-#[derive(Debug, StructOpt)]
-#[structopt(verbatim_doc_comment)]
+#[derive(Debug, Args)]
+#[command(verbatim_doc_comment)]
 /// Translates a FASTA stream of DNA reads to peptides
 ///
 /// The `umgap translate` command takes one or more DNA sequences and translates them into amino
@@ -45,31 +48,32 @@ use crate::io::fasta;
 /// bacterial, archaeal and plant plastid code.
 pub struct Translate {
     /// Replace each start-codon with methionine
-    #[structopt(short = "m", long = "methionine")]
+    #[arg(short = 'm', long = "methionine")]
     pub methionine: bool,
 
     /// Read and output all six frames
-    #[structopt(short = "a", long = "all-frames", conflicts_with = "frame")]
+    #[arg(short = 'a', long = "all-frames", conflicts_with = "frame")]
     pub all_frames: bool,
 
     /// Adds a reading frame (1, 2, 3, 1R, 2R or 3R)
-    #[structopt(
-        short = "f",
+    #[arg(
+        short = 'f',
         long = "frame",
-        possible_values = &Frame::variants()
+        value_parser = PossibleValuesParser::new(Frame::variants().iter().copied())
+            .map(|s| Frame::from_str(&s).expect("a possible value always parses")),
     )]
     pub frames: Vec<Frame>,
 
     /// Append a bar (|) and the name of the frame to the fasta header
-    #[structopt(short = "n", long = "append-name")]
+    #[arg(short = 'n', long = "append-name")]
     pub append_name: bool,
 
     /// Translation table to use
-    #[structopt(short = "t", long = "table", default_value = "1")]
+    #[arg(short = 't', long = "table", default_value = "1")]
     pub table: String,
 
     /// Instead of normal use, print the selected table and exit
-    #[structopt(short = "s", long = "show-table")]
+    #[arg(short = 's', long = "show-table")]
     pub show_table: bool,
 }
 

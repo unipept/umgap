@@ -19,9 +19,6 @@ extern crate lazy_static;
 extern crate assert_matches;
 
 #[macro_use]
-extern crate structopt;
-
-#[macro_use]
 extern crate strum_macros;
 
 pub mod agg;

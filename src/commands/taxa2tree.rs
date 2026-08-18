@@ -5,12 +5,14 @@ use std::io;
 
 use serde_json::json;
 
+use clap::Args;
+
 use crate::errors;
 use crate::io::fasta;
 use crate::taxon::TaxonId;
 
-#[derive(Debug, StructOpt)]
-#[structopt(verbatim_doc_comment)]
+#[derive(Debug, Args)]
+#[command(verbatim_doc_comment)]
 /// Visualizes a stream of taxon IDs using the Unipept API
 ///
 /// The `umgap taxa2tree` command, similar to the `unipept taxa2tree` command, takes one or more
@@ -33,7 +35,7 @@ use crate::taxon::TaxonId;
 /// ```
 pub struct TaxaToTree {
     /// Host the result online and return the URL
-    #[structopt(short = "u", long = "url")]
+    #[arg(short = 'u', long = "url")]
     pub url: bool,
 }
 

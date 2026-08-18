@@ -6,6 +6,9 @@ use std::path::PathBuf;
 use std::str::FromStr;
 
 use crate::agg;
+use clap::builder::{PossibleValuesParser, TypedValueParser};
+use clap::Args;
+
 use crate::errors;
 use crate::io::fasta;
 use crate::rmq;
@@ -13,8 +16,8 @@ use crate::taxon;
 use crate::taxon::TaxonId;
 use crate::tree;
 
-#[derive(Debug, StructOpt)]
-#[structopt(verbatim_doc_comment)]
+#[derive(Debug, Args)]
+#[command(verbatim_doc_comment)]
 /// Aggregates taxon IDs in a FASTA stream
 ///
 /// The `umgap taxa2agg` command takes one or more lists of taxon IDs and aggregates them into a
@@ -60,41 +63,42 @@ use crate::tree;
 ///   1.0`).
 pub struct TaxaToAgg {
     /// Each taxon is followed by a score between 0 and 1
-    #[structopt(short = "s", long = "scored")]
+    #[arg(short = 's', long = "scored")]
     pub scored: bool,
 
     /// Let all taxa snap to taxa with a named rank (such as species) during calculations
-    #[structopt(short = "r", long = "ranked")]
+    #[arg(short = 'r', long = "ranked")]
     pub ranked_only: bool,
 
     /// The method to use for aggregation
-    #[structopt(
-                short = "m",
-                long = "method",
-                default_value = "tree",
-                possible_values = &Method::variants()
+    #[arg(
+        short = 'm',
+        long = "method",
+        default_value = "tree",
+        value_parser = PossibleValuesParser::new(Method::variants().iter().copied())
+            .map(|s| Method::from_str(&s).expect("a possible value always parses")),
     )]
     pub method: Method,
 
     /// The strategy to use for aggregation
-    #[structopt(
-                short = "a",
-                long = "aggregate",
-                default_value = "hybrid",
-                possible_values = &Strategy::variants()
+    #[arg(
+        short = 'a',
+        long = "aggregate",
+        default_value = "hybrid",
+        value_parser = PossibleValuesParser::new(Strategy::variants().iter().copied())
+            .map(|s| Strategy::from_str(&s).expect("a possible value always parses")),
     )]
     pub strategy: Strategy,
 
     /// The factor for the hybrid aggregation, from 0.0 (MRTL) to 1.0 (LCA*)
-    #[structopt(short = "f", long = "factor", default_value = "0.25")]
+    #[arg(short = 'f', long = "factor", default_value = "0.25")]
     pub factor: f32,
 
     /// The smallest input frequency for a taxon to be included in the aggregation
-    #[structopt(short = "l", long = "lower-bound", default_value = "0")]
+    #[arg(short = 'l', long = "lower-bound", default_value = "0")]
     pub lower_bound: f32,
 
     /// An NCBI taxonomy TSV-file as processed by Unipept
-    #[structopt(parse(from_os_str))]
     pub taxon_file: PathBuf,
 }
 
@@ -184,7 +188,7 @@ pub fn taxa2agg(args: TaxaToAgg) -> errors::Result<()> {
 
 /// An aggregation method
 #[allow(missing_docs)]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Method {
     Tree,
     RangeMinimumQuery,
@@ -211,7 +215,7 @@ impl FromStr for Method {
 
 /// An aggregation strategy
 #[allow(missing_docs)]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Strategy {
     LowestCommonAncestor,
     Hybrid,

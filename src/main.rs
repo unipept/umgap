@@ -1,12 +1,12 @@
 use error_chain::quick_main;
 
-use structopt::StructOpt;
+use clap::Parser;
 
 use umgap::commands;
 use umgap::errors::Result;
 
 quick_main!(|| -> Result<()> {
-    match Opt::from_args() {
+    match Opt::parse() {
         Opt::BestOf(args) => commands::bestof::bestof(args),
         Opt::BuildIndex(args) => commands::buildindex::buildindex(args),
         Opt::FastqToFasta(args) => commands::fastq2fasta::fastq2fasta(args),
@@ -38,26 +38,27 @@ quick_main!(|| -> Result<()> {
 /// The term taxon ID refers to an identifier of a NCBI taxonomy (which should be the same version
 /// in the whole pipeline).
 #[rustfmt::skip]
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Parser)]
+#[command(version, propagate_version = true)]
 pub enum Opt {
-    #[structopt(name = "bestof")] BestOf(commands::bestof::BestOf),
-    #[structopt(name = "buildindex")] BuildIndex(commands::buildindex::BuildIndex),
-    #[structopt(name = "fastq2fasta")] FastqToFasta(commands::fastq2fasta::FastqToFasta),
-    #[structopt(name = "filter")] Filter(commands::filter::Filter),
-    #[structopt(name = "joinkmers")] JoinKmers(commands::joinkmers::JoinKmers),
-    #[structopt(name = "pept2lca")] PeptToLca(commands::pept2lca::PeptToLca),
-    #[structopt(name = "printindex")] PrintIndex(commands::printindex::PrintIndex),
-    #[cfg(target_family = "unix")] #[structopt(name = "prot2kmer2lca")] ProtToKmerToLca(commands::prot2kmer2lca::ProtToKmerToLca),
-    #[structopt(name = "prot2kmer")] ProtToKmer(commands::prot2kmer::ProtToKmer),
-    #[structopt(name = "prot2tryp2lca")] ProtToTrypToLca(commands::prot2tryp2lca::ProtToTrypToLca),
-    #[structopt(name = "prot2tryp")] ProtToTryp(commands::prot2tryp::ProtToTryp),
-    #[structopt(name = "seedextend")] SeedExtend(commands::seedextend::SeedExtend),
-    #[structopt(name = "snaptaxon")] SnapTaxon(commands::snaptaxon::SnapTaxon),
-    #[structopt(name = "splitkmers")] SplitKmers(commands::splitkmers::SplitKmers),
-    #[structopt(name = "taxa2agg")] TaxaToAgg(commands::taxa2agg::TaxaToAgg),
-    #[structopt(name = "taxa2freq")] TaxaToFreq(commands::taxa2freq::TaxaToFreq),
-    #[structopt(name = "taxa2tree")] TaxaToTree(commands::taxa2tree::TaxaToTree),
-    #[structopt(name = "taxonomy")] Taxonomy(commands::taxonomy::Taxonomy),
-    #[structopt(name = "translate")] Translate(commands::translate::Translate),
-    #[structopt(name = "uniq")] Uniq(commands::uniq::Uniq),
+    #[command(name = "bestof")] BestOf(commands::bestof::BestOf),
+    #[command(name = "buildindex")] BuildIndex(commands::buildindex::BuildIndex),
+    #[command(name = "fastq2fasta")] FastqToFasta(commands::fastq2fasta::FastqToFasta),
+    #[command(name = "filter")] Filter(commands::filter::Filter),
+    #[command(name = "joinkmers")] JoinKmers(commands::joinkmers::JoinKmers),
+    #[command(name = "pept2lca")] PeptToLca(commands::pept2lca::PeptToLca),
+    #[command(name = "printindex")] PrintIndex(commands::printindex::PrintIndex),
+    #[cfg(target_family = "unix")] #[command(name = "prot2kmer2lca")] ProtToKmerToLca(commands::prot2kmer2lca::ProtToKmerToLca),
+    #[command(name = "prot2kmer")] ProtToKmer(commands::prot2kmer::ProtToKmer),
+    #[command(name = "prot2tryp2lca")] ProtToTrypToLca(commands::prot2tryp2lca::ProtToTrypToLca),
+    #[command(name = "prot2tryp")] ProtToTryp(commands::prot2tryp::ProtToTryp),
+    #[command(name = "seedextend")] SeedExtend(commands::seedextend::SeedExtend),
+    #[command(name = "snaptaxon")] SnapTaxon(commands::snaptaxon::SnapTaxon),
+    #[command(name = "splitkmers")] SplitKmers(commands::splitkmers::SplitKmers),
+    #[command(name = "taxa2agg")] TaxaToAgg(commands::taxa2agg::TaxaToAgg),
+    #[command(name = "taxa2freq")] TaxaToFreq(commands::taxa2freq::TaxaToFreq),
+    #[command(name = "taxa2tree")] TaxaToTree(commands::taxa2tree::TaxaToTree),
+    #[command(name = "taxonomy")] Taxonomy(commands::taxonomy::Taxonomy),
+    #[command(name = "translate")] Translate(commands::translate::Translate),
+    #[command(name = "uniq")] Uniq(commands::uniq::Uniq),
 }
