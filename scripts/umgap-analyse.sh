@@ -115,7 +115,7 @@ fi
 debug "parsing the arguments"
 
 count=0
-fgspp_used="false"
+fgs_used="false"
 tryptic_used="false"
 ninemer_used="false"
 samples=""
@@ -142,10 +142,10 @@ while getopts c:1:2:t:zo: f; do
 		case "$type" in
 		"max-sensitivity") ninemer_used="true" ;;
 		"high-sensitivity") ninemer_used="true" ;;
-		"tryptic-sensitivity") fgspp_used="true" ; tryptic_used="true" ;;
-		"tryptic-precision") fgspp_used="true" ; tryptic_used="true" ;;
-		"high-precision") fgspp_used="true" ; ninemer_used="true" ;;
-		"max-precision") fgspp_used="true" ; ninemer_used="true" ;;
+		"tryptic-sensitivity") fgs_used="true" ; tryptic_used="true" ;;
+		"tryptic-precision") fgs_used="true" ; tryptic_used="true" ;;
+		"high-precision") fgs_used="true" ; ninemer_used="true" ;;
+		"max-precision") fgs_used="true" ; ninemer_used="true" ;;
 		*) crash "Unrecognized type: '$type'."
 		esac
 		log "- Using '$type'."
@@ -223,10 +223,15 @@ fi
 #  Environmental checks.
 # =========================================================================== #
 
-if [ "$fgspp_used" = "true" ]; then
-	debug "checking if FGSpp is installed"
-	if ! [ -h "$(getconfigdir)/FGSpp" ]; then
-		crash "FragGeneScan++ not found. Please run umgap-setup."
+if [ "$fgs_used" = "true" ]; then
+	debug "checking if FragGeneScanRs is installed"
+	if ! [ -h "$(getconfigdir)/FragGeneScanRs" ]; then
+		if [ -h "$(getconfigdir)/FGSpp" ]; then
+			crash "This configuration still points at FragGeneScan++, which UMGAP no longer
+uses. Install FragGeneScanRs (https://github.com/unipept/FragGeneScanRs) and run
+umgap-setup again."
+		fi
+		crash "FragGeneScanRs not found. Please run umgap-setup."
 	fi
 fi
 
@@ -245,9 +250,8 @@ debug "using version '$version'"
 #  The actual pipeline
 # =========================================================================== #
 
-fgspp() {
-	"$(getconfigdir)/FGSpp/FGSpp" -s stdin -o stdout -w 0 \
-	    -r "$(getconfigdir)/FGSpp/train" -t "illumina_10" -p 4 -c 2
+fgs() {
+	"$(getconfigdir)/FragGeneScanRs" -s stdin -o stdout -w 0 -t "illumina_10" -p 4
 }
 
 taxons="$(getconfigdir)/$version/taxons.tsv"
@@ -287,23 +291,23 @@ while [ -n "${samples}" ]; do
 		umgap uniq -d /                                | # join paired ends
 		umgap taxa2agg -l1 -a hybrid -f 0.25 "$taxons";; # aggregate
 	"tryptic-sensitivity")
-		fgspp                                          | # gene prediction
+		fgs                                            | # gene prediction
 		umgap prot2tryp2lca    -l9 -L45 "$tryptics"    | # map to taxa
 		umgap uniq -d /                                | # join paired ends
 		umgap taxa2agg -l1 -m rmq -a mrtl "$taxons"   ;; # aggregate
 	"tryptic-precision")
-		fgspp                                          | # gene prediction
+		fgs                                            | # gene prediction
 		umgap prot2tryp2lca    -l9 -L45 "$tryptics"    | # map to taxa
 		umgap uniq -d /                                | # join paired ends
 		umgap taxa2agg -l5 -m rmq -a mrtl "$taxons"   ;; # aggregate
 	"high-precision")
-		fgspp                                          | # gene prediction
+		fgs                                            | # gene prediction
 		nc -NU "$socket"                               | # map to taxa
 		umgap seedextend -g1 -s3                       | # seedextend filter
 		umgap uniq -d /                                | # join paired ends
 		umgap taxa2agg -l2 -a lca\* "$taxons"         ;; # aggregate
 	"max-precision")
-		fgspp                                          | # gene prediction
+		fgs                                            | # gene prediction
 		nc -NU "$socket"                               | # map to taxa
 		umgap seedextend -g1 -s4                       | # seedextend filter
 		umgap uniq -d /                                | # join paired ends
