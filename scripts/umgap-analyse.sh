@@ -99,6 +99,15 @@ getconfigdir() {
 	fi
 }
 
+# List the entries of the configuration directory, name only. find's -printf is a
+# GNU extension and is not available on the BSD find shipped with macOS.
+list_versions() {
+	for entry in "$(getconfigdir)"/*; do
+		[ -e "$entry" ] || [ -L "$entry" ] || continue
+		basename "$entry"
+	done | sort -n
+}
+
 # =========================================================================== #
 #  Environmental checks.
 # =========================================================================== #
@@ -235,8 +244,7 @@ umgap-setup again."
 	fi
 fi
 
-versions="$(find -H "$(getconfigdir)" -mindepth 1 -maxdepth 1 \
-                 -printf '%P\n' | sort -n)"
+versions="$(list_versions)"
 for candidate in $versions; do
 	[ ! -h "$(getconfigdir)/$candidate/taxons.tsv" ] && continue
 	[ "$tryptic_used" = "true" -a ! -h "$(getconfigdir)/$candidate/tryptic.fst" ] && continue
