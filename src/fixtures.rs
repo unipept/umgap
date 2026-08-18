@@ -1,7 +1,12 @@
+//! A small taxonomy used to test the aggregation and tree operations.
+
 use crate::rank::Rank;
 use crate::taxon::*;
 
+/// The taxon ID of the root of the test taxonomy.
 pub const ROOT: TaxonId = 1;
+
+/// The taxa making up the test taxonomy.
 pub fn taxon_list() -> Vec<Taxon> {
     vec![
         Taxon::from_static(1, "root", Rank::NoRank, 1, true),
@@ -13,9 +18,12 @@ pub fn taxon_list() -> Vec<Taxon> {
     ]
 }
 
+/// The test taxonomy as a tree.
 pub fn tree() -> TaxonTree {
     TaxonTree::new(&taxon_list())
 }
+
+/// The test taxonomy indexed by taxon ID.
 pub fn by_id() -> TaxonList {
     TaxonList::new(taxon_list())
 }
