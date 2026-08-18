@@ -14,7 +14,7 @@ keywords = ["metagenomics", "transcriptonomics", "bio", "DNA", "unipept"]
 categories = ["command-line-utilities", "science"]
 license = "MIT"
 include = ["Cargo.toml", "LICENSE", "README.md", "scripts/umgap*.sh", "src/**/*.rs"]
-edition = "2018"
+edition = "2024"
 rust-version = "1.88"
 
 [dependencies]
