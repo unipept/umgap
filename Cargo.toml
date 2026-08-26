@@ -1,6 +1,6 @@
 [package]
 name = "umgap"
-version = "1.1.1"
+version = "1.2.0"
 authors = ["Felix Van der Jeugt <felix.vanderjeugt@gmail.com>",
            "Stijn Seghers <stijn.seghers@gmail.com>",
            "Niels De Graef <Niels.DeGraef@UGent.be>",
@@ -15,6 +15,7 @@ categories = ["command-line-utilities", "science"]
 license = "MIT"
 include = ["Cargo.toml", "LICENSE", "README.md", "scripts/umgap*.sh", "src/**/*.rs"]
 edition = "2018"
+rust-version = "1.88"
 
 [dependencies]
 clap = "2.33.0"

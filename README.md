@@ -11,9 +11,7 @@ Statistics at [Ghent University].
 ## Installation & Setup
 
 1. Install [Rust], according to [their installation instructions][rust-install],
-   or use your favourite package manager (e.g. `apt install rustc`). The
-   pipeline is developed for the latest stable release, but should work on 1.35
-   and higher.
+   or use your favourite package manager (e.g. `apt install rustc`).
 
 2. Clone this repository and go to the repository root.
 
